@@ -132,6 +132,44 @@ Confirme login, fluxo coordenador/catequista e, se aplicável, chamada offline e
 
 ---
 
+## Passo a passo: usar no celular (PWA)
+
+A app é instalável como **PWA**. O **service worker só entra em ação em build de produção** (Vercel ou `npm run build` + `npm run start`). Em `npm run dev` o PWA fica desligado — use a **URL HTTPS de produção** (ou staging) para testar no telemóvel como os catequistas vão usar.
+
+**Antes da primeira vez:** abra o site **com internet**, faça login e navegue um pouco para o navegador cachear os ficheiros necessários ao modo offline na chamada.
+
+### iPhone e iPad (Safari)
+
+1. Abra a URL da app **no Safari** (ex.: `https://seu-app.vercel.app`). No iOS, a instalação na tela inicial costuma funcionar melhor pelo Safari que por outros browsers.
+2. Toque no botão **Partilhar** (ícone quadrado com seta para cima).
+3. Role e escolha **Adicionar à Tela de Início**.
+4. Confirme o nome e toque **Adicionar**.
+5. No ecrã principal, abra o **ícone** da app — abre em ecrã quase inteiro (sem barra do Safari habitual).
+
+Para **desinstalar**, mantenha o dedo premido no ícone → **Remover App** → **Remover da Tela Inicial** (ou equivalente conforme a versão do iOS).
+
+### Android (Chrome)
+
+1. Abra a URL da app no **Chrome**.
+2. Dependendo da versão, aparece um banner **Instalar app** **ou** abra o menu **⋮** → **Instalar app** / **Adicionar à tela inicial**.
+3. Confirme a instalação.
+4. Abra pelo **ícone** na gaveta de apps ou no ecrã inicial.
+
+Para **desinstalar**, como qualquer app instalada via Chrome: definições do Chrome ou arrastar o ícone para **Desinstalar** (varia por fabricante).
+
+### Uso no dia a dia (catequista)
+
+1. **Com rede:** abra a app (ou o site), inicie a chamada e registe presenças normalmente.
+2. **Sem rede:** se já usou a app online neste telemóvel, continue a marcar presenças; os dados ficam na fila local até haver rede.
+3. **Quando a internet voltar:** mantenha a app aberta um momento ou volte mais tarde — a sincronização corre automaticamente. No **Safari/iOS** o recurso Background Sync pode ser limitado; nesse caso, abrir a app quando houver rede costuma bastar para enviar chamadas pendentes.
+
+### Desenvolvimento: testar no telemóvel
+
+- **`localhost` no PC** não está acessível diretamente como `localhost` no telemóvel. Opções: **URL de produção/preview na Vercel**, ou exponha o servidor com HTTPS (tunnel tipo [ngrok](https://ngrok.com/) ou `cloudflared`) e compatibilize redirects no Supabase Auth com essa URL temporária.
+- **HTTPS** é habitualmente exigido para service worker fora de `localhost`; por isso a validação fiel ao PWA costuma ser em **staging/produção**.
+
+---
+
 ## Scripts NPM
 
 | Comando | Descrição |
