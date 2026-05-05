@@ -11,14 +11,16 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|------------|
-| App | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript |
-| UI | Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), [Base UI](https://base-ui.com) |
-| Backend / dados | [Supabase](https://supabase.com) (PostgreSQL, Auth, Row Level Security) |
-| Offline | PWA ([`@ducanh2912/next-pwa`](https://github.com/DuCanhGH/next-pwa)), [Dexie](https://dexie.org) (IndexedDB) |
-| Relatórios | jsPDF, xlsx (geração no servidor) |
-| Deploy | [Vercel](https://vercel.com) (recomendado) |
+
+| Camada          | Tecnologia                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| App             | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript                                          |
+| UI              | Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), [Base UI](https://base-ui.com)                             |
+| Backend / dados | [Supabase](https://supabase.com) (PostgreSQL, Auth, Row Level Security)                                      |
+| Offline         | PWA (`[@ducanh2912/next-pwa](https://github.com/DuCanhGH/next-pwa)`), [Dexie](https://dexie.org) (IndexedDB) |
+| Relatórios      | jsPDF, xlsx (geração no servidor)                                                                            |
+| Deploy          | [Vercel](https://vercel.com) (recomendado)                                                                   |
+
 
 ---
 
@@ -29,7 +31,7 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
 - **LGPD:** dados de menores e responsáveis são sensíveis; apenas usuários autorizados devem acessar o sistema. Consentimento e processo paroquial ficam fora do código, mas o desenho do produto assume essa obrigação.
 - **Escopo do MVP:** uma paróquia, sem portal para pais, sem notificações automáticas de falta, sem multi-paróquia (detalhes em *Non-Goals* do PRD).
 - **Linguagem da UI:** português brasileiro, vocabulário paroquial (turma, catequista, aluno).
-- **Segredos:** `SUPABASE_SERVICE_ROLE_KEY` é **somente servidor** (nunca no client nem em variáveis `NEXT_PUBLIC_*`). O projeto valida isso em `lib/supabase/config.ts`.
+- **Segredos:** `SUPABASE_SECRET_KEY` (recomendada, formato `sb_secret_…`) ou, em legado, `SUPABASE_SERVICE_ROLE_KEY` (JWT `service_role`) — **somente servidor** (nunca no client nem em `NEXT_PUBLIC_*`). Validação em `lib/supabase/config.ts`.
 
 ---
 
@@ -56,9 +58,9 @@ npm install
 **Opção A — Supabase na nuvem (mais próximo da produção)**
 
 1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
-2. Aplique o schema: o SQL inicial está em [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql). Pode usar o SQL Editor do Supabase ou a CLI com o projeto linkado (`supabase link` + `supabase db push`).
-3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/**`).
-4. Crie usuários (e‑mail/senha) e perfis conforme sua política — o arquivo [`supabase/seed.sql`](supabase/seed.sql) é pensado para **desenvolvimento local** com usuários fictícios e senha de teste; **não use esse seed tal qual em produção**.
+2. Aplique o schema: o SQL inicial está em `[supabase/migrations/0001_initial_schema.sql](supabase/migrations/0001_initial_schema.sql)`. Pode usar o SQL Editor do Supabase ou a CLI com o projeto linkado (`supabase link` + `supabase db push`).
+3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/`**).
+4. Crie usuários (e‑mail/senha) e perfis conforme sua política — o arquivo `[supabase/seed.sql](supabase/seed.sql)` é pensado para **desenvolvimento local** com usuários fictícios e senha de teste; **não use esse seed tal qual em produção**.
 
 **Opção B — Supabase local (CLI)**
 
@@ -78,20 +80,26 @@ Obtenha URL e chaves anon com:
 supabase status
 ```
 
-Use o **anon key** e a **API URL** (geralmente `http://127.0.0.1:54321`) no arquivo de ambiente da próxima etapa.
+Use a **publishable key** (`sb_publishable_…`) ou o **anon** (JWT) e a **API URL** (geralmente `http://127.0.0.1:54321`) no arquivo de ambiente da próxima etapa.
 
 ### 3. Variáveis de ambiente
 
-Crie `.env.local` na raiz (**não commite** este arquivo):
+Crie `.env.local` na raiz (**não commite** este arquivo). Um modelo versionado está em [`.env.example`](.env.example). O Supabase passou a chaves novas ([API keys](https://supabase.com/docs/guides/api/api-keys)); este projeto aceita os nomes novos **e** os legados:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<URL do projeto Supabase>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon public key>
-SUPABASE_SERVICE_ROLE_KEY=<service_role key — só servidor>
+# Cliente público (uma das duas):
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<sb_publishable_… — recomendado>
+# ou, legado:
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon JWT>
+# Servidor apenas (uma das duas):
+SUPABASE_SECRET_KEY=<sb_secret_… — recomendado>
+# ou, legado:
+# SUPABASE_SERVICE_ROLE_KEY=<service_role JWT>
 ```
 
-- No dashboard Supabase: **Settings → API**.
-- Local: saída de `supabase status`.
+- No dashboard: **Project Settings → API Keys** (`sb_publishable_…` / `sb_secret_…`). Chaves legadas ficam na aba **Legacy anon, service_role**.
+- **Supabase local:** use a saída de `supabase status` (URL + chave anônima / publishable, conforme sua versão da CLI).
 
 ### 4. Rodar o app
 
@@ -123,9 +131,9 @@ npm run start
 
 1. **Repositório:** envie o código para o Git (GitHub, GitLab ou Bitbucket) se ainda não estiver.
 2. **Supabase (produção):** projeto dedicado em produção, com o mesmo schema aplicado (`supabase/migrations`). Revise políticas RLS após migrações.
-3. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/**`).
+3. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/`**).
 4. **Vercel:** [importe o repositório](https://vercel.com/new), framework Next.js detectado automaticamente.
-5. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre as três variáveis (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) para Production (e Preview, se usar Supabase de staging).
+5. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre `NEXT_PUBLIC_SUPABASE_URL`, uma chave pública (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ou `NEXT_PUBLIC_SUPABASE_ANON_KEY`), e uma chave de servidor (`SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`), para Production (e Preview, se usar projeto de staging).
 6. **Deploy:** dispare um deploy (push na branch conectada ou “Redeploy”). O build gera também artefatos PWA em `public/` (ex.: service worker conforme `@ducanh2912/next-pwa`).
 
 Confirme login, fluxo coordenador/catequista e, se aplicável, chamada offline em um dispositivo real.
@@ -165,27 +173,29 @@ Para **desinstalar**, como qualquer app instalada via Chrome: definições do Ch
 
 ### Desenvolvimento: testar no telemóvel
 
-- **`localhost` no PC** não está acessível diretamente como `localhost` no telemóvel. Opções: **URL de produção/preview na Vercel**, ou exponha o servidor com HTTPS (tunnel tipo [ngrok](https://ngrok.com/) ou `cloudflared`) e compatibilize redirects no Supabase Auth com essa URL temporária.
+- `**localhost` no PC** não está acessível diretamente como `localhost` no telemóvel. Opções: **URL de produção/preview na Vercel**, ou exponha o servidor com HTTPS (tunnel tipo [ngrok](https://ngrok.com/) ou `cloudflared`) e compatibilize redirects no Supabase Auth com essa URL temporária.
 - **HTTPS** é habitualmente exigido para service worker fora de `localhost`; por isso a validação fiel ao PWA costuma ser em **staging/produção**.
 
 ---
 
 ## Scripts NPM
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run start` | Serve o build localmente |
-| `npm run lint` | Verificação TypeScript (`tsc --noEmit`) |
-| `npm test` | Testes Vitest |
-| `npm run test:watch` | Vitest em modo watch |
+
+| Comando              | Descrição                               |
+| -------------------- | --------------------------------------- |
+| `npm run dev`        | Servidor de desenvolvimento             |
+| `npm run build`      | Build de produção                       |
+| `npm run start`      | Serve o build localmente                |
+| `npm run lint`       | Verificação TypeScript (`tsc --noEmit`) |
+| `npm test`           | Testes Vitest                           |
+| `npm run test:watch` | Vitest em modo watch                    |
+
 
 ---
 
 ## Contribuindo e agentes (IA)
 
-O repositório inclui orientações para desenvolvimento com assistentes — ver [`AGENTS.md`](AGENTS.md) e [`CLAUDE.md`](CLAUDE.md).
+O repositório inclui orientações para desenvolvimento com assistentes — ver `[AGENTS.md](AGENTS.md)` e `[CLAUDE.md](CLAUDE.md)`.
 
 ---
 

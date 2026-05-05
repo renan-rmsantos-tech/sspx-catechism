@@ -29,7 +29,7 @@ const originalEnv = { ...process.env }
 beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
+  process.env.SUPABASE_SECRET_KEY = 'test-sb-secret-key'
   vi.clearAllMocks()
   mockCookiesStore.getAll.mockReturnValue([])
   mockCookiesStore.set.mockReset()
@@ -57,26 +57,59 @@ describe('getPublicEnv', () => {
     expect(() => getPublicEnv()).toThrow('NEXT_PUBLIC_SUPABASE_URL')
   })
 
-  it('throws descriptive error when NEXT_PUBLIC_SUPABASE_ANON_KEY is missing', async () => {
+  it('throws descriptive error when both public keys are missing', async () => {
     vi.resetModules()
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
     const { getPublicEnv } = await import('../lib/supabase/config')
-    expect(() => getPublicEnv()).toThrow('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    expect(() => getPublicEnv()).toThrow(/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY/)
+  })
+
+  it('prefers NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY over anon when both are set', async () => {
+    vi.resetModules()
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_xyz'
+    const { getPublicEnv } = await import('../lib/supabase/config')
+    expect(getPublicEnv().anonKey).toBe('sb_publishable_xyz')
+  })
+})
+
+describe('getSupabaseSecretKey', () => {
+  it('returns SUPABASE_SECRET_KEY when set', async () => {
+    vi.resetModules()
+    const { getSupabaseSecretKey } = await import('../lib/supabase/config')
+    expect(getSupabaseSecretKey()).toBe('test-sb-secret-key')
+  })
+
+  it('falls back to legacy SUPABASE_SERVICE_ROLE_KEY when secret key is absent', async () => {
+    vi.resetModules()
+    delete process.env.SUPABASE_SECRET_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'legacy-jwt'
+    const { getSupabaseSecretKey } = await import('../lib/supabase/config')
+    expect(getSupabaseSecretKey()).toBe('legacy-jwt')
+  })
+
+  it('prefers SUPABASE_SECRET_KEY over SUPABASE_SERVICE_ROLE_KEY when both are set', async () => {
+    vi.resetModules()
+    process.env.SUPABASE_SECRET_KEY = 'preferred'
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'ignored'
+    const { getSupabaseSecretKey } = await import('../lib/supabase/config')
+    expect(getSupabaseSecretKey()).toBe('preferred')
+  })
+
+  it('throws descriptive error when both secret env vars are missing', async () => {
+    vi.resetModules()
+    delete process.env.SUPABASE_SECRET_KEY
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY
+    const { getSupabaseSecretKey } = await import('../lib/supabase/config')
+    expect(() => getSupabaseSecretKey()).toThrow(/SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY/)
   })
 })
 
 describe('getServiceRoleKey', () => {
-  it('returns the service role key when set', async () => {
+  it('delegates to getSupabaseSecretKey', async () => {
     vi.resetModules()
     const { getServiceRoleKey } = await import('../lib/supabase/config')
-    expect(getServiceRoleKey()).toBe('test-service-role-key')
-  })
-
-  it('throws descriptive error when SUPABASE_SERVICE_ROLE_KEY is missing', async () => {
-    vi.resetModules()
-    delete process.env.SUPABASE_SERVICE_ROLE_KEY
-    const { getServiceRoleKey } = await import('../lib/supabase/config')
-    expect(() => getServiceRoleKey()).toThrow('SUPABASE_SERVICE_ROLE_KEY')
+    expect(getServiceRoleKey()).toBe('test-sb-secret-key')
   })
 })
 
