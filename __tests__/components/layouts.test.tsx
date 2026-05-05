@@ -55,7 +55,7 @@ describe('AdminLayout', () => {
 })
 
 describe('DashboardLayout', () => {
-  it('renders children inside main', () => {
+  it('renders children', () => {
     render(
       <DashboardLayout>
         <div>Minhas Turmas</div>
@@ -64,25 +64,15 @@ describe('DashboardLayout', () => {
     expect(screen.getByText('Minhas Turmas')).toBeInTheDocument()
   })
 
-  it('renders "Catequese" header with amber color', () => {
+  it('does not render its own header (header lives in the page)', () => {
     render(
       <DashboardLayout>
         <div>Content</div>
       </DashboardLayout>
     )
-    const header = screen.getByRole('banner')
-    expect(header).toBeInTheDocument()
-    const title = screen.getByText('Catequese')
-    expect(title).toHaveStyle({ color: 'var(--accent)' })
-  })
-
-  it('renders dashboard-header', () => {
-    render(
-      <DashboardLayout>
-        <div>Content</div>
-      </DashboardLayout>
-    )
-    expect(screen.getByTestId('dashboard-header')).toBeInTheDocument()
+    // The layout is a thin wrapper — page-level header is rendered by each page
+    expect(screen.queryByTestId('dashboard-header')).not.toBeInTheDocument()
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument()
   })
 
   it('does not render a sidebar (mobile-first, no sidebar)', () => {
