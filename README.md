@@ -82,6 +82,16 @@ supabase status
 
 Use a **publishable key** (`sb_publishable_…`) ou o **anon** (JWT) e a **API URL** (geralmente `http://127.0.0.1:54321`) no arquivo de ambiente da próxima etapa.
 
+#### Usuários de teste (após `supabase db reset` ou aplicar `seed.sql` em dev)
+
+| E-mail | Papel | Nome no perfil |
+| --- | --- | --- |
+| `coord@catechism.dev` | coordenador | Maria Coordenadora |
+| `catechist1@catechism.dev` | catequista | João Catequista |
+| `catechist2@catechism.dev` | catequista | Ana Catequista |
+
+**Senha** (igual para as três contas): `password123` — só para desenvolvimento; **nunca** em produção.
+
 ### 3. Variáveis de ambiente
 
 Crie `.env.local` na raiz (**não commite** este arquivo). Um modelo versionado está em [`.env.example`](.env.example). O Supabase passou a chaves novas ([API keys](https://supabase.com/docs/guides/api/api-keys)); este projeto aceita os nomes novos **e** os legados:
