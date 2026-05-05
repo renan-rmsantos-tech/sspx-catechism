@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import { getPublicEnv } from './config'
+import { getPublicEnv, getServiceRoleKey } from './config'
 
 export async function createSupabaseServerClient() {
   const { url, anonKey } = getPublicEnv()
@@ -21,5 +22,13 @@ export async function createSupabaseServerClient() {
         }
       },
     },
+  })
+}
+
+export function createSupabaseAdminClient() {
+  const { url } = getPublicEnv()
+  const serviceRoleKey = getServiceRoleKey()
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 }
