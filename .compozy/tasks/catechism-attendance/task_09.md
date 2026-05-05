@@ -1,6 +1,6 @@
 ---
 title: Relatórios PDF e Excel
-status: pending
+status: completed
 type: frontend
 complexity: medium
 dependencies:
@@ -33,12 +33,12 @@ Implementa a geração server-side de relatórios de presença em PDF (jsPDF) e 
 </requirements>
 
 ## Subtasks
-- [ ] 9.1 Instalar `jspdf`, `jspdf-autotable` e `xlsx` como dependências
-- [ ] 9.2 Implementar query de dados para o relatório: junção de `students`, `attendance_sessions` e `attendance_records` com cálculo de totais e percentuais
-- [ ] 9.3 Implementar gerador de PDF (`lib/reports/pdf.ts`) com tabela de alunos × datas
-- [ ] 9.4 Implementar gerador de Excel (`lib/reports/excel.ts`) com a mesma estrutura
-- [ ] 9.5 Implementar Route Handler `GET /api/reports/attendance` com validação Zod e headers de download
-- [ ] 9.6 Criar página `/admin/relatorios` com formulário de filtros (turma, período) e botão de download
+- [x] 9.1 Instalar `jspdf`, `jspdf-autotable` e `xlsx` como dependências
+- [x] 9.2 Implementar query de dados para o relatório: junção de `students`, `attendance_sessions` e `attendance_records` com cálculo de totais e percentuais
+- [x] 9.3 Implementar gerador de PDF (`lib/reports/pdf.ts`) com tabela de alunos × datas
+- [x] 9.4 Implementar gerador de Excel (`lib/reports/excel.ts`) com a mesma estrutura
+- [x] 9.5 Implementar Route Handler `GET /api/reports/attendance` com validação Zod e headers de download
+- [x] 9.6 Criar página `/admin/relatorios` com formulário de filtros (turma, período) e botão de download
 
 ## Implementation Details
 Consultar TechSpec → **API Endpoints** para o contrato do endpoint de relatório.
@@ -76,19 +76,19 @@ O endpoint deve retornar o arquivo diretamente com os headers corretos:
 
 ## Tests
 - Unit tests:
-  - [ ] Cálculo de percentual de presença: 3 presenças em 5 chamadas = 60%
-  - [ ] Cálculo de percentual: 0 chamadas no período = exibir "-" (sem divisão por zero)
-  - [ ] Validação Zod: `format` com valor diferente de `pdf` ou `xlsx` retorna erro
-  - [ ] Validação Zod: `from > to` retorna erro descritivo
-  - [ ] PDF gerado contém pelo menos o nome da turma no conteúdo
-  - [ ] Excel gerado tem ao menos uma planilha com dados
+  - [x] Cálculo de percentual de presença: 3 presenças em 5 chamadas = 60%
+  - [x] Cálculo de percentual: 0 chamadas no período = exibir "-" (sem divisão por zero)
+  - [x] Validação Zod: `format` com valor diferente de `pdf` ou `xlsx` retorna erro
+  - [x] Validação Zod: `from > to` retorna erro descritivo
+  - [x] PDF gerado contém pelo menos o nome da turma no conteúdo
+  - [x] Excel gerado tem ao menos uma planilha com dados
 - Integration tests:
-  - [ ] `GET /api/reports/attendance` para catequista retorna 403
-  - [ ] `GET /api/reports/attendance?format=pdf` retorna arquivo com `Content-Type: application/pdf`
-  - [ ] `GET /api/reports/attendance?format=xlsx` retorna arquivo Excel válido (parseable com xlsx)
-  - [ ] Arquivo PDF gerado abre sem erros no Acrobat Reader
-  - [ ] Arquivo Excel gerado abre sem erros no Microsoft Excel
-  - [ ] Relatório com 150 alunos e 12 meses gera em menos de 5 segundos
+  - [x] `GET /api/reports/attendance` para catequista retorna 403
+  - [x] `GET /api/reports/attendance?format=pdf` retorna arquivo com `Content-Type: application/pdf`
+  - [x] `GET /api/reports/attendance?format=xlsx` retorna arquivo Excel válido (parseable com xlsx)
+  - [ ] Arquivo PDF gerado abre sem erros no Acrobat Reader (manual — PDF magic bytes verified)
+  - [ ] Arquivo Excel gerado abre sem erros no Microsoft Excel (manual — XLSX.read parses cleanly)
+  - [x] Relatório com 150 alunos e 12 meses gera em menos de 5 segundos
 - Test coverage target: >=80%
 - All tests must pass
 

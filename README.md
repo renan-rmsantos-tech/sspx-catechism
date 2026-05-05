@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Catechism — gestão de presença para catecismo
 
-## Getting Started
+Aplicação web/PWA para **uma paróquia** gerenciar **cadastro de alunos** de catecismo e **chamada de presença** por turma. O foco é substituir listas em papel, centralizar dados pessoais, pastorais e de contato dos responsáveis, e permitir que **catequistas** registrem a chamada no celular — inclusive **offline**, com sincronização automática quando a conexão voltar. **Coordenadores** usam um painel para turmas, alunos e relatórios.
 
-First, run the development server:
+Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
+
+- [PRD](.compozy/tasks/catechism-attendance/_prd.md) — visão, personas, funcionalidades e fases
+- [TechSpec](.compozy/tasks/catechism-attendance/_techspec.md) — arquitetura, modelo de dados, APIs e decisões técnicas
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|------------|
+| App | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript |
+| UI | Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), [Base UI](https://base-ui.com) |
+| Backend / dados | [Supabase](https://supabase.com) (PostgreSQL, Auth, Row Level Security) |
+| Offline | PWA ([`@ducanh2912/next-pwa`](https://github.com/DuCanhGH/next-pwa)), [Dexie](https://dexie.org) (IndexedDB) |
+| Relatórios | jsPDF, xlsx (geração no servidor) |
+| Deploy | [Vercel](https://vercel.com) (recomendado) |
+
+---
+
+## Regras e princípios principais
+
+- **Papéis:** **coordenador** — turmas, alunos, catequistas, relatórios; **catequista** — apenas turmas às quais está vinculado, chamada e histórico. O acesso é reforçado no banco com **RLS** (Row Level Security), não só na interface.
+- **Offline-first na chamada:** a fila fica no dispositivo (IndexedDB) e tenta enviar ao servidor ao voltar online; em Safari/iOS o **Background Sync** pode ser limitado — há fallback com o evento `online` (ver TechSpec).
+- **LGPD:** dados de menores e responsáveis são sensíveis; apenas usuários autorizados devem acessar o sistema. Consentimento e processo paroquial ficam fora do código, mas o desenho do produto assume essa obrigação.
+- **Escopo do MVP:** uma paróquia, sem portal para pais, sem notificações automáticas de falta, sem multi-paróquia (detalhes em *Non-Goals* do PRD).
+- **Linguagem da UI:** português brasileiro, vocabulário paroquial (turma, catequista, aluno).
+- **Segredos:** `SUPABASE_SERVICE_ROLE_KEY` é **somente servidor** (nunca no client nem em variáveis `NEXT_PUBLIC_*`). O projeto valida isso em `lib/supabase/config.ts`.
+
+---
+
+## Pré-requisitos
+
+- **Node.js** 20+ (recomendado; alinhado ao `package.json`)
+- **npm** (há `package-lock.json` no repositório)
+- Conta **Supabase** (cloud) e, para banco local, **Supabase CLI** ([instalação](https://supabase.com/docs/guides/cli))
+
+---
+
+## Passo a passo: ambiente local
+
+### 1. Clonar e instalar dependências
+
+```bash
+git clone <url-do-repositório>
+cd catechism
+npm install
+```
+
+### 2. Banco de dados e Supabase
+
+**Opção A — Supabase na nuvem (mais próximo da produção)**
+
+1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
+2. Aplique o schema: o SQL inicial está em [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql). Pode usar o SQL Editor do Supabase ou a CLI com o projeto linkado (`supabase link` + `supabase db push`).
+3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/**`).
+4. Crie usuários (e‑mail/senha) e perfis conforme sua política — o arquivo [`supabase/seed.sql`](supabase/seed.sql) é pensado para **desenvolvimento local** com usuários fictícios e senha de teste; **não use esse seed tal qual em produção**.
+
+**Opção B — Supabase local (CLI)**
+
+```bash
+supabase start
+```
+
+Isso sobe API, Postgres e Studio localmente. Para aplicar migrações e seed de dev:
+
+```bash
+supabase db reset
+```
+
+Obtenha URL e chaves anon com:
+
+```bash
+supabase status
+```
+
+Use o **anon key** e a **API URL** (geralmente `http://127.0.0.1:54321`) no arquivo de ambiente da próxima etapa.
+
+### 3. Variáveis de ambiente
+
+Crie `.env.local` na raiz (**não commite** este arquivo):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=<URL do projeto Supabase>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon public key>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key — só servidor>
+```
+
+- No dashboard Supabase: **Settings → API**.
+- Local: saída de `supabase status`.
+
+### 4. Rodar o app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O PWA/service worker é **desativado em desenvolvimento** (`next.config.ts`); para testar cache/offline como em produção, use um build de produção local (passo opcional abaixo).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Verificação rápida (opcional)
 
-## Learn More
+```bash
+npm run lint
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+Build de produção local (útil para validar PWA e bundle):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Passo a passo: produção (Vercel + Supabase)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Repositório:** envie o código para o Git (GitHub, GitLab ou Bitbucket) se ainda não estiver.
+2. **Supabase (produção):** projeto dedicado em produção, com o mesmo schema aplicado (`supabase/migrations`). Revise políticas RLS após migrações.
+3. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/**`).
+4. **Vercel:** [importe o repositório](https://vercel.com/new), framework Next.js detectado automaticamente.
+5. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre as três variáveis (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) para Production (e Preview, se usar Supabase de staging).
+6. **Deploy:** dispare um deploy (push na branch conectada ou “Redeploy”). O build gera também artefatos PWA em `public/` (ex.: service worker conforme `@ducanh2912/next-pwa`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Confirme login, fluxo coordenador/catequista e, se aplicável, chamada offline em um dispositivo real.
+
+---
+
+## Scripts NPM
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run start` | Serve o build localmente |
+| `npm run lint` | Verificação TypeScript (`tsc --noEmit`) |
+| `npm test` | Testes Vitest |
+| `npm run test:watch` | Vitest em modo watch |
+
+---
+
+## Contribuindo e agentes (IA)
+
+O repositório inclui orientações para desenvolvimento com assistentes — ver [`AGENTS.md`](AGENTS.md) e [`CLAUDE.md`](CLAUDE.md).
+
+---
+
+## Licença e privacidade
+
+Trate dados de alunos e responsáveis conforme a **LGPD** e políticas da instituição. O PRD lista riscos e mitigações; o TechSpec detalha modelo de dados e segurança (RLS).

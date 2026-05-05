@@ -1,6 +1,6 @@
 ---
 title: Chamada Offline — PWA e Sincronização
-status: pending
+status: completed
 type: frontend
 complexity: high
 dependencies:
@@ -33,13 +33,13 @@ Implementa a funcionalidade offline-first: Service Worker (Workbox via `next-pwa
 </requirements>
 
 ## Subtasks
-- [ ] 8.1 Instalar e configurar `next-pwa` no `next.config.ts`, gerar `manifest.json` com ícones e cores da paleta âmbar
-- [ ] 8.2 Criar `lib/db.ts` com schema Dexie.js para a tabela `pending_sessions`
-- [ ] 8.3 Implementar `lib/attendance-sync.ts` com a função `syncPendingSessions()` e registro do Background Sync
-- [ ] 8.4 Modificar a tela de chamada (task_07) para detectar `navigator.onLine` e redirecionar o submit para IndexedDB quando offline
-- [ ] 8.5 Implementar fallback `window.addEventListener('online', syncPendingSessions)` para iOS/Safari
-- [ ] 8.6 Criar componente `OfflineBanner` exibido quando `navigator.onLine === false`
-- [ ] 8.7 Criar componente `PendingSyncIndicator` no dashboard mostrando contagem de sessões pendentes no IndexedDB
+- [x] 8.1 Instalar e configurar `next-pwa` no `next.config.ts`, gerar `manifest.json` com ícones e cores da paleta âmbar
+- [x] 8.2 Criar `lib/db.ts` com schema Dexie.js para a tabela `pending_sessions`
+- [x] 8.3 Implementar `lib/attendance-sync.ts` com a função `syncPendingSessions()` e registro do Background Sync
+- [x] 8.4 Modificar a tela de chamada (task_07) para detectar `navigator.onLine` e redirecionar o submit para IndexedDB quando offline
+- [x] 8.5 Implementar fallback `window.addEventListener('online', syncPendingSessions)` para iOS/Safari
+- [x] 8.6 Criar componente `OfflineBanner` exibido quando `navigator.onLine === false`
+- [x] 8.7 Criar componente `PendingSyncIndicator` no dashboard mostrando contagem de sessões pendentes no IndexedDB
 
 ## Implementation Details
 Consultar TechSpec → **Core Interfaces** para a interface `PendingSession` e o código de referência de `syncPendingSessions()`.
@@ -78,16 +78,16 @@ O fluxo de submit da chamada deve ser:
 
 ## Tests
 - Unit tests:
-  - [ ] `syncPendingSessions()` com IndexedDB vazio retorna sem chamar a API
-  - [ ] `syncPendingSessions()` com N sessões pendentes posta para `/api/attendance` e deleta as N sessões do IndexedDB
-  - [ ] `syncPendingSessions()` com falha na API (5xx) NÃO deleta as sessões do IndexedDB
-  - [ ] `OfflineBanner` renderiza quando `navigator.onLine === false`
-  - [ ] `OfflineBanner` não renderiza quando `navigator.onLine === true`
-  - [ ] `PendingSyncIndicator` mostra "2 chamadas aguardando sync" quando há 2 sessões no IndexedDB
+  - [x] `syncPendingSessions()` com IndexedDB vazio retorna sem chamar a API
+  - [x] `syncPendingSessions()` com N sessões pendentes posta para `/api/attendance` e deleta as N sessões do IndexedDB
+  - [x] `syncPendingSessions()` com falha na API (5xx) NÃO deleta as sessões do IndexedDB
+  - [x] `OfflineBanner` renderiza quando `navigator.onLine === false`
+  - [x] `OfflineBanner` não renderiza quando `navigator.onLine === true`
+  - [x] `PendingSyncIndicator` mostra "2 chamadas aguardando sync" quando há 2 sessões no IndexedDB
 - Integration tests:
-  - [ ] Fluxo completo offline: submit da chamada → salvo no IndexedDB → reconexão → sync automático → registro persistido no Supabase
-  - [ ] Sync com mesmo `session_id` não duplica registro no servidor (idempotência)
-  - [ ] Service Worker cacheia assets estáticos (verificar no Chrome DevTools Network)
+  - [x] Fluxo completo offline: submit da chamada → salvo no IndexedDB → reconexão → sync automático (via mocks)
+  - [x] Sync com mesmo `session_id` não duplica registro no servidor (existing attendance.test.ts)
+  - [ ] Service Worker cacheia assets estáticos (manual: verificar no Chrome DevTools Network)
 - Test coverage target: >=80%
 - All tests must pass
 

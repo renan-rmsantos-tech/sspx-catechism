@@ -1,7 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/articles/ignoring-files/
 
-# dependencies
-/node_modules
+# ─── dependencies ─────────────────────────────────────────────
+/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,33 +10,72 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# ─── environment (nunca secrets; .env.example pode ser versionado) ─
+.env
+.env.*
+.envrc
+!.env.example
+!.env.sample
 
-# next.js
+# ─── Next.js ──────────────────────────────────────────────────
 /.next/
 /out/
+next-env.d.ts
 
-# production
+# PWA — gerado em `npm run build` (@ducanh2912/next-pwa → public/)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/swe-worker-*.js
+/public/fallback-*.js
+
+# ─── build / bundlers ─────────────────────────────────────────
 /build
+/.turbo
+.cache/
+.parcel-cache/
+.eslintcache
 
-# misc
-.DS_Store
-*.pem
+# ─── testing & coverage ───────────────────────────────────────
+/coverage
+*.lcov
 
-# debug
+# ─── Supabase (CLI local) ─────────────────────────────────────
+.branches/
+supabase/.branches/
+supabase/.temp/
+
+# ─── Vercel ───────────────────────────────────────────────────
+.vercel
+
+# ─── TypeScript ───────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── logs & debug ─────────────────────────────────────────────
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ─── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
 
-# vercel
-.vercel
+# ─── IDE / editor ─────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-.env*.local
+# ─── certs & keys ─────────────────────────────────────────────
+*.pem
+*.p12
