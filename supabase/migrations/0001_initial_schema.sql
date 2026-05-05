@@ -120,8 +120,11 @@ ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_records ENABLE ROW LEVEL SECURITY;
 
+-- Helpers in schema "private" — not exposed by PostgREST when API "Exposed schemas" is only "public".
+CREATE SCHEMA IF NOT EXISTS private;
+
 -- Helper: check if the current user is a coordinator
-CREATE OR REPLACE FUNCTION is_coordinator()
+CREATE OR REPLACE FUNCTION private.is_coordinator()
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
@@ -134,7 +137,7 @@ AS $$
 $$;
 
 -- Helper: check if the current user is a catechist for a given class
-CREATE OR REPLACE FUNCTION is_class_catechist(p_class_id UUID)
+CREATE OR REPLACE FUNCTION private.is_class_catechist(p_class_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
@@ -147,15 +150,19 @@ AS $$
   );
 $$;
 
+GRANT USAGE ON SCHEMA private TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION private.is_coordinator() TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION private.is_class_catechist(UUID) TO anon, authenticated, service_role;
+
 -- ---- profiles ----
 -- Users read their own profile; coordinator reads all.
 CREATE POLICY profiles_select ON profiles
-  FOR SELECT USING (id = auth.uid() OR is_coordinator());
+  FOR SELECT USING (id = auth.uid() OR private.is_coordinator());
 
 -- Only trigger/service-role inserts profiles (no direct user insert policy needed).
 -- Coordinator can update any profile; user updates own.
 CREATE POLICY profiles_update ON profiles
-  FOR UPDATE USING (id = auth.uid() OR is_coordinator());
+  FOR UPDATE USING (id = auth.uid() OR private.is_coordinator());
 
 -- ---- academic_years ----
 -- All authenticated users can view; only coordinator can write.
@@ -163,95 +170,95 @@ CREATE POLICY academic_years_select ON academic_years
   FOR SELECT USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY academic_years_insert ON academic_years
-  FOR INSERT WITH CHECK (is_coordinator());
+  FOR INSERT WITH CHECK (private.is_coordinator());
 
 CREATE POLICY academic_years_update ON academic_years
-  FOR UPDATE USING (is_coordinator());
+  FOR UPDATE USING (private.is_coordinator());
 
 CREATE POLICY academic_years_delete ON academic_years
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
 
 -- ---- classes ----
 -- Catechist sees only their classes; coordinator sees all.
 CREATE POLICY classes_select ON classes
   FOR SELECT USING (
-    is_coordinator()
-    OR is_class_catechist(id)
+    private.is_coordinator()
+    OR private.is_class_catechist(id)
   );
 
 CREATE POLICY classes_insert ON classes
-  FOR INSERT WITH CHECK (is_coordinator());
+  FOR INSERT WITH CHECK (private.is_coordinator());
 
 CREATE POLICY classes_update ON classes
-  FOR UPDATE USING (is_coordinator());
+  FOR UPDATE USING (private.is_coordinator());
 
 CREATE POLICY classes_delete ON classes
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
 
 -- ---- class_catechists ----
 -- Catechist sees own assignments; coordinator sees all.
 CREATE POLICY class_catechists_select ON class_catechists
   FOR SELECT USING (
-    is_coordinator()
+    private.is_coordinator()
     OR catechist_id = auth.uid()
   );
 
 CREATE POLICY class_catechists_insert ON class_catechists
-  FOR INSERT WITH CHECK (is_coordinator());
+  FOR INSERT WITH CHECK (private.is_coordinator());
 
 CREATE POLICY class_catechists_delete ON class_catechists
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
 
 -- ---- students ----
 -- Catechist sees students in their classes; coordinator sees all.
 CREATE POLICY students_select ON students
   FOR SELECT USING (
-    is_coordinator()
-    OR is_class_catechist(class_id)
+    private.is_coordinator()
+    OR private.is_class_catechist(class_id)
   );
 
 CREATE POLICY students_insert ON students
-  FOR INSERT WITH CHECK (is_coordinator());
+  FOR INSERT WITH CHECK (private.is_coordinator());
 
 CREATE POLICY students_update ON students
-  FOR UPDATE USING (is_coordinator());
+  FOR UPDATE USING (private.is_coordinator());
 
 CREATE POLICY students_delete ON students
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
 
 -- ---- attendance_sessions ----
 -- Catechist sees sessions for their classes; coordinator sees all.
 CREATE POLICY attendance_sessions_select ON attendance_sessions
   FOR SELECT USING (
-    is_coordinator()
-    OR is_class_catechist(class_id)
+    private.is_coordinator()
+    OR private.is_class_catechist(class_id)
   );
 
 -- Catechist can only insert sessions where they are the catechist and assigned to the class.
 CREATE POLICY attendance_sessions_insert ON attendance_sessions
   FOR INSERT WITH CHECK (
     catechist_id = auth.uid()
-    AND is_class_catechist(class_id)
+    AND private.is_class_catechist(class_id)
   );
 
 CREATE POLICY attendance_sessions_update ON attendance_sessions
   FOR UPDATE USING (
-    is_coordinator()
-    OR (catechist_id = auth.uid() AND is_class_catechist(class_id))
+    private.is_coordinator()
+    OR (catechist_id = auth.uid() AND private.is_class_catechist(class_id))
   );
 
 CREATE POLICY attendance_sessions_delete ON attendance_sessions
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
 
 -- ---- attendance_records ----
 -- Linked to sessions; access mirrors session access.
 CREATE POLICY attendance_records_select ON attendance_records
   FOR SELECT USING (
-    is_coordinator()
+    private.is_coordinator()
     OR EXISTS (
       SELECT 1 FROM attendance_sessions s
       WHERE s.id = session_id
-        AND is_class_catechist(s.class_id)
+        AND private.is_class_catechist(s.class_id)
     )
   );
 
@@ -261,20 +268,20 @@ CREATE POLICY attendance_records_insert ON attendance_records
       SELECT 1 FROM attendance_sessions s
       WHERE s.id = session_id
         AND s.catechist_id = auth.uid()
-        AND is_class_catechist(s.class_id)
+        AND private.is_class_catechist(s.class_id)
     )
   );
 
 CREATE POLICY attendance_records_update ON attendance_records
   FOR UPDATE USING (
-    is_coordinator()
+    private.is_coordinator()
     OR EXISTS (
       SELECT 1 FROM attendance_sessions s
       WHERE s.id = session_id
         AND s.catechist_id = auth.uid()
-        AND is_class_catechist(s.class_id)
+        AND private.is_class_catechist(s.class_id)
     )
   );
 
 CREATE POLICY attendance_records_delete ON attendance_records
-  FOR DELETE USING (is_coordinator());
+  FOR DELETE USING (private.is_coordinator());
