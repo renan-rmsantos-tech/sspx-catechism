@@ -11,14 +11,6 @@ const migrationSQL = readFileSync(
   join(ROOT, 'supabase/migrations/0001_initial_schema.sql'),
   'utf-8'
 )
-const migration0002SQL = readFileSync(
-  join(ROOT, 'supabase/migrations/0002_revoke_handle_new_user_rpc.sql'),
-  'utf-8'
-)
-const migration0003SQL = readFileSync(
-  join(ROOT, 'supabase/migrations/0003_lockdown_rls_helper_rpcs.sql'),
-  'utf-8'
-)
 const seedSQL = readFileSync(join(ROOT, 'supabase/seed.sql'), 'utf-8')
 
 // ============================================================
@@ -83,6 +75,11 @@ describe('0001_initial_schema.sql — trigger handle_new_user', () => {
     expect(migrationSQL).toMatch(/CREATE OR REPLACE FUNCTION handle_new_user\(\)/i)
   })
 
+  it('revokes handle_new_user RPC from PUBLIC, anon, authenticated', () => {
+    expect(migrationSQL).toMatch(/REVOKE ALL ON FUNCTION public\.handle_new_user\(\)/i)
+    expect(migrationSQL).toMatch(/FROM PUBLIC,\s*anon,\s*authenticated/i)
+  })
+
   it('creates the trigger on_auth_user_created', () => {
     expect(migrationSQL).toMatch(/CREATE TRIGGER on_auth_user_created/i)
   })
@@ -104,20 +101,15 @@ describe('0001_initial_schema.sql — trigger handle_new_user', () => {
   })
 })
 
-describe('0002_revoke_handle_new_user_rpc.sql', () => {
-  it('revokes handle_new_user from PUBLIC, anon, authenticated', () => {
-    expect(migration0002SQL).toMatch(/REVOKE ALL ON FUNCTION public\.handle_new_user\(\)/i)
-    expect(migration0002SQL).toMatch(/FROM PUBLIC,\s*anon,\s*authenticated/i)
+describe('0001_initial_schema.sql — private RLS helpers (no LEAKPROOF)', () => {
+  it('creates private schema and coordinator/catechist helpers', () => {
+    expect(migrationSQL).toMatch(/CREATE SCHEMA IF NOT EXISTS private/i)
+    expect(migrationSQL).toMatch(/CREATE OR REPLACE FUNCTION private\.is_coordinator\(\)/i)
+    expect(migrationSQL).toMatch(/CREATE OR REPLACE FUNCTION private\.is_class_catechist\(p_class_id UUID\)/i)
   })
-})
 
-describe('0003_lockdown_rls_helper_rpcs.sql', () => {
-  it('moves RLS helpers to private schema and drops public copies (no LEAKPROOF)', () => {
-    expect(migration0003SQL).toMatch(/CREATE SCHEMA IF NOT EXISTS private/i)
-    expect(migration0003SQL).not.toMatch(/\bLEAKPROOF\b/i)
-    expect(migration0003SQL).toMatch(/CREATE OR REPLACE FUNCTION private\.is_coordinator\(\)/i)
-    expect(migration0003SQL).toMatch(/DROP FUNCTION IF EXISTS public\.is_coordinator\(\)/i)
-    expect(migration0003SQL).toMatch(/DROP FUNCTION IF EXISTS public\.is_class_catechist\(uuid\)/i)
+  it('does not use LEAKPROOF (hosted Supabase migration role)', () => {
+    expect(migrationSQL).not.toMatch(/\bLEAKPROOF\b/i)
   })
 })
 

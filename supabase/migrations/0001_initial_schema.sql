@@ -1,5 +1,6 @@
 -- Migration: 0001_initial_schema
--- Creates all tables, constraints, indexes, RLS policies, and trigger for the catechism attendance system.
+-- Full schema for the catechism attendance system: tables, indexes, auth trigger → profiles,
+-- RLS helpers in schema `private` (not exposed by PostgREST by default), policies, RPC revoke on handle_new_user.
 
 -- ============================================================
 -- TABLES
@@ -285,3 +286,10 @@ CREATE POLICY attendance_records_update ON attendance_records
 
 CREATE POLICY attendance_records_delete ON attendance_records
   FOR DELETE USING (private.is_coordinator());
+
+-- ============================================================
+-- RPC hardening
+-- Trigger-only SECURITY DEFINER must not be callable via /rest/v1/rpc/.
+-- ============================================================
+
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;

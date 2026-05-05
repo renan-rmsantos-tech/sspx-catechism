@@ -58,7 +58,7 @@ npm install
 **Opção A — Supabase na nuvem (mais próximo da produção)**
 
 1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
-2. Aplique o schema: o SQL inicial está em `[supabase/migrations/0001_initial_schema.sql](supabase/migrations/0001_initial_schema.sql)`. Pode usar o SQL Editor do Supabase ou a CLI com o projeto linkado (`supabase link` + `supabase db push`).
+2. Aplique o schema: o SQL completo está em `[supabase/migrations/0001_initial_schema.sql](supabase/migrations/0001_initial_schema.sql)` (tabelas, RLS em `private`, políticas e revogações de RPC no trigger). Use o SQL Editor do Supabase ou a CLI (`supabase link` + **`supabase db push`** sobre o diretório de migrações).
 3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/`**).
 4. Crie usuários (e‑mail/senha) e perfis conforme sua política — o arquivo `[supabase/seed.sql](supabase/seed.sql)` é pensado para **desenvolvimento local** com usuários fictícios e senha de teste; **não use esse seed tal qual em produção**.
 
