@@ -9,6 +9,7 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - Task 03 (Auth) complete. Login page, Server Actions, proxy.ts role routing, placeholder pages, 104 tests (98%+ coverage).
 - Task 04 (Design System) complete. Amber CSS tokens, Inter font, Sidebar, admin/dashboard layouts, Badge, Card, 141 tests (98.78% coverage).
 - Task 05 (Classes & Catechists) complete. API routes (academic-years, classes, catechists, invite), coordinator dashboard (Paper screen 3), class form, archive action. 192 tests (98%+ coverage).
+- Task 06 (Students) complete. API routes (students CRUD, classes/[id]/students), student list with ILIKE search, 3-section form (Paper screen 4), edit/transfer, StudentSearch debounce. 237 tests (92%+ coverage).
 - Vercel project linked: `rmsantos-team/catechism`. Production alias: https://catechism-kohl.vercel.app/
 - Supabase env vars set to placeholder values in Vercel; must be replaced with real Supabase project credentials before any Supabase-dependent task works.
 - **`supabase db push` + Studio validation pending**: requires Docker Desktop running or real Supabase project credentials. Manual prerequisite for any task that queries the DB.
@@ -61,3 +62,15 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - **Server Component data extraction pattern**: extract rendering to `components/admin/` pure components that accept data as props — enables jsdom unit testing of coordinator UI without RSC rendering.
 - **Test mock fluent chain**: use `mockReturnThis()` for intermediate methods, `mockResolvedValue()` for terminal methods. Add `then` property to make chain directly awaitable. `makeInsertChain` for `.insert().select().single()` pattern.
 - **Route Handler test casting**: `new Request(...)` must be cast to `Parameters<typeof POST>[0]` since plain `Request` is not `NextRequest`.
+
+## Shared Decisions (task_06)
+
+- **URL search params in Route Handlers**: use `new URL(request.url).searchParams.get('q')` instead of `request.nextUrl.searchParams` — `nextUrl` doesn't exist on plain `Request` objects in tests.
+- **`student.classes` Supabase join type**: Supabase infers joined table as array `{ name: any }[]` even for FK-to-PK joins. Cast via `as unknown as { name: string } | null` in TypeScript.
+- **`StudentSearch` is a Client Component** with `useRouter`, `usePathname`, `useSearchParams`. Mock all three in tests via `vi.mock('next/navigation', ...)`. Debounce via `useRef<ReturnType<typeof setTimeout>>`.
+- **`getByText('Turma')` finds multiple elements**: section header `<p>` and field label `<label>` both render "Turma". Use `getAllByText` or check `.length >= 1`.
+- **`student-form.tsx` BooleanToggle**: uses radio buttons (`<input type="radio">`). Test radio check state via `(getAllByRole('radio') as HTMLInputElement[])[n].checked`.
+
+## Handoffs
+
+- **→ task_07+**: `/api/students`, `/api/students/[id]`, `/api/classes/[id]/students` are ready. `StudentForm` in `components/admin/student-form.tsx`. `/admin/alunos` list + `/admin/alunos/novo` + `/admin/alunos/[id]/editar` pages implemented.
