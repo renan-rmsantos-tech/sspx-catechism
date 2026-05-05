@@ -6,9 +6,10 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 
 - Task 01 (Scaffold) complete. Next.js 16.2.4 + Supabase SSR + shadcn/ui + Vitest scaffolded and deployed.
 - Task 02 (Schema) complete. Migration, seed, TypeScript types, and 68 tests (100% coverage) all done.
+- Task 03 (Auth) complete. Login page, Server Actions, proxy.ts role routing, placeholder pages, 104 tests (98%+ coverage).
 - Vercel project linked: `rmsantos-team/catechism`. Production alias: https://catechism-kohl.vercel.app/
 - Supabase env vars set to placeholder values in Vercel; must be replaced with real Supabase project credentials before any Supabase-dependent task works.
-- **`supabase db push` + Studio validation (subtask 2.6) pending**: requires Docker Desktop running or real Supabase project credentials. Manual prerequisite for any task that queries the DB.
+- **`supabase db push` + Studio validation pending**: requires Docker Desktop running or real Supabase project credentials. Manual prerequisite for any task that queries the DB.
 
 ## Shared Decisions
 
@@ -25,11 +26,18 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - Vercel env pull removes vars not in the Vercel project from `.env.local`. Always restore placeholder values after a pull when real credentials are not yet available.
 - Next.js 16 docs live in `node_modules/next/dist/docs/` — always check before writing framework code.
 
+## Shared Decisions (continued)
+
+- **`lib/auth/schemas.ts` + `lib/auth/routing.ts`**: Routing and schema logic extracted to lib/ for testability (coverage scope is `lib/**/*.ts` only — app/ and proxy.ts are excluded).
+- **`getProxyUser` in lib/supabase/middleware.ts**: Returns `{ response, user }` — use this in proxy.ts instead of `updateSession`. `updateSession` kept unchanged for backward compat.
+- **`@hookform/resolvers` added**: Required for zod resolver in react-hook-form login form.
+- **`redirect()` in Server Actions throws**: Integration tests must wrap in `rejects.toThrow('REDIRECT:/...')`.
+
 ## Open Risks
 
 - **`supabase db push` blocked**: Docker daemon not running + placeholder credentials. Must start Docker Desktop and/or add real Supabase project credentials before any task needs a live DB.
-- `proxy.ts` is a passthrough — no auth protection until task_03 is complete. Do not deploy auth-gated routes before task_03.
+- **proxy.ts queries profiles on every request**: Role lookup is a DB query per page load. Acceptable for MVP but may need caching (e.g. role cookie) in later tasks if performance is a concern.
 
 ## Handoffs
 
-- **→ task_03**: Set real Supabase credentials in `.env.local` (run `supabase db push` + seed first). Replace `proxy.ts` passthrough with full `updateSession` from `lib/supabase/middleware.ts`. Export name must be `proxy`.
+- **→ task_04+**: Real Supabase credentials needed in `.env.local` for any feature that touches the DB (login will fail without them). Auth routing is fully implemented in proxy.ts.
