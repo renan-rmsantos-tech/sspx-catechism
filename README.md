@@ -60,7 +60,7 @@ npm install
 1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
 2. Aplique o schema: o SQL completo está em `[supabase/migrations/0001_initial_schema.sql](supabase/migrations/0001_initial_schema.sql)` (tabelas, RLS em `private`, políticas e revogações de RPC no trigger). Use o SQL Editor do Supabase ou a CLI (`supabase link` + **`supabase db push`** sobre o diretório de migrações).
 3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/`**).
-4. Crie usuários (e‑mail/senha) e perfis conforme sua política — o arquivo `[supabase/seed.sql](supabase/seed.sql)` é pensado para **desenvolvimento local** com usuários fictícios e senha de teste; **não use esse seed tal qual em produção**.
+4. Crie usuários de teste via SQL Editor: use `[supabase/scripts/setup_prod_users.sql](supabase/scripts/setup_prod_users.sql)` (cria os três perfis de dev com hash correto para produção). O `seed.sql` também pode ser colado, mas é voltado ao CLI local — para a nuvem o script dedicado é mais seguro.
 
 **Opção B — Supabase local (CLI)**
 
@@ -141,10 +141,11 @@ npm run start
 
 1. **Repositório:** envie o código para o Git (GitHub, GitLab ou Bitbucket) se ainda não estiver.
 2. **Supabase (produção):** projeto dedicado em produção, com o mesmo schema aplicado (`supabase/migrations`). Revise políticas RLS após migrações.
-3. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/`**).
-4. **Vercel:** [importe o repositório](https://vercel.com/new), framework Next.js detectado automaticamente.
-5. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre `NEXT_PUBLIC_SUPABASE_URL`, uma chave pública (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ou `NEXT_PUBLIC_SUPABASE_ANON_KEY`), e uma chave de servidor (`SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`), para Production (e Preview, se usar projeto de staging).
-6. **Deploy:** dispare um deploy (push na branch conectada ou “Redeploy”). O build gera também artefatos PWA em `public/` (ex.: service worker conforme `@ducanh2912/next-pwa`).
+3. **Usuários de teste:** no **SQL Editor** do Supabase, cole e execute [`supabase/scripts/setup_prod_users.sql`](supabase/scripts/setup_prod_users.sql). O script limpa qualquer inserção quebrada e recria os usuários com `instance_id` e hash gerado via `pgcrypto` — necessário para o GoTrue autenticar em produção.
+4. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/**`).
+5. **Vercel:** [importe o repositório](https://vercel.com/new), framework Next.js detectado automaticamente.
+6. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre `NEXT_PUBLIC_SUPABASE_URL`, uma chave pública (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ou `NEXT_PUBLIC_SUPABASE_ANON_KEY`), e uma chave de servidor (`SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`), para Production (e Preview, se usar projeto de staging).
+7. **Deploy:** dispare um deploy (push na branch conectada ou “Redeploy”). O build gera também artefatos PWA em `public/` (ex.: service worker conforme `@ducanh2912/next-pwa`).
 
 Confirme login, fluxo coordenador/catequista e, se aplicável, chamada offline em um dispositivo real.
 
