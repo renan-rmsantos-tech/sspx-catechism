@@ -1,56 +1,54 @@
 -- Seed data for local development
--- NOTE: This seed inserts directly into auth.users and profiles using service-role access.
--- Run after migrations are applied: supabase db push && supabase db seed (or paste in Studio SQL editor).
+-- NOTE: Run via Supabase CLI: supabase db push && supabase db seed
+-- For production, use supabase/scripts/setup_prod_users.sql instead.
 
 -- ============================================================
 -- USERS (auth.users + profiles)
--- Passwords are bcrypt hashes of "password123" for dev convenience.
+-- Uses pgcrypto to hash passwords — works locally and in production.
+-- Password for all dev accounts: password123
 -- ============================================================
 
--- Coordinator
 INSERT INTO auth.users (
+  instance_id,
   id, email, encrypted_password, email_confirmed_at,
-  raw_user_meta_data, created_at, updated_at,
-  aud, role
-) VALUES (
-  '00000000-0000-0000-0000-000000000001',
-  'coord@catechism.dev',
-  '$2a$10$X7UrYZXOdNtYAFdcxPf6xewE5.5q9u/l7sxgkBXH0AYoUwzJ.Y9Aq',
-  now(),
-  '{"full_name": "Maria Coordenadora", "role": "coordinator"}',
-  now(), now(),
-  'authenticated', 'authenticated'
-) ON CONFLICT (id) DO NOTHING;
-
--- Catechist 1
-INSERT INTO auth.users (
-  id, email, encrypted_password, email_confirmed_at,
-  raw_user_meta_data, created_at, updated_at,
-  aud, role
-) VALUES (
-  '00000000-0000-0000-0000-000000000002',
-  'catechist1@catechism.dev',
-  '$2a$10$X7UrYZXOdNtYAFdcxPf6xewE5.5q9u/l7sxgkBXH0AYoUwzJ.Y9Aq',
-  now(),
-  '{"full_name": "João Catequista", "role": "catechist"}',
-  now(), now(),
-  'authenticated', 'authenticated'
-) ON CONFLICT (id) DO NOTHING;
-
--- Catechist 2
-INSERT INTO auth.users (
-  id, email, encrypted_password, email_confirmed_at,
-  raw_user_meta_data, created_at, updated_at,
-  aud, role
-) VALUES (
-  '00000000-0000-0000-0000-000000000003',
-  'catechist2@catechism.dev',
-  '$2a$10$X7UrYZXOdNtYAFdcxPf6xewE5.5q9u/l7sxgkBXH0AYoUwzJ.Y9Aq',
-  now(),
-  '{"full_name": "Ana Catequista", "role": "catechist"}',
-  now(), now(),
-  'authenticated', 'authenticated'
-) ON CONFLICT (id) DO NOTHING;
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  aud, role,
+  confirmation_token, email_change, email_change_token_new, recovery_token
+) VALUES
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000001',
+    'coord@catechism.dev',
+    crypt('password123', gen_salt('bf', 10)),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Maria Coordenadora","role":"coordinator"}',
+    now(), now(), 'authenticated', 'authenticated',
+    '', '', '', ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000002',
+    'catechist1@catechism.dev',
+    crypt('password123', gen_salt('bf', 10)),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"João Catequista","role":"catechist"}',
+    now(), now(), 'authenticated', 'authenticated',
+    '', '', '', ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000003',
+    'catechist2@catechism.dev',
+    crypt('password123', gen_salt('bf', 10)),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Ana Catequista","role":"catechist"}',
+    now(), now(), 'authenticated', 'authenticated',
+    '', '', '', ''
+  )
+ON CONFLICT (id) DO NOTHING;
 
 -- Profiles (the trigger handles this on real user creation; insert directly for seed)
 INSERT INTO profiles (id, full_name, role) VALUES
