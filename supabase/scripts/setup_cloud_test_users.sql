@@ -1,17 +1,23 @@
--- Production user setup for Supabase Dashboard SQL editor
--- Run this AFTER the migrations (0001 + 0002) have been applied.
+-- Test users for Supabase **cloud** (SQL Editor), after migrations are applied.
 --
--- The seed.sql inserts into auth.users without `instance_id`, which breaks
--- GoTrue authentication in production. This script fixes that and uses
--- pgcrypto to generate the password hash at insert time.
+-- When to run:
+--   - Novo projeto Supabase: após `supabase db push` (ou colar migrações manualmente
+--     em ordem: 0001_initial_schema.sql → 0002_…).
+--   - Ambiente de desenvolvimento na nuvem ou preview: use à vontade com a senha abaixo.
 --
--- Credentials created:
---   coord@catechism.dev     / password123  (coordinator)
---   catechist1@catechism.dev / password123  (catechist)
---   catechist2@catechism.dev / password123  (catechist)
+-- Produção com dados reais: **não** execute isto com estas credenciais fracas; crie
+-- coordenadores pela UI (Sign up) ou ajuste e-mails/senhas antes de rodar.
+--
+-- Requer extensão `pgcrypto` (em Supabase: Database → Extensions → pgcrypto, se faltar).
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
+-- Credenciais criadas (somente para dev / homologação):
+--   coord@catechism.dev       / password123  (coordinator)
+--   catechist1@catechism.dev  / password123  (catechist)
+--   catechist2@catechism.dev  / password123  (catechist)
 
 -- ============================================================
--- 1. Clean up any broken auth.users rows from the seed
+-- 1. Clean up any duplicate rows from a previous run or broken seed
 -- ============================================================
 DELETE FROM auth.users WHERE id IN (
   '00000000-0000-0000-0000-000000000001',
@@ -20,7 +26,7 @@ DELETE FROM auth.users WHERE id IN (
 );
 
 -- ============================================================
--- 2. Re-insert with instance_id + pgcrypto password hash
+-- 2. Insert with instance_id + pgcrypto password hash (GoTrue)
 -- ============================================================
 INSERT INTO auth.users (
   instance_id,
@@ -80,7 +86,7 @@ INSERT INTO auth.users (
   );
 
 -- ============================================================
--- 3. Ensure profiles exist (trigger may not fire for direct inserts)
+-- 3. Profiles (direct auth.users inserts may not fire trigger)
 -- ============================================================
 INSERT INTO profiles (id, full_name, role) VALUES
   ('00000000-0000-0000-0000-000000000001', 'Maria Coordenadora', 'coordinator'),

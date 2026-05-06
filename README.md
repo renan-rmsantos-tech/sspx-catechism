@@ -37,52 +37,26 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
 
 ## Pré-requisitos
 
-- **Node.js** 20+ (recomendado; alinhado ao `package.json`)
-- **npm** (há `package-lock.json` no repositório)
-- Conta **Supabase** (cloud) e, para banco local, **Supabase CLI** ([instalação](https://supabase.com/docs/guides/cli))
+- Contas **Vercel** e **Supabase**, com o repositório Git ligado à Vercel.
+- **Dois projetos Supabase** (recomendado): um para **Preview / desenvolvimento** e outro para **Production**, ambos com o mesmo schema em [`supabase/migrations/`](supabase/migrations/).
+- **Supabase CLI** para empurrar migrações a partir do repo: [instalação](https://supabase.com/docs/guides/cli) global **ou** `npm install` e uso de `npx supabase` / scripts `supabase:*` abaixo.
+- **Node.js 20+** só é necessário na sua máquina se for correr `npm run lint`, `npm test` ou a CLI via npm; a aplicação em si executa na Vercel.
 
 ---
 
-## Passo a passo: ambiente local
+## Novo projeto Supabase (incluindo recriar do zero)
 
-### 1. Clonar e instalar dependências
+1. Crie o projeto em [Supabase Dashboard](https://supabase.com/dashboard) e copie **URL** e chaves em **Project Settings → API Keys**.
+2. **Aplique o schema** (nesta ordem):
+   - **CLI (recomendado):** na raiz do repo, `npm install`, `npm run supabase:link` (liga a pasta `supabase/` ao projeto), depois `npm run supabase:push` para enviar as migrações.
+   - **SQL Editor:** execute manualmente [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) e em seguida [`supabase/migrations/0002_revoke_rls_auto_enable_rpc.sql`](supabase/migrations/0002_revoke_rls_auto_enable_rpc.sql).
+3. Ative a extensão **pgcrypto** em **Database → Extensions** (o script de teste também tenta criá-la se faltar).
+4. **Contas de teste (homologação / dev):** no **SQL Editor**, execute [`supabase/scripts/setup_cloud_test_users.sql`](supabase/scripts/setup_cloud_test_users.sql). Em **produção com dados reais**, não use estas palavras-passe; prefira registo pela UI ou credenciais próprias.
+5. **Authentication → URL configuration:** **Site URL** = URL principal da app (por exemplo o domínio de **Production** na Vercel). Em **Redirect URLs**, inclua as origens que a Vercel usa, por exemplo `https://seu-app.vercel.app/**` e, para previews, `https://*.vercel.app/**` (ou liste URLs fixas, conforme a política que quiser).
 
-```bash
-git clone <url-do-repositório>
-cd catechism
-npm install
-```
+Repita os passos 2–5 no projeto Supabase de **produção** quando for dar deploy final.
 
-### 2. Banco de dados e Supabase
-
-**Opção A — Supabase na nuvem (mais próximo da produção)**
-
-1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
-2. Aplique o schema: o SQL completo está em `[supabase/migrations/0001_initial_schema.sql](supabase/migrations/0001_initial_schema.sql)` (tabelas, RLS em `private`, políticas e revogações de RPC no trigger). Use o SQL Editor do Supabase ou a CLI (`supabase link` + **`supabase db push`** sobre o diretório de migrações).
-3. Em **Authentication → URL configuration**, configure a **Site URL** (ex.: `http://localhost:3000` em dev) e **Redirect URLs** permitidas (ex.: `http://localhost:3000/`**).
-4. Crie usuários de teste via SQL Editor: use `[supabase/scripts/setup_prod_users.sql](supabase/scripts/setup_prod_users.sql)` (cria os três perfis de dev com hash correto para produção). O `seed.sql` também pode ser colado, mas é voltado ao CLI local — para a nuvem o script dedicado é mais seguro.
-
-**Opção B — Supabase local (CLI)**
-
-```bash
-supabase start
-```
-
-Isso sobe API, Postgres e Studio localmente. Para aplicar migrações e seed de dev:
-
-```bash
-supabase db reset
-```
-
-Obtenha URL e chaves anon com:
-
-```bash
-supabase status
-```
-
-Use a **publishable key** (`sb_publishable_…`) ou o **anon** (JWT) e a **API URL** (geralmente `http://127.0.0.1:54321`) no arquivo de ambiente da próxima etapa.
-
-#### Usuários de teste (após `supabase db reset` ou aplicar `seed.sql` em dev)
+### Contas de teste (após `setup_cloud_test_users.sql`)
 
 | E-mail | Papel | Nome no perfil |
 | --- | --- | --- |
@@ -90,72 +64,60 @@ Use a **publishable key** (`sb_publishable_…`) ou o **anon** (JWT) e a **API U
 | `catechist1@catechism.dev` | catequista | João Catequista |
 | `catechist2@catechism.dev` | catequista | Ana Catequista |
 
-**Senha** (igual para as três contas): `password123` — só para desenvolvimento; **nunca** em produção.
+**Senha** (igual para as três): `password123` — apenas para ambientes de teste.
 
-### 3. Variáveis de ambiente
+---
 
-Crie `.env.local` na raiz (**não commite** este arquivo). Um modelo versionado está em [`.env.example`](.env.example). O Supabase passou a chaves novas ([API keys](https://supabase.com/docs/guides/api/api-keys)); este projeto aceita os nomes novos **e** os legados:
+## Variáveis de ambiente
+
+Configure na **Vercel** (**Project → Settings → Environment Variables**). Modelo em [`.env.example`](.env.example).
+
+- **Production:** variáveis apontando para o Supabase de **produção**.
+- **Preview** (e **Development** na Vercel, se usar): apontando para o Supabase de **dev**, para não misturar dados.
+
+O projeto aceita chaves novas e legadas do Supabase:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=<URL do projeto Supabase>
-# Cliente público (uma das duas):
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<sb_publishable_… — recomendado>
-# ou, legado:
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon JWT>
-# Servidor apenas (uma das duas):
-SUPABASE_SECRET_KEY=<sb_secret_… — recomendado>
-# ou, legado:
-# SUPABASE_SERVICE_ROLE_KEY=<service_role JWT>
+NEXT_PUBLIC_SUPABASE_URL=<URL do projeto>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<sb_publishable_…>  # ou NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SECRET_KEY=<sb_secret_…>                       # ou SUPABASE_SERVICE_ROLE_KEY
 ```
 
-- No dashboard: **Project Settings → API Keys** (`sb_publishable_…` / `sb_secret_…`). Chaves legadas ficam na aba **Legacy anon, service_role**.
-- **Supabase local:** use a saída de `supabase status` (URL + chave anônima / publishable, conforme sua versão da CLI).
+Documentação: [API keys](https://supabase.com/docs/guides/api/api-keys).
 
-### 4. Rodar o app
+---
+
+## Vercel
+
+1. [Importe o repositório](https://vercel.com/new); Next.js é detetado automaticamente.
+2. Associe variáveis por ambiente (Production vs Preview) conforme a secção anterior.
+3. Faça deploy. O PWA (service worker) segue a configuração de build; em desenvolvimento local o PWA costuma estar desligado (`next.config.ts`).
+
+Confirme login, papéis coordenador/catequista e, se aplicável, chamada offline num dispositivo real.
+
+---
+
+## Opcional na sua máquina (CI / PR)
+
+Não é obrigatório correr a app localmente. Para lint e testes:
 
 ```bash
-npm run dev
-```
-
-Abra [http://localhost:3000](http://localhost:3000).
-
-O PWA/service worker é **desativado em desenvolvimento** (`next.config.ts`); para testar cache/offline como em produção, use um build de produção local (passo opcional abaixo).
-
-### 5. Verificação rápida (opcional)
-
-```bash
+git clone <url-do-repositório>
+cd catechism
+npm install
 npm run lint
 npm test
 ```
 
-Build de produção local (útil para validar PWA e bundle):
-
-```bash
-npm run build
-npm run start
-```
-
----
-
-## Passo a passo: produção (Vercel + Supabase)
-
-1. **Repositório:** envie o código para o Git (GitHub, GitLab ou Bitbucket) se ainda não estiver.
-2. **Supabase (produção):** projeto dedicado em produção, com o mesmo schema aplicado (`supabase/migrations`). Revise políticas RLS após migrações.
-3. **Usuários de teste:** no **SQL Editor** do Supabase, cole e execute [`supabase/scripts/setup_prod_users.sql`](supabase/scripts/setup_prod_users.sql). O script limpa qualquer inserção quebrada e recria os usuários com `instance_id` e hash gerado via `pgcrypto` — necessário para o GoTrue autenticar em produção.
-4. **Auth:** em Authentication → URL configuration, defina **Site URL** como a URL pública da Vercel (ex.: `https://seu-app.vercel.app`) e inclua redirects para essa origem (`https://seu-app.vercel.app/**`).
-5. **Vercel:** [importe o repositório](https://vercel.com/new), framework Next.js detectado automaticamente.
-6. **Variáveis de ambiente na Vercel:** em **Project → Settings → Environment Variables**, cadastre `NEXT_PUBLIC_SUPABASE_URL`, uma chave pública (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ou `NEXT_PUBLIC_SUPABASE_ANON_KEY`), e uma chave de servidor (`SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`), para Production (e Preview, se usar projeto de staging).
-7. **Deploy:** dispare um deploy (push na branch conectada ou “Redeploy”). O build gera também artefatos PWA em `public/` (ex.: service worker conforme `@ducanh2912/next-pwa`).
-
-Confirme login, fluxo coordenador/catequista e, se aplicável, chamada offline em um dispositivo real.
+O ficheiro [`supabase/seed.sql`](supabase/seed.sql) destina-se a quem usa **stack local** do Supabase (`supabase start` / `db reset`). No fluxo **só nuvem**, ignore-o e use o script SQL em `supabase/scripts/` no dashboard.
 
 ---
 
 ## Passo a passo: usar no celular (PWA)
 
-A app é instalável como **PWA**. O **service worker só entra em ação em build de produção** (Vercel ou `npm run build` + `npm run start`). Em `npm run dev` o PWA fica desligado — use a **URL HTTPS de produção** (ou staging) para testar no telemóvel como os catequistas vão usar.
+A app é instalável como **PWA**. O **service worker** só entra em ação nos **deploys na Vercel** (Production / Preview); use uma **URL HTTPS** desses ambientes para testar offline e instalação como os utilizadores finais.
 
-**Antes da primeira vez:** abra o site **com internet**, faça login e navegue um pouco para o navegador cachear os ficheiros necessários ao modo offline na chamada.
+**Antes da primeira vez:** com internet, abra o site, faça login e navegue um pouco para o browser cachear o necessário ao modo offline na chamada.
 
 ### iPhone e iPad (Safari)
 
@@ -184,22 +146,23 @@ Para **desinstalar**, como qualquer app instalada via Chrome: definições do Ch
 
 ### Desenvolvimento: testar no telemóvel
 
-- `**localhost` no PC** não está acessível diretamente como `localhost` no telemóvel. Opções: **URL de produção/preview na Vercel**, ou exponha o servidor com HTTPS (tunnel tipo [ngrok](https://ngrok.com/) ou `cloudflared`) e compatibilize redirects no Supabase Auth com essa URL temporária.
-- **HTTPS** é habitualmente exigido para service worker fora de `localhost`; por isso a validação fiel ao PWA costuma ser em **staging/produção**.
+Use **Preview** ou **Production** na Vercel (**HTTPS**). O Supabase Auth deve ter essas URLs nas **Redirect URLs** (wildcard de preview ou URLs por branch).
 
 ---
 
 ## Scripts NPM
 
 
-| Comando              | Descrição                               |
-| -------------------- | --------------------------------------- |
-| `npm run dev`        | Servidor de desenvolvimento             |
-| `npm run build`      | Build de produção                       |
-| `npm run start`      | Serve o build localmente                |
-| `npm run lint`       | Verificação TypeScript (`tsc --noEmit`) |
-| `npm test`           | Testes Vitest                           |
-| `npm run test:watch` | Vitest em modo watch                    |
+| Comando                 | Descrição                                                |
+| ----------------------- | -------------------------------------------------------- |
+| `npm run supabase:link` | Liga o diretório `supabase/` a um projeto cloud (`link`) |
+| `npm run supabase:push` | Envia migrações para o projeto ligado (`db push`)        |
+| `npm run dev`           | Servidor Next local (opcional)                           |
+| `npm run build`         | Build de produção (também usado na Vercel)               |
+| `npm run start`         | Serve o build localmente (opcional)                      |
+| `npm run lint`          | Verificação TypeScript (`tsc --noEmit`)                  |
+| `npm test`              | Testes Vitest                                            |
+| `npm run test:watch`    | Vitest em modo watch                                     |
 
 
 ---

@@ -1,6 +1,6 @@
--- Seed data for local development
--- NOTE: Run via Supabase CLI: supabase db push && supabase db seed
--- For production, use supabase/scripts/setup_prod_users.sql instead.
+-- Seed opcional: usado apenas com `supabase db reset` (stack Docker local).
+-- Fluxo apenas nuvem: aplique migrações no projeto Supabase e rode
+-- supabase/scripts/setup_cloud_test_users.sql no SQL Editor.
 
 -- ============================================================
 -- USERS (auth.users + profiles)

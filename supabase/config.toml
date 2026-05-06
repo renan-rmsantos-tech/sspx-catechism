@@ -1,5 +1,7 @@
-# For detailed configuration reference documentation, visit:
-# https://supabase.com/docs/guides/local-development/cli/config
+# Config da pasta `supabase/` para a CLI (migrações, link remoto).
+# Este repositório segue deploy em Vercel + banco apenas na nuvem; `supabase start` é opcional.
+#
+# Doc: https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
 project_id = "catechism"
