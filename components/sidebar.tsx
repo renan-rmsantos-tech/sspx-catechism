@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTransition } from 'react'
+import { logoutAction } from '@/app/(auth)/login/actions'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -79,6 +81,7 @@ export default function Sidebar({
   userInitials = 'CO',
 }: SidebarProps) {
   const pathname = usePathname()
+  const [isPending, startTransition] = useTransition()
 
   return (
     <aside
@@ -146,12 +149,27 @@ export default function Sidebar({
           >
             {userInitials}
           </div>
-          <div className="flex flex-col">
-            <span className="text-[13px] font-semibold text-white leading-[18px]">{userName}</span>
-            <span className="text-[11px] leading-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[13px] font-semibold text-white leading-[18px] truncate">{userName}</span>
+            <span className="text-[11px] leading-4 truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>
               {userRole}
             </span>
           </div>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => startTransition(() => logoutAction())}
+            className="shrink-0 p-1.5 rounded-md transition-colors hover:bg-white/10 disabled:opacity-50"
+            style={{ color: 'rgba(255,255,255,0.4)' }}
+            aria-label="Sair"
+            title="Sair"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
         </div>
       </div>
     </aside>
