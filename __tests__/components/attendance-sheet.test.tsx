@@ -32,6 +32,10 @@ vi.mock('@/lib/attendance-sync', () => ({
   syncPendingSessions: vi.fn(),
 }))
 
+vi.mock('@/app/(auth)/login/actions', () => ({
+  logoutAction: vi.fn(),
+}))
+
 const STUDENTS = [
   { id: 'stu-550e8400-e29b-41d4-a716-446655440001', full_name: 'Ana Clara Souza' },
   { id: 'stu-550e8400-e29b-41d4-a716-446655440002', full_name: 'Bruno Lima' },
@@ -79,6 +83,11 @@ describe('AttendanceSheet — initial state', () => {
   it('shows the formatted date in header', () => {
     render(<AttendanceSheet {...DEFAULT_PROPS} />)
     expect(screen.getByTestId('chamada-header')).toHaveTextContent('4 de maio de 2026')
+  })
+
+  it('shows logout on chamada header', () => {
+    render(<AttendanceSheet {...DEFAULT_PROPS} />)
+    expect(screen.getByTestId('btn-logout-chamada')).toBeInTheDocument()
   })
 })
 

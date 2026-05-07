@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { db } from '@/lib/db'
 import { registerBackgroundSync } from '@/lib/attendance-sync'
+import { logoutAction } from '@/app/(auth)/login/actions'
 
 interface Student {
   id: string
@@ -59,6 +60,7 @@ export default function AttendanceSheet({
   formattedDate,
 }: AttendanceSheetProps) {
   const router = useRouter()
+  const [logoutPending, startLogoutTransition] = useTransition()
   const [marks, setMarks] = useState<Record<string, Mark>>(
     () => Object.fromEntries(students.map((s) => [s.id, null]))
   )
@@ -144,33 +146,61 @@ export default function AttendanceSheet({
         style={{ backgroundColor: '#78350F' }}
         data-testid="chamada-header"
       >
-        <div className="flex items-center gap-3 mb-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center justify-center w-12 h-12 rounded-full"
-            aria-label="Voltar para Minhas Turmas"
-            style={{ color: 'white' }}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Link
+              href="/dashboard"
+              className="flex shrink-0 items-center justify-center w-12 h-12 rounded-full"
+              aria-label="Voltar para Minhas Turmas"
+              style={{ color: 'white' }}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </Link>
+            <div className="min-w-0">
+              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                {className}
+              </p>
+              <h1 className="text-xl font-bold text-white">Chamada de hoje</h1>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={logoutPending}
+            onClick={() => startLogoutTransition(() => logoutAction())}
+            className="shrink-0 flex items-center justify-center w-12 h-12 rounded-full transition-colors hover:bg-white/10 disabled:opacity-50"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            aria-label="Sair"
+            title="Sair"
+            data-testid="btn-logout-chamada"
           >
             <svg
               width="20"
               height="20"
               viewBox="0 0 24 24"
               fill="none"
-              strokeWidth="2.5"
+              stroke="currentColor"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              stroke="currentColor"
               aria-hidden="true"
             >
-              <polyline points="15 18 9 12 15 6" />
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-          </Link>
-          <div>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              {className}
-            </p>
-            <h1 className="text-xl font-bold text-white">Chamada de hoje</h1>
-          </div>
+          </button>
         </div>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)', paddingLeft: '44px' }}>
           {formattedDate} &bull;{' '}
