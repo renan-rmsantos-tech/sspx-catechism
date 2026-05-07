@@ -22,6 +22,34 @@ interface AttendanceSheetProps {
 
 type Mark = boolean | null
 
+function formatAttendanceSaveError(status: number, body: unknown): string {
+  const fallback = `Erro ao salvar chamada (${status})`
+  if (!body || typeof body !== 'object' || !('error' in body)) return fallback
+  const raw = (body as { error: unknown }).error
+  if (typeof raw === 'string') {
+    if (raw === 'Unauthorized') return 'Sessão expirada. Faça login novamente.'
+    return raw
+  }
+  if (Array.isArray(raw)) {
+    const parts = raw
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null
+        const o = item as { path?: unknown; message?: unknown }
+        const path = Array.isArray(o.path)
+          ? o.path
+              .filter((p): p is string | number => typeof p === 'string' || typeof p === 'number')
+              .join('.')
+          : ''
+        const msg = typeof o.message === 'string' ? o.message : null
+        if (!msg) return null
+        return path ? `${path}: ${msg}` : msg
+      })
+      .filter((s): s is string => Boolean(s))
+    if (parts.length) return parts.join(' · ')
+  }
+  return fallback
+}
+
 export default function AttendanceSheet({
   classId,
   className,
@@ -80,7 +108,17 @@ export default function AttendanceSheet({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessions: [session] }),
         })
-        if (!res.ok) throw new Error('Erro ao salvar chamada')
+        if (!res.ok) {
+          let body: unknown
+          try {
+            body = await res.json()
+          } catch {
+            body = undefined
+          }
+          setError(formatAttendanceSaveError(res.status, body))
+          setSubmitting(false)
+          return
+        }
         router.push('/dashboard')
         router.refresh()
       } else {

@@ -175,9 +175,10 @@ describe('AttendanceSheet — confirm submission', () => {
     )
   })
 
-  it('shows error message when fetch fails', async () => {
+  it('shows API error message when fetch returns not ok', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,
+      status: 500,
       json: vi.fn().mockResolvedValue({ error: 'server error' }),
     })
     vi.stubGlobal('fetch', mockFetch)
@@ -189,7 +190,65 @@ describe('AttendanceSheet — confirm submission', () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId('btn-confirm'))
     })
-    expect(screen.getByText('Erro ao salvar chamada')).toBeInTheDocument()
+    expect(screen.getByText('server error')).toBeInTheDocument()
+  })
+
+  it('formats Zod validation issues from API', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: vi.fn().mockResolvedValue({
+        error: [{ path: ['sessions', 0, 'classId'], message: 'ID de turma inválido' }],
+      }),
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    render(<AttendanceSheet {...DEFAULT_PROPS} />)
+    for (const student of STUDENTS) {
+      fireEvent.click(screen.getByTestId(`btn-present-${student.id}`))
+    }
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('btn-confirm'))
+    })
+    expect(
+      screen.getByText('sessions.0.classId: ID de turma inválido')
+    ).toBeInTheDocument()
+  })
+
+  it('shows friendly message for Unauthorized from API', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: vi.fn().mockResolvedValue({ error: 'Unauthorized' }),
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    render(<AttendanceSheet {...DEFAULT_PROPS} />)
+    for (const student of STUDENTS) {
+      fireEvent.click(screen.getByTestId(`btn-present-${student.id}`))
+    }
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('btn-confirm'))
+    })
+    expect(screen.getByText('Sessão expirada. Faça login novamente.')).toBeInTheDocument()
+  })
+
+  it('shows fallback when response is not JSON', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: vi.fn().mockRejectedValue(new SyntaxError('bad json')),
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    render(<AttendanceSheet {...DEFAULT_PROPS} />)
+    for (const student of STUDENTS) {
+      fireEvent.click(screen.getByTestId(`btn-present-${student.id}`))
+    }
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('btn-confirm'))
+    })
+    expect(screen.getByText('Erro ao salvar chamada (502)')).toBeInTheDocument()
   })
 })
 
