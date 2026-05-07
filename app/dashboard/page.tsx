@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ClassCard from '@/components/dashboard/class-card'
+import ClassDatesCache from '@/components/dashboard/class-dates-cache'
 import DashboardHeader from '@/components/dashboard/dashboard-header'
 import OfflineBanner from '@/components/offline-banner'
 import PendingSyncIndicator from '@/components/pending-sync-indicator'
@@ -33,6 +34,33 @@ export default async function DashboardPage() {
 
   const classIds = (classes ?? []).map((c) => c.id)
   const today = new Date().toISOString().split('T')[0]
+
+  // Check if today is a scheduled class date
+  const { data: activeYear } = await supabase
+    .from('academic_years')
+    .select('id')
+    .eq('is_active', true)
+    .maybeSingle()
+
+  let isScheduledDay = false
+  let allClassDates: string[] = []
+  if (activeYear) {
+    const [{ data: scheduledDate }, { data: classDatesRows }] = await Promise.all([
+      supabase
+        .from('class_dates')
+        .select('id')
+        .eq('academic_year_id', activeYear.id)
+        .eq('date', today)
+        .maybeSingle(),
+      supabase
+        .from('class_dates')
+        .select('date')
+        .eq('academic_year_id', activeYear.id)
+        .order('date', { ascending: true }),
+    ])
+    isScheduledDay = !!scheduledDate
+    allClassDates = (classDatesRows ?? []).map((r) => r.date)
+  }
 
   const [studentsResult, todaySessionsResult, allSessionsResult] = await Promise.all([
     classIds.length > 0
@@ -109,6 +137,7 @@ export default async function DashboardPage() {
       <OfflineBanner />
       <PendingSyncIndicator />
       <DashboardHeader />
+      {activeYear && <ClassDatesCache academicYearId={activeYear.id} dates={allClassDates} />}
 
       {/* Page content */}
       <div className="px-5 pt-4 pb-36">
@@ -158,7 +187,20 @@ export default async function DashboardPage() {
       </div>
 
       {/* Bottom CTA — fixed */}
-      {nextPending && (
+      {!isScheduledDay && (
+        <div
+          className="fixed bottom-0 left-0 right-0 px-5 py-4"
+          style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--border)' }}
+        >
+          <div
+            className="flex items-center justify-center w-full py-4 rounded-2xl text-sm font-medium"
+            style={{ color: 'var(--text-secondary)', backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)', minHeight: '56px' }}
+          >
+            Não há aula programada para hoje
+          </div>
+        </div>
+      )}
+      {isScheduledDay && nextPending && (
         <div
           className="fixed bottom-0 left-0 right-0 px-5 py-4"
           style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--border)' }}

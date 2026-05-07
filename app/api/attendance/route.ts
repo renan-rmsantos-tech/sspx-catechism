@@ -29,6 +29,27 @@ export async function POST(request: NextRequest) {
   let skipped = 0
 
   for (const session of result.data.sessions) {
+    // Validate that the date is a scheduled class date
+    const { data: classRow } = await supabase
+      .from('classes')
+      .select('academic_year_id')
+      .eq('id', session.classId)
+      .single()
+
+    if (classRow) {
+      const { data: scheduledDate } = await supabase
+        .from('class_dates')
+        .select('id')
+        .eq('academic_year_id', classRow.academic_year_id)
+        .eq('date', session.date)
+        .maybeSingle()
+
+      if (!scheduledDate) {
+        skipped++
+        continue
+      }
+    }
+
     // Idempotency check: if a session for this class+date already exists, skip it
     const { data: existing } = await supabase
       .from('attendance_sessions')

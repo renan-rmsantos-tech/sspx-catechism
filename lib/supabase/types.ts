@@ -59,6 +59,12 @@ export interface AttendanceRecord {
   present: boolean
 }
 
+export interface ClassDate {
+  id: string
+  academic_year_id: string
+  date: string
+}
+
 export type TableName =
   | 'profiles'
   | 'academic_years'
@@ -67,6 +73,7 @@ export type TableName =
   | 'students'
   | 'attendance_sessions'
   | 'attendance_records'
+  | 'class_dates'
 
 export const ALL_TABLES: TableName[] = [
   'profiles',
@@ -76,6 +83,7 @@ export const ALL_TABLES: TableName[] = [
   'students',
   'attendance_sessions',
   'attendance_records',
+  'class_dates',
 ]
 
 export function isValidRole(role: unknown): role is UserRole {
