@@ -69,6 +69,22 @@ describe('pendingSessionSchema — classId validation', () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it('accepts seed-style UUIDs (Zod .uuid rejects these; Postgres accepts)', async () => {
+    const SEED_CLASS = '20000000-0000-0000-0000-000000000001'
+    const SEED_STUDENT = '30000000-0000-0000-0000-000000000001'
+    const SEED_CATECHIST = '00000000-0000-0000-0000-000000000002'
+    const { pendingSessionSchema } = await import('../lib/attendance/schemas')
+    const result = pendingSessionSchema.safeParse({
+      id: VALID_SESSION_UUID,
+      classId: SEED_CLASS,
+      date: '2026-05-04',
+      catechistId: SEED_CATECHIST,
+      records: [{ studentId: SEED_STUDENT, present: true }],
+      createdAt: Date.now(),
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe('pendingSessionSchema — date validation', () => {

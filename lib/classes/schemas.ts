@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { zPgUuid } from '@/lib/z-pg-uuid'
 
 export const createAcademicYearSchema = z.object({
   year: z.number().int().positive('Ano letivo deve ser um número inteiro positivo'),
@@ -7,19 +8,19 @@ export const createAcademicYearSchema = z.object({
 
 export const createClassSchema = z.object({
   name: z.string().min(1, 'Nome da turma é obrigatório'),
-  academic_year_id: z.string().uuid('ID do ano letivo inválido'),
+  academic_year_id: zPgUuid('ID do ano letivo inválido'),
   level: z.string().optional(),
   schedule: z.string().optional(),
-  catechist_ids: z.array(z.string().uuid('ID de catequista inválido')).optional().default([]),
+  catechist_ids: z.array(zPgUuid('ID de catequista inválido')).optional().default([]),
 })
 
 export const updateClassSchema = z.object({
   name: z.string().min(1, 'Nome da turma é obrigatório').optional(),
-  academic_year_id: z.string().uuid().optional(),
+  academic_year_id: zPgUuid().optional(),
   level: z.string().optional(),
   schedule: z.string().optional(),
   is_archived: z.boolean().optional(),
-  catechist_ids: z.array(z.string().uuid()).optional(),
+  catechist_ids: z.array(zPgUuid()).optional(),
 })
 
 export const inviteCatechistSchema = z.object({

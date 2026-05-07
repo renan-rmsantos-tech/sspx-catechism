@@ -1,15 +1,16 @@
 import { z } from 'zod'
+import { zPgUuid } from '@/lib/z-pg-uuid'
 
 export const attendanceRecordSchema = z.object({
-  studentId: z.string().uuid('ID de aluno inválido'),
+  studentId: zPgUuid('ID de aluno inválido'),
   present: z.boolean(),
 })
 
 export const pendingSessionSchema = z.object({
-  id: z.string().uuid('ID de sessão inválido'),
-  classId: z.string().uuid('ID de turma inválido'),
+  id: zPgUuid('ID de sessão inválido'),
+  classId: zPgUuid('ID de turma inválido'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida. Use o formato YYYY-MM-DD'),
-  catechistId: z.string().uuid('ID de catequista inválido'),
+  catechistId: zPgUuid('ID de catequista inválido'),
   records: z.array(attendanceRecordSchema),
   createdAt: z.number(),
 })

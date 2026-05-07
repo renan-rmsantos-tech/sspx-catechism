@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { zPgUuid } from '@/lib/z-pg-uuid'
 
 const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/
 
 export const createStudentSchema = z.object({
-  class_id: z.string().uuid('ID da turma inválido'),
+  class_id: zPgUuid('ID da turma inválido'),
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
   birth_date: z
     .string()
@@ -25,7 +26,7 @@ export const createStudentSchema = z.object({
 })
 
 export const updateStudentSchema = z.object({
-  class_id: z.string().uuid('ID da turma inválido').optional(),
+  class_id: zPgUuid('ID da turma inválido').optional(),
   full_name: z.string().min(1, 'Nome completo é obrigatório').optional(),
   birth_date: z
     .string()

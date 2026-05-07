@@ -1,8 +1,9 @@
 import { z } from 'zod'
+import { zPgUuid } from '@/lib/z-pg-uuid'
 
 export const reportParamsSchema = z
   .object({
-    classId: z.string().uuid(),
+    classId: zPgUuid('classId inválido'),
     from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD'),
     to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD'),
     format: z.enum(['pdf', 'xlsx']),
