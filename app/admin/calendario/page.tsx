@@ -20,19 +20,37 @@ export default async function CalendarioPage() {
     )
   }
 
-  const { data: classDates } = await supabase
-    .from('class_dates')
-    .select('date')
+  // Get all classes for this academic year to find dates with attendance
+  const { data: yearClasses } = await supabase
+    .from('classes')
+    .select('id')
     .eq('academic_year_id', activeYear.id)
-    .order('date', { ascending: true })
+
+  const classIds = (yearClasses ?? []).map((c) => c.id)
+
+  const [{ data: classDates }, sessionsResult] = await Promise.all([
+    supabase
+      .from('class_dates')
+      .select('date')
+      .eq('academic_year_id', activeYear.id)
+      .order('date', { ascending: true }),
+    classIds.length > 0
+      ? supabase
+          .from('attendance_sessions')
+          .select('date')
+          .in('class_id', classIds)
+      : Promise.resolve({ data: [] as { date: string }[] }),
+  ])
 
   const initialDates = (classDates ?? []).map((r) => r.date)
+  const lockedDates = [...new Set((sessionsResult.data ?? []).map((s) => s.date))]
 
   return (
     <CalendarEditor
       academicYearId={activeYear.id}
       year={activeYear.year}
       initialDates={initialDates}
+      lockedDates={lockedDates}
     />
   )
 }

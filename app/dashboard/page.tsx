@@ -181,6 +181,7 @@ export default async function DashboardPage() {
               studentCount={studentCountByClass[cls.id] ?? 0}
               attendanceDone={todaySessionClassIds.has(cls.id)}
               presencePercent={presenceByClass[cls.id] ?? 0}
+              isScheduledDay={isScheduledDay}
             />
           ))}
         </div>

@@ -42,10 +42,21 @@ export default async function AdminPage() {
       .eq('date', today),
     supabase
       .from('academic_years')
-      .select('year')
+      .select('id, year')
       .eq('is_active', true)
       .maybeSingle(),
   ])
+
+  let isScheduledDay = false
+  if (activeYear) {
+    const { data: scheduledDate } = await supabase
+      .from('class_dates')
+      .select('id')
+      .eq('academic_year_id', activeYear.id)
+      .eq('date', today)
+      .maybeSingle()
+    isScheduledDay = !!scheduledDate
+  }
 
   if (classesError) {
     return (
@@ -153,6 +164,7 @@ export default async function AdminPage() {
       classes={classes}
       academicYearLabel={yearLabel}
       dateLabel={dateLabel}
+      isScheduledDay={isScheduledDay}
     />
   )
 }

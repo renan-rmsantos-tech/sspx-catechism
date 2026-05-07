@@ -7,6 +7,7 @@ interface CalendarEditorProps {
   academicYearId: string
   year: number
   initialDates: string[]
+  lockedDates: string[]
 }
 
 const MONTH_NAMES = [
@@ -59,7 +60,8 @@ function getAllSaturdays(year: number): string[] {
   return saturdays
 }
 
-export default function CalendarEditor({ academicYearId, year, initialDates }: CalendarEditorProps) {
+export default function CalendarEditor({ academicYearId, year, initialDates, lockedDates }: CalendarEditorProps) {
+  const locked = useMemo(() => new Set(lockedDates), [lockedDates])
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialDates))
   const [savedSet, setSavedSet] = useState<Set<string>>(() => new Set(initialDates))
   const [saving, setSaving] = useState(false)
@@ -74,6 +76,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates }: C
   }, [selected, savedSet])
 
   const toggle = useCallback((date: string) => {
+    if (locked.has(date)) return
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(date)) next.delete(date)
@@ -81,7 +84,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates }: C
       return next
     })
     setMessage(null)
-  }, [])
+  }, [locked])
 
   const selectAll = useCallback(() => {
     setSelected(new Set(getAllSaturdays(year)))
@@ -89,9 +92,9 @@ export default function CalendarEditor({ academicYearId, year, initialDates }: C
   }, [year])
 
   const clearAll = useCallback(() => {
-    setSelected(new Set())
+    setSelected(new Set(locked))
     setMessage(null)
-  }, [])
+  }, [locked])
 
   const save = useCallback(async () => {
     setSaving(true)
@@ -192,6 +195,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates }: C
             year={year}
             month={month}
             selected={selected}
+            locked={locked}
             today={today}
             onToggle={toggle}
           />
@@ -205,12 +209,14 @@ function MonthCard({
   year,
   month,
   selected,
+  locked,
   today,
   onToggle,
 }: {
   year: number
   month: number
   selected: Set<string>
+  locked: Set<string>
   today: string
   onToggle: (date: string) => void
 }) {
@@ -250,6 +256,7 @@ function MonthCard({
           if (!cell) return <div key={i} />
 
           const isSelected = selected.has(cell.date)
+          const isLocked = locked.has(cell.date)
           const isToday = cell.date === today
 
           if (!cell.isSaturday) {
@@ -269,14 +276,17 @@ function MonthCard({
               key={i}
               type="button"
               onClick={() => onToggle(cell.date)}
+              disabled={isLocked}
               className="flex items-center justify-center w-full aspect-square rounded-lg text-xs font-semibold transition-all"
               style={{
-                backgroundColor: isSelected ? 'var(--accent)' : 'transparent',
+                backgroundColor: isSelected ? (isLocked ? '#92400E' : 'var(--accent)') : 'transparent',
                 color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                 border: isSelected ? 'none' : '1.5px solid var(--border)',
                 boxShadow: isToday ? '0 0 0 2px var(--accent)' : 'none',
+                cursor: isLocked ? 'not-allowed' : 'pointer',
+                opacity: isLocked ? 0.8 : 1,
               }}
-              title={cell.date}
+              title={isLocked ? `${cell.date} — chamada registrada` : cell.date}
             >
               {cell.day}
             </button>

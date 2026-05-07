@@ -18,17 +18,38 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'academic_year_id is required' }, { status: 400 })
   }
 
-  const { data, error } = await supabase
-    .from('class_dates')
-    .select('date')
+  // Get all classes for this academic year to find dates with attendance
+  const { data: yearClasses } = await supabase
+    .from('classes')
+    .select('id')
     .eq('academic_year_id', academicYearId)
-    .order('date', { ascending: true })
+
+  const classIds = (yearClasses ?? []).map((c) => c.id)
+
+  const [{ data, error }, sessionsResult] = await Promise.all([
+    supabase
+      .from('class_dates')
+      .select('date')
+      .eq('academic_year_id', academicYearId)
+      .order('date', { ascending: true }),
+    classIds.length > 0
+      ? supabase
+          .from('attendance_sessions')
+          .select('date')
+          .in('class_id', classIds)
+      : Promise.resolve({ data: [] as { date: string }[] }),
+  ])
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 })
   }
 
-  return Response.json({ dates: (data ?? []).map((r) => r.date) })
+  const lockedDates = [...new Set((sessionsResult.data ?? []).map((s) => s.date))]
+
+  return Response.json({
+    dates: (data ?? []).map((r) => r.date),
+    lockedDates,
+  })
 }
 
 export async function PUT(request: NextRequest) {
@@ -75,6 +96,31 @@ export async function PUT(request: NextRequest) {
       { error: `Datas não são sábados: ${invalidDates.join(', ')}` },
       { status: 400 }
     )
+  }
+
+  // Check for dates with existing attendance that would be removed
+  const { data: yearClasses } = await supabase
+    .from('classes')
+    .select('id')
+    .eq('academic_year_id', academic_year_id)
+
+  const classIds = (yearClasses ?? []).map((c) => c.id)
+  if (classIds.length > 0) {
+    const { data: existingSessions } = await supabase
+      .from('attendance_sessions')
+      .select('date')
+      .in('class_id', classIds)
+
+    const datesWithAttendance = new Set((existingSessions ?? []).map((s) => s.date))
+    const newDatesSet = new Set(dates)
+    const removedLocked = [...datesWithAttendance].filter((d) => !newDatesSet.has(d))
+
+    if (removedLocked.length > 0) {
+      return Response.json(
+        { error: `Não é possível remover datas com chamada registrada: ${removedLocked.join(', ')}` },
+        { status: 400 }
+      )
+    }
   }
 
   const { error: deleteError } = await supabase

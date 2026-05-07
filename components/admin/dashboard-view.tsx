@@ -24,6 +24,7 @@ export interface DashboardViewProps {
   classes: ClassRow[]
   academicYearLabel: string
   dateLabel: string
+  isScheduledDay: boolean
 }
 
 function AttendanceBar({ percent }: { percent: number }) {
@@ -57,6 +58,7 @@ export default function DashboardView({
   classes,
   academicYearLabel,
   dateLabel,
+  isScheduledDay,
 }: DashboardViewProps) {
   return (
     <div className="flex flex-col h-full p-8 gap-6" style={{ backgroundColor: 'var(--bg)' }}>
@@ -113,14 +115,20 @@ export default function DashboardView({
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)', letterSpacing: '0.08em' }}>
             Chamadas Hoje
           </p>
-          <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              {stats.sessionsToday}
-            </span>
-            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              de {stats.totalClasses}
-            </span>
-          </div>
+          {isScheduledDay ? (
+            <div className="mt-2 flex items-baseline gap-1">
+              <span className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                {stats.sessionsToday}
+              </span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                de {stats.totalClasses}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Sem aula hoje
+            </p>
+          )}
         </Card>
       </div>
 
@@ -201,7 +209,11 @@ export default function DashboardView({
                     <AttendanceBar percent={cls.attendancePercent} />
                   </td>
                   <td className="py-4">
-                    <Badge variant={cls.hasSessionToday ? 'feita' : 'pendente'} />
+                    {isScheduledDay ? (
+                      <Badge variant={cls.hasSessionToday ? 'feita' : 'pendente'} />
+                    ) : (
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>—</span>
+                    )}
                   </td>
                 </tr>
               ))}

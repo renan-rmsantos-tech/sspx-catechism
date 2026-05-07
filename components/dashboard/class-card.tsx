@@ -7,6 +7,7 @@ interface ClassCardProps {
   studentCount: number
   attendanceDone: boolean
   presencePercent: number
+  isScheduledDay: boolean
 }
 
 export default function ClassCard({
@@ -16,6 +17,7 @@ export default function ClassCard({
   studentCount,
   attendanceDone,
   presencePercent,
+  isScheduledDay,
 }: ClassCardProps) {
   return (
     <div
@@ -30,9 +32,11 @@ export default function ClassCard({
         >
           {name}
         </h3>
-        <Badge variant={attendanceDone ? 'feita' : 'pendente'}>
-          {attendanceDone ? 'Chamada feita' : 'Pendente'}
-        </Badge>
+        {isScheduledDay && (
+          <Badge variant={attendanceDone ? 'feita' : 'pendente'}>
+            {attendanceDone ? 'Chamada feita' : 'Pendente'}
+          </Badge>
+        )}
       </div>
       <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
         {schedule ? `${schedule} • ` : ''}
