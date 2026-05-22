@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { updateAcademicYearSchema } from '@/lib/classes/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 async function getCoordinator() {
   const supabase = await createSupabaseServerClient()
@@ -17,7 +18,7 @@ async function getCoordinator() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return null
+  if (!isCoordinatorOrAdmin(profile?.role)) return null
   return supabase
 }
 

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { reportParamsSchema } from '@/lib/reports/query'
 import { generatePdf } from '@/lib/reports/pdf'
 import { generateExcel } from '@/lib/reports/excel'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient()
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -68,6 +69,10 @@ export async function GET(request: NextRequest) {
     students: students ?? [],
     sessions: sessions ?? [],
     records,
+  }
+
+  if (format === 'json') {
+    return Response.json(reportData)
   }
 
   if (format === 'pdf') {

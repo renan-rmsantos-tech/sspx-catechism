@@ -1,54 +1,74 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import CalendarEditor from '@/components/admin/calendar-editor'
+import CalendarPageView, { type AcademicYearRow } from '@/components/admin/calendar-page-view'
 
 export default async function CalendarioPage() {
   const supabase = await createSupabaseServerClient()
 
-  const { data: activeYear } = await supabase
+  const { data: years, error } = await supabase
     .from('academic_years')
-    .select('id, year')
-    .eq('is_active', true)
-    .maybeSingle()
+    .select('id, year, is_active')
+    .order('year', { ascending: false })
 
-  if (!activeYear) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Nenhum ano letivo ativo. Crie um primeiro.
-        </p>
+      <div className="p-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
+        Erro ao carregar dados.
       </div>
     )
   }
 
-  // Get all classes for this academic year to find dates with attendance
-  const { data: yearClasses } = await supabase
-    .from('classes')
-    .select('id')
-    .eq('academic_year_id', activeYear.id)
+  const yearIds = (years ?? []).map((y) => y.id)
+  const { data: allClasses } = yearIds.length > 0
+    ? await supabase
+        .from('classes')
+        .select('id, academic_year_id')
+        .in('academic_year_id', yearIds)
+    : { data: [] }
 
-  const classIds = (yearClasses ?? []).map((c) => c.id)
+  const classCountMap: Record<string, number> = {}
+  for (const cls of allClasses ?? []) {
+    classCountMap[cls.academic_year_id] = (classCountMap[cls.academic_year_id] ?? 0) + 1
+  }
 
-  const [{ data: classDates }, sessionsResult] = await Promise.all([
-    supabase
-      .from('class_dates')
-      .select('date')
-      .eq('academic_year_id', activeYear.id)
-      .order('date', { ascending: true }),
-    classIds.length > 0
-      ? supabase
-          .from('attendance_sessions')
-          .select('date')
-          .in('class_id', classIds)
-      : Promise.resolve({ data: [] as { date: string }[] }),
-  ])
+  const rows: AcademicYearRow[] = (years ?? []).map((y) => ({
+    id: y.id,
+    year: y.year,
+    is_active: y.is_active,
+    classCount: classCountMap[y.id] ?? 0,
+  }))
 
-  const initialDates = (classDates ?? []).map((r) => r.date)
-  const lockedDates = [...new Set((sessionsResult.data ?? []).map((s) => s.date))]
+  const activeYear = (years ?? []).find((y) => y.is_active) ?? null
+
+  let initialDates: string[] = []
+  let lockedDates: string[] = []
+
+  if (activeYear) {
+    const activeClassIds = (allClasses ?? [])
+      .filter((c) => c.academic_year_id === activeYear.id)
+      .map((c) => c.id)
+
+    const [{ data: classDates }, sessionsResult] = await Promise.all([
+      supabase
+        .from('class_dates')
+        .select('date')
+        .eq('academic_year_id', activeYear.id)
+        .order('date', { ascending: true }),
+      activeClassIds.length > 0
+        ? supabase
+            .from('attendance_sessions')
+            .select('date')
+            .in('class_id', activeClassIds)
+        : Promise.resolve({ data: [] as { date: string }[] }),
+    ])
+
+    initialDates = (classDates ?? []).map((r) => r.date)
+    lockedDates = [...new Set((sessionsResult.data ?? []).map((s) => s.date))]
+  }
 
   return (
-    <CalendarEditor
-      academicYearId={activeYear.id}
-      year={activeYear.year}
+    <CalendarPageView
+      years={rows}
+      activeYear={activeYear ? { id: activeYear.id, year: activeYear.year } : null}
       initialDates={initialDates}
       lockedDates={lockedDates}
     />

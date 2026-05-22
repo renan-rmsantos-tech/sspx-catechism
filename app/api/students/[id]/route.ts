@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { updateStudentSchema } from '@/lib/students/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function GET(
   _request: NextRequest,
@@ -22,7 +23,7 @@ export async function GET(
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -61,7 +62,7 @@ export async function PATCH(
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 

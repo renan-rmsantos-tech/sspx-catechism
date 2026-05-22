@@ -22,7 +22,7 @@ export default async function EditTurmaPage({
     supabase.from('academic_years').select('*').order('year', { ascending: false }),
     supabase
       .from('profiles')
-      .select('id, full_name, role, created_at')
+      .select('id, full_name, role, is_active, created_at')
       .eq('role', 'catechist')
       .order('full_name'),
     supabase.from('class_catechists').select('catechist_id').eq('class_id', id),

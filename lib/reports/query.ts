@@ -6,7 +6,7 @@ export const reportParamsSchema = z
     classId: zPgUuid('classId inválido'),
     from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD'),
     to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD'),
-    format: z.enum(['pdf', 'xlsx']),
+    format: z.enum(['pdf', 'xlsx', 'json']),
   })
   .refine((d) => d.from <= d.to, { message: 'from must be <= to', path: ['from'] })
 

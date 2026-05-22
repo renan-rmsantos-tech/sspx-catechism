@@ -1,4 +1,5 @@
 import type { UserRole } from '@/lib/supabase/types'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 const PUBLIC_PATHS = ['/', '/login']
 const PROTECTED_PATHS = ['/admin', '/dashboard'] as const
@@ -32,9 +33,9 @@ export function getRoleRedirect(pathname: string, role: UserRole): string | null
     pathname === '/login' ||
     pathname.startsWith('/login/')
   ) {
-    return role === 'coordinator' ? '/admin' : '/dashboard'
+    return isCoordinatorOrAdmin(role) ? '/admin' : '/dashboard'
   }
-  if ((pathname === '/admin' || pathname.startsWith('/admin/')) && role !== 'coordinator') {
+  if ((pathname === '/admin' || pathname.startsWith('/admin/')) && !isCoordinatorOrAdmin(role)) {
     return '/dashboard'
   }
   if ((pathname === '/dashboard' || pathname.startsWith('/dashboard/')) && role !== 'catechist') {

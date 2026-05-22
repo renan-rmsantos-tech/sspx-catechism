@@ -1,9 +1,10 @@
-export type UserRole = 'coordinator' | 'catechist'
+export type UserRole = 'coordinator' | 'catechist' | 'admin'
 
 export interface Profile {
   id: string
   full_name: string
   role: UserRole
+  is_active: boolean
   created_at: string
 }
 
@@ -41,6 +42,7 @@ export interface Student {
   guardian_father_name: string | null
   guardian_mother_name: string | null
   guardian_phone: string | null
+  is_active: boolean
   created_at: string
 }
 
@@ -87,11 +89,15 @@ export const ALL_TABLES: TableName[] = [
 ]
 
 export function isValidRole(role: unknown): role is UserRole {
-  return role === 'coordinator' || role === 'catechist'
+  return role === 'coordinator' || role === 'catechist' || role === 'admin'
 }
 
 export function isCoordinator(profile: Pick<Profile, 'role'>): boolean {
-  return profile.role === 'coordinator'
+  return profile.role === 'coordinator' || profile.role === 'admin'
+}
+
+export function isAdmin(profile: Pick<Profile, 'role'>): boolean {
+  return profile.role === 'admin'
 }
 
 export function isCatechist(profile: Pick<Profile, 'role'>): boolean {

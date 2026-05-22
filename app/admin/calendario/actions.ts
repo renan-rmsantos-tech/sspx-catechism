@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createAcademicYearSchema, updateAcademicYearSchema } from '@/lib/classes/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export type ActionState = { error: string } | null
 
@@ -19,7 +20,7 @@ async function getCoordinatorClient() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return null
+  if (!isCoordinatorOrAdmin(profile?.role)) return null
   return supabase
 }
 
@@ -50,7 +51,7 @@ export async function createAcademicYearAction(
     return { error: error.message }
   }
 
-  revalidatePath('/admin/anos-letivos')
+  revalidatePath('/admin/calendario')
   return null
 }
 
@@ -71,7 +72,7 @@ export async function toggleAcademicYearAction(
 
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/anos-letivos')
+  revalidatePath('/admin/calendario')
   return null
 }
 
@@ -91,6 +92,6 @@ export async function deleteAcademicYearAction(yearId: string): Promise<ActionSt
     return { error: error.message }
   }
 
-  revalidatePath('/admin/anos-letivos')
+  revalidatePath('/admin/calendario')
   return null
 }

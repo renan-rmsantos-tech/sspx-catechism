@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function GET() {
   const supabase = await createSupabaseServerClient()
@@ -17,13 +18,13 @@ export async function GET() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, role, created_at')
+    .select('id, full_name, role, is_active, created_at')
     .eq('role', 'catechist')
     .order('full_name')
 

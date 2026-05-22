@@ -10,8 +10,8 @@ export default async function CatequistasPage() {
 
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, full_name, role, created_at')
-    .in('role', ['catechist', 'coordinator'])
+    .select('id, full_name, role, is_active, created_at')
+    .in('role', ['catechist', 'coordinator', 'admin'])
     .order('full_name')
 
   if (error) {
@@ -58,7 +58,8 @@ export default async function CatequistasPage() {
   const rows: CatechistRow[] = (profiles ?? []).map((p) => ({
     id: p.id,
     full_name: p.full_name,
-    role: p.role as 'coordinator' | 'catechist',
+    role: p.role as 'coordinator' | 'catechist' | 'admin',
+    is_active: p.is_active ?? true,
     classes: catechistClassesMap[p.id] ?? [],
     created_at: p.created_at,
   }))

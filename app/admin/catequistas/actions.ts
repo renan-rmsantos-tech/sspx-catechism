@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
 import { inviteCatechistSchema } from '@/lib/classes/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export type ActionState = { error: string } | null
 
@@ -19,7 +20,7 @@ async function getCoordinatorClient() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return null
+  if (!isCoordinatorOrAdmin(profile?.role)) return null
   return supabase
 }
 
@@ -62,6 +63,77 @@ export async function promoteToCoordinatorAction(userId: string): Promise<Action
     .update({ role: 'coordinator' })
     .eq('id', userId)
 
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/catequistas')
+  return null
+}
+
+export async function deactivateCatechistAction(userId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const admin = createSupabaseAdminClient()
+
+  const { data: target } = await admin
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (target?.role === 'admin') return { error: 'O administrador não pode ser desativado' }
+
+  const { error } = await admin
+    .from('profiles')
+    .update({ is_active: false })
+    .eq('id', userId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/catequistas')
+  return null
+}
+
+export async function activateCatechistAction(userId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const admin = createSupabaseAdminClient()
+  const { error } = await admin
+    .from('profiles')
+    .update({ is_active: true })
+    .eq('id', userId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/catequistas')
+  return null
+}
+
+export async function deleteCatechistAction(userId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const admin = createSupabaseAdminClient()
+
+  const { data: target } = await admin
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (target?.role === 'admin') return { error: 'O administrador não pode ser excluído' }
+
+  const { count } = await admin
+    .from('attendance_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('catechist_id', userId)
+
+  if (count && count > 0) {
+    return { error: 'Catequista possui chamadas registradas. Desative-o em vez de excluir.' }
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(userId)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/catequistas')

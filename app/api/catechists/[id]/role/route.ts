@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function PUT(
   _request: NextRequest,
@@ -21,7 +22,7 @@ export async function PUT(
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function loginAction(
   _prevState: { error: string } | null,
@@ -32,7 +33,7 @@ export async function loginAction(
     .single()
 
   const role = profile?.role
-  redirect(role === 'coordinator' ? '/admin' : '/dashboard')
+  redirect(isCoordinatorOrAdmin(role) ? '/admin' : '/dashboard')
 }
 
 export async function logoutAction(): Promise<void> {

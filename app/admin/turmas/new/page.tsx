@@ -8,7 +8,7 @@ export default async function NewTurmaPage() {
 
   const [{ data: academicYears }, { data: catechists }] = await Promise.all([
     supabase.from('academic_years').select('*').order('year', { ascending: false }),
-    supabase.from('profiles').select('id, full_name, role, created_at').eq('role', 'catechist').order('full_name'),
+    supabase.from('profiles').select('id, full_name, role, is_active, created_at').eq('role', 'catechist').order('full_name'),
   ])
 
   return (

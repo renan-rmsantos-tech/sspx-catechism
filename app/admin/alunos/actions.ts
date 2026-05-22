@@ -1,8 +1,10 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createStudentSchema, updateStudentSchema } from '@/lib/students/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export type ActionState = { error: string } | null
 
@@ -37,7 +39,7 @@ async function getCoordinatorClient() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return null
+  if (!isCoordinatorOrAdmin(profile?.role)) return null
   return supabase
 }
 
@@ -84,4 +86,58 @@ export async function updateStudentAction(
   if (error) return { error: error.message }
 
   redirect('/admin/alunos')
+}
+
+export async function deactivateStudentAction(studentId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const { error } = await supabase
+    .from('students')
+    .update({ is_active: false })
+    .eq('id', studentId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alunos')
+  return null
+}
+
+export async function activateStudentAction(studentId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const { error } = await supabase
+    .from('students')
+    .update({ is_active: true })
+    .eq('id', studentId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alunos')
+  return null
+}
+
+export async function deleteStudentAction(studentId: string): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const { count } = await supabase
+    .from('attendance_records')
+    .select('id', { count: 'exact', head: true })
+    .eq('student_id', studentId)
+
+  if (count && count > 0) {
+    return { error: 'Aluno possui registros de chamada. Desative-o em vez de excluir.' }
+  }
+
+  const { error } = await supabase
+    .from('students')
+    .delete()
+    .eq('id', studentId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/alunos')
+  return null
 }

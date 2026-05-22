@@ -1,13 +1,20 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { inviteCatechistAction, promoteToCoordinatorAction } from '@/app/admin/catequistas/actions'
+import {
+  inviteCatechistAction,
+  promoteToCoordinatorAction,
+  deactivateCatechistAction,
+  activateCatechistAction,
+  deleteCatechistAction,
+} from '@/app/admin/catequistas/actions'
 import type { ActionState } from '@/app/admin/catequistas/actions'
 
 export interface CatechistRow {
   id: string
   full_name: string
-  role: 'coordinator' | 'catechist'
+  role: 'coordinator' | 'catechist' | 'admin'
+  is_active: boolean
   classes: string[]
   created_at: string
 }
@@ -17,21 +24,67 @@ export interface CatechistsViewProps {
   currentUserId: string
 }
 
+function RoleBadge({ role }: { role: string }) {
+  const styles =
+    role === 'admin'
+      ? { backgroundColor: '#FEE2E2', color: '#DC2626' }
+      : role === 'coordinator'
+        ? { backgroundColor: '#EDE9FE', color: '#7C3AED' }
+        : { backgroundColor: '#FEF9C3', color: '#B45309' }
+
+  const label =
+    role === 'admin' ? 'Admin' : role === 'coordinator' ? 'Coordenador(a)' : 'Catequista'
+
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+      style={styles}
+    >
+      {label}
+    </span>
+  )
+}
+
 export default function CatechistsView({ catechists, currentUserId }: CatechistsViewProps) {
   const [showForm, setShowForm] = useState(false)
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(inviteCatechistAction, null)
   const [actionError, setActionError] = useState<string | null>(null)
 
+  const active = catechists.filter((c) => c.is_active)
+  const inactive = catechists.filter((c) => !c.is_active)
+
   async function handlePromote(userId: string, name: string) {
-    if (!confirm(`Tem certeza que deseja promover ${name} a Coordenador(a)?`)) return
+    if (!confirm(`Promover ${name} a Coordenador(a)?`)) return
     setActionError(null)
     const result = await promoteToCoordinatorAction(userId)
     if (result?.error) setActionError(result.error)
   }
 
+  async function handleDeactivate(userId: string, name: string) {
+    if (!confirm(`Desativar ${name}?`)) return
+    setActionError(null)
+    const result = await deactivateCatechistAction(userId)
+    if (result?.error) setActionError(result.error)
+  }
+
+  async function handleActivate(userId: string) {
+    setActionError(null)
+    const result = await activateCatechistAction(userId)
+    if (result?.error) setActionError(result.error)
+  }
+
+  async function handleDelete(userId: string, name: string) {
+    if (!confirm(`Excluir ${name} permanentemente? Esta ação não pode ser desfeita.`)) return
+    setActionError(null)
+    const result = await deleteCatechistAction(userId)
+    if (result?.error) setActionError(result.error)
+  }
+
+  const isSelf = (id: string) => id === currentUserId
+  const canAct = (cat: CatechistRow) => cat.role !== 'admin' && !isSelf(cat.id)
+
   return (
     <div className="flex flex-col p-8 gap-6" style={{ backgroundColor: 'var(--bg)', minHeight: '100%' }}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
@@ -55,7 +108,6 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
         </button>
       </div>
 
-      {/* Invite form */}
       {showForm && (
         <div
           className="rounded-2xl p-6"
@@ -76,11 +128,7 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
                 required
                 placeholder="Maria da Silva"
                 className="rounded-lg px-3 py-2 text-sm"
-                style={{
-                  backgroundColor: 'var(--bg)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                }}
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               />
             </div>
             <div className="flex flex-col gap-1.5 flex-1">
@@ -94,11 +142,7 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
                 required
                 placeholder="email@exemplo.com"
                 className="rounded-lg px-3 py-2 text-sm"
-                style={{
-                  backgroundColor: 'var(--bg)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                }}
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               />
             </div>
             <button
@@ -111,98 +155,126 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
             </button>
           </form>
           {state?.error && (
-            <p className="mt-3 text-sm" style={{ color: 'var(--error)' }}>
-              {state.error}
-            </p>
+            <p className="mt-3 text-sm" style={{ color: 'var(--error)' }}>{state.error}</p>
           )}
         </div>
       )}
 
-      {/* Action error */}
       {actionError && (
         <div className="rounded-lg px-4 py-3 text-sm" style={{ backgroundColor: '#FEF2F2', color: 'var(--error)' }}>
           {actionError}
         </div>
       )}
 
-      {/* Catechists list */}
+      {/* Active catechists */}
       <div
         className="rounded-2xl"
         style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
       >
         <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            Equipe ({catechists.length})
+            Ativos ({active.length})
           </h2>
         </div>
-        {catechists.length === 0 ? (
+        {active.length === 0 ? (
           <div className="p-8 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Nenhum catequista cadastrado.
+            Nenhum catequista ativo.
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <th className="px-5 pb-3 pt-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
-                  Nome
-                </th>
-                <th className="px-5 pb-3 pt-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
-                  Papel
-                </th>
-                <th className="px-5 pb-3 pt-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
-                  Turmas
-                </th>
-                <th className="px-5 pb-3 pt-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {catechists.map((cat) => (
-                <tr key={cat.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td className="px-5 py-4">
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                      {cat.full_name}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
-                      style={
-                        cat.role === 'coordinator'
-                          ? { backgroundColor: '#EDE9FE', color: '#7C3AED' }
-                          : { backgroundColor: '#FEF9C3', color: '#B45309' }
-                      }
-                    >
-                      {cat.role === 'coordinator' ? 'Coordenador(a)' : 'Catequista'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <ul>
+            {active.map((cat) => (
+              <li
+                key={cat.id}
+                className="flex items-center justify-between px-5 py-4"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                    {cat.full_name}
+                  </span>
+                  <RoleBadge role={cat.role} />
+                  <span className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
                     {cat.classes.length > 0 ? cat.classes.join(', ') : '—'}
-                  </td>
-                  <td className="px-5 py-4">
-                    {cat.role === 'catechist' && cat.id !== currentUserId && (
-                      <button
-                        type="button"
-                        onClick={() => handlePromote(cat.id, cat.full_name)}
-                        className="text-xs font-medium hover:underline"
-                        style={{ color: 'var(--accent)' }}
-                      >
-                        Promover a Coordenador
-                      </button>
-                    )}
-                    {cat.id === currentUserId && (
-                      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                        Você
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {isSelf(cat.id) && (
+                    <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Você</span>
+                  )}
+                  {canAct(cat) && cat.role === 'catechist' && (
+                    <button
+                      type="button"
+                      onClick={() => handlePromote(cat.id, cat.full_name)}
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      Promover
+                    </button>
+                  )}
+                  {canAct(cat) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeactivate(cat.id, cat.full_name)}
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      Desativar
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
+
+      {/* Inactive catechists */}
+      {inactive.length > 0 && (
+        <div
+          className="rounded-2xl"
+          style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
+        >
+          <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+              Inativos ({inactive.length})
+            </h2>
+          </div>
+          <ul>
+            {inactive.map((cat) => (
+              <li
+                key={cat.id}
+                className="flex items-center justify-between px-5 py-4"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {cat.full_name}
+                  </span>
+                  <RoleBadge role={cat.role} />
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleActivate(cat.id)}
+                    className="text-xs font-medium hover:underline"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    Reativar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(cat.id, cat.full_name)}
+                    className="text-xs font-medium hover:underline"
+                    style={{ color: '#DC2626' }}
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

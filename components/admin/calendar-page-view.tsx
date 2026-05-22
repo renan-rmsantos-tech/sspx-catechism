@@ -1,8 +1,13 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { createAcademicYearAction, toggleAcademicYearAction, deleteAcademicYearAction } from '@/app/admin/anos-letivos/actions'
-import type { ActionState } from '@/app/admin/anos-letivos/actions'
+import {
+  createAcademicYearAction,
+  toggleAcademicYearAction,
+  deleteAcademicYearAction,
+} from '@/app/admin/calendario/actions'
+import type { ActionState } from '@/app/admin/calendario/actions'
+import CalendarEditor from '@/components/admin/calendar-editor'
 
 export interface AcademicYearRow {
   id: string
@@ -11,11 +16,19 @@ export interface AcademicYearRow {
   classCount: number
 }
 
-export interface AcademicYearsViewProps {
+export interface CalendarPageViewProps {
   years: AcademicYearRow[]
+  activeYear: { id: string; year: number } | null
+  initialDates: string[]
+  lockedDates: string[]
 }
 
-export default function AcademicYearsView({ years }: AcademicYearsViewProps) {
+export default function CalendarPageView({
+  years,
+  activeYear,
+  initialDates,
+  lockedDates,
+}: CalendarPageViewProps) {
   const [showForm, setShowForm] = useState(false)
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(createAcademicYearAction, null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -39,10 +52,10 @@ export default function AcademicYearsView({ years }: AcademicYearsViewProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-            Anos Letivos
+            Calendário
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            Gerencie os anos letivos da catequese
+            Anos letivos e datas de aula
           </p>
         </div>
         <button
@@ -59,7 +72,7 @@ export default function AcademicYearsView({ years }: AcademicYearsViewProps) {
         </button>
       </div>
 
-      {/* Create form */}
+      {/* Create year form */}
       {showForm && (
         <div
           className="rounded-2xl p-6"
@@ -127,14 +140,14 @@ export default function AcademicYearsView({ years }: AcademicYearsViewProps) {
         </div>
       )}
 
-      {/* Years list */}
+      {/* Academic years list */}
       <div
         className="rounded-2xl"
         style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
       >
         <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            Todos os anos ({years.length})
+            Anos Letivos ({years.length})
           </h2>
         </div>
         {years.length === 0 ? (
@@ -192,6 +205,25 @@ export default function AcademicYearsView({ years }: AcademicYearsViewProps) {
           </ul>
         )}
       </div>
+
+      {/* Calendar editor for active year */}
+      {activeYear ? (
+        <CalendarEditor
+          academicYearId={activeYear.id}
+          year={activeYear.year}
+          initialDates={initialDates}
+          lockedDates={lockedDates}
+        />
+      ) : (
+        <div
+          className="rounded-2xl p-8 text-center"
+          style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
+        >
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Ative um ano letivo para gerenciar o calendário de aulas.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

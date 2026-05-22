@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createClassSchema, updateClassSchema } from '@/lib/classes/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 type ActionState = { error: string } | null
 
@@ -23,7 +24,7 @@ export async function createClassAction(
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return { error: 'Sem permissão.' }
+  if (!isCoordinatorOrAdmin(profile?.role)) return { error: 'Sem permissão.' }
 
   const raw = {
     name: formData.get('name') as string,
@@ -75,7 +76,7 @@ export async function updateClassAction(
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return { error: 'Sem permissão.' }
+  if (!isCoordinatorOrAdmin(profile?.role)) return { error: 'Sem permissão.' }
 
   const raw = {
     name: formData.get('name') as string,
@@ -122,7 +123,7 @@ export async function archiveClassAction(classId: string): Promise<void> {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') return
+  if (!isCoordinatorOrAdmin(profile?.role)) return
 
   await supabase.from('classes').update({ is_archived: true }).eq('id', classId)
 

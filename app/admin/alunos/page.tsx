@@ -2,19 +2,25 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import StudentSearch from '@/components/admin/student-search'
+import { deactivateStudentAction, activateStudentAction, deleteStudentAction } from './actions'
 
 export default async function AlunosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; inativos?: string }>
 }) {
-  const { q } = await searchParams
+  const { q, inativos } = await searchParams
+  const showInactive = inativos === '1'
   const supabase = await createSupabaseServerClient()
 
   let query = supabase
     .from('students')
-    .select('id, full_name, birth_date, city, class_id, classes(name)')
+    .select('id, full_name, birth_date, city, class_id, is_active, classes(name)')
     .order('full_name')
+
+  if (!showInactive) {
+    query = query.eq('is_active', true)
+  }
 
   if (q) {
     query = query.ilike('full_name', `%${q}%`)
@@ -30,6 +36,9 @@ export default async function AlunosPage({
     )
   }
 
+  const activeStudents = (students ?? []).filter((s) => s.is_active !== false)
+  const inactiveStudents = (students ?? []).filter((s) => s.is_active === false)
+
   return (
     <div className="flex flex-col p-8 gap-6" style={{ backgroundColor: 'var(--bg)', minHeight: '100%' }}>
       <div className="flex items-center justify-between">
@@ -44,44 +53,44 @@ export default async function AlunosPage({
             Cadastro e gestão de alunos
           </p>
         </div>
-        <Link
-          href="/admin/alunos/novo"
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white"
-          style={{ backgroundColor: 'var(--accent)' }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <div className="flex items-center gap-3">
+          <Link
+            href={showInactive ? '/admin/alunos' : '/admin/alunos?inativos=1'}
+            className="text-xs font-medium hover:underline"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Novo Aluno
-        </Link>
+            {showInactive ? 'Ocultar inativos' : 'Ver inativos'}
+          </Link>
+          <Link
+            href="/admin/alunos/novo"
+            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white"
+            style={{ backgroundColor: 'var(--accent)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Novo Aluno
+          </Link>
+        </div>
       </div>
 
       <Suspense>
         <StudentSearch />
       </Suspense>
 
+      {/* Active students */}
       <div
         className="rounded-2xl"
         style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
       >
         <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {q ? `Resultados para "${q}"` : 'Todos os alunos'} ({students?.length ?? 0})
+            {q ? `Resultados para "${q}"` : 'Alunos ativos'} ({activeStudents.length})
           </h2>
         </div>
 
-        {!students || students.length === 0 ? (
+        {activeStudents.length === 0 ? (
           <div className="p-8 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
             {q ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado.'}{' '}
             {!q && (
@@ -92,7 +101,7 @@ export default async function AlunosPage({
           </div>
         ) : (
           <ul>
-            {students.map((student) => {
+            {activeStudents.map((student) => {
               const cls = student.classes as unknown as { name: string } | null
               return (
                 <li
@@ -101,10 +110,7 @@ export default async function AlunosPage({
                   style={{ borderBottom: '1px solid var(--border)' }}
                 >
                   <div>
-                    <p
-                      className="text-sm font-medium"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                       {student.full_name}
                     </p>
                     {cls?.name && (
@@ -113,19 +119,77 @@ export default async function AlunosPage({
                       </p>
                     )}
                   </div>
-                  <Link
-                    href={`/admin/alunos/${student.id}/editar`}
-                    className="text-xs font-medium hover:underline"
-                    style={{ color: 'var(--accent)' }}
-                  >
-                    Editar
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/admin/alunos/${student.id}/editar`}
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      Editar
+                    </Link>
+                    <form action={deactivateStudentAction.bind(null, student.id) as (formData: FormData) => void}>
+                      <button
+                        type="submit"
+                        className="text-xs font-medium hover:underline"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        Desativar
+                      </button>
+                    </form>
+                  </div>
                 </li>
               )
             })}
           </ul>
         )}
       </div>
+
+      {/* Inactive students */}
+      {showInactive && inactiveStudents.length > 0 && (
+        <div
+          className="rounded-2xl"
+          style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
+        >
+          <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+              Inativos ({inactiveStudents.length})
+            </h2>
+          </div>
+          <ul>
+            {inactiveStudents.map((student) => (
+              <li
+                key={student.id}
+                className="flex items-center justify-between px-5 py-4"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {student.full_name}
+                </p>
+                <div className="flex items-center gap-3">
+                  <form action={activateStudentAction.bind(null, student.id) as (formData: FormData) => void}>
+                    <button
+                      type="submit"
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      Reativar
+                    </button>
+                  </form>
+                  <form action={deleteStudentAction.bind(null, student.id) as (formData: FormData) => void}>
+                    <button
+                      type="submit"
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: '#DC2626' }}
+                    >
+                      Excluir
+                    </button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

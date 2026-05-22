@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { updateClassDatesSchema } from '@/lib/class-dates/schemas'
+import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient()
@@ -69,7 +70,7 @@ export async function PUT(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'coordinator') {
+  if (!isCoordinatorOrAdmin(profile?.role)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 

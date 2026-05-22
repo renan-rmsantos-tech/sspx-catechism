@@ -13,6 +13,7 @@
 
 -- Opcional: remover contas de teste para um rerun limpo no SQL Editor (cloud).
 DELETE FROM auth.users WHERE id IN (
+  '00000000-0000-0000-0000-000000000000',
   '00000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000002',
   '00000000-0000-0000-0000-000000000003'
@@ -35,6 +36,19 @@ INSERT INTO auth.users (
   email_change_token_new,
   recovery_token
 ) VALUES
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'admin@catechism.dev',
+    crypt('admin123', gen_salt('bf', 10)),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Administrador","role":"admin"}',
+    now(), now(),
+    '', '', '', ''
+  ),
   (
     '00000000-0000-0000-0000-000000000000',
     '00000000-0000-0000-0000-000000000001',
@@ -76,8 +90,9 @@ INSERT INTO auth.users (
   )
 ON CONFLICT (id) DO NOTHING;
 
--- O trigger cria sempre catechist; aqui fixamos o coordenador e nomes.
+-- O trigger cria sempre catechist; aqui fixamos o admin, coordenador e nomes.
 INSERT INTO profiles (id, full_name, role) VALUES
+  ('00000000-0000-0000-0000-000000000000', 'Administrador',      'admin'),
   ('00000000-0000-0000-0000-000000000001', 'Maria Coordenadora', 'coordinator'),
   ('00000000-0000-0000-0000-000000000002', 'João Catequista',    'catechist'),
   ('00000000-0000-0000-0000-000000000003', 'Ana Catequista',     'catechist')
