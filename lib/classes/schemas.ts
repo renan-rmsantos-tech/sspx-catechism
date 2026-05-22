@@ -28,7 +28,12 @@ export const inviteCatechistSchema = z.object({
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
 })
 
+export const updateAcademicYearSchema = z.object({
+  is_active: z.boolean(),
+})
+
 export type CreateAcademicYearInput = z.infer<typeof createAcademicYearSchema>
+export type UpdateAcademicYearInput = z.infer<typeof updateAcademicYearSchema>
 export type CreateClassInput = z.infer<typeof createClassSchema>
 export type UpdateClassInput = z.infer<typeof updateClassSchema>
 export type InviteCatechistInput = z.infer<typeof inviteCatechistSchema>
