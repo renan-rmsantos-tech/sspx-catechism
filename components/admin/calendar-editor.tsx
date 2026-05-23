@@ -6,9 +6,13 @@ import { Button } from '@/components/ui/button'
 interface CalendarEditorProps {
   academicYearId: string
   year: number
+  classDays: number[]
   initialDates: string[]
   lockedDates: string[]
+  onClassDaysChange?: (days: number[]) => void
 }
+
+const WEEKDAY_SHORT = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
 const MONTH_NAMES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -20,10 +24,11 @@ const WEEKDAY_HEADERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 interface DayCell {
   date: string
   day: number
-  isSaturday: boolean
+  isClassDay: boolean
 }
 
-function getMonthCells(year: number, month: number): (DayCell | null)[] {
+function getMonthCells(year: number, month: number, classDays: number[]): (DayCell | null)[] {
+  const classDaysSet = new Set(classDays)
   const firstDayOfWeek = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const cells: (DayCell | null)[] = []
@@ -38,7 +43,7 @@ function getMonthCells(year: number, month: number): (DayCell | null)[] {
     cells.push({
       date: `${yyyy}-${mm}-${dd}`,
       day: d,
-      isSaturday: dateObj.getDay() === 6,
+      isClassDay: classDaysSet.has(dateObj.getDay()),
     })
   }
 
@@ -46,26 +51,29 @@ function getMonthCells(year: number, month: number): (DayCell | null)[] {
   return cells
 }
 
-function getAllSaturdays(year: number): string[] {
-  const saturdays: string[] = []
+function getAllClassDays(year: number, classDays: number[]): string[] {
+  const classDaysSet = new Set(classDays)
+  const dates: string[] = []
   const date = new Date(year, 0, 1)
-  while (date.getDay() !== 6) date.setDate(date.getDate() + 1)
   while (date.getFullYear() === year) {
-    const yyyy = date.getFullYear()
-    const mm = String(date.getMonth() + 1).padStart(2, '0')
-    const dd = String(date.getDate()).padStart(2, '0')
-    saturdays.push(`${yyyy}-${mm}-${dd}`)
-    date.setDate(date.getDate() + 7)
+    if (classDaysSet.has(date.getDay())) {
+      const yyyy = date.getFullYear()
+      const mm = String(date.getMonth() + 1).padStart(2, '0')
+      const dd = String(date.getDate()).padStart(2, '0')
+      dates.push(`${yyyy}-${mm}-${dd}`)
+    }
+    date.setDate(date.getDate() + 1)
   }
-  return saturdays
+  return dates
 }
 
-export default function CalendarEditor({ academicYearId, year, initialDates, lockedDates }: CalendarEditorProps) {
+export default function CalendarEditor({ academicYearId, year, classDays, initialDates, lockedDates, onClassDaysChange }: CalendarEditorProps) {
   const locked = useMemo(() => new Set(lockedDates), [lockedDates])
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialDates))
   const [savedSet, setSavedSet] = useState<Set<string>>(() => new Set(initialDates))
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const classDaysSet = useMemo(() => new Set(classDays), [classDays])
 
   const isDirty = useMemo(() => {
     if (selected.size !== savedSet.size) return true
@@ -87,9 +95,9 @@ export default function CalendarEditor({ academicYearId, year, initialDates, loc
   }, [locked])
 
   const selectAll = useCallback(() => {
-    setSelected(new Set(getAllSaturdays(year)))
+    setSelected(new Set(getAllClassDays(year, classDays)))
     setMessage(null)
-  }, [year])
+  }, [year, classDays])
 
   const clearAll = useCallback(() => {
     setSelected(new Set(locked))
@@ -113,7 +121,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates, loc
       }
       const data = await res.json()
       setSavedSet(new Set(dates))
-      setMessage({ type: 'success', text: `${data.count} sábado${data.count !== 1 ? 's' : ''} salvo${data.count !== 1 ? 's' : ''}` })
+      setMessage({ type: 'success', text: `${data.count} dia${data.count !== 1 ? 's' : ''} de aula salvo${data.count !== 1 ? 's' : ''}` })
     } catch {
       setMessage({ type: 'error', text: 'Erro de conexão' })
     } finally {
@@ -126,41 +134,75 @@ export default function CalendarEditor({ academicYearId, year, initialDates, loc
   return (
     <div className="px-10 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1
-            className="text-2xl font-extrabold"
-            style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
-          >
-            Calendário Letivo {year}
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            Selecione os sábados com aula. {selected.size} sábado{selected.size !== 1 ? 's' : ''} selecionado{selected.size !== 1 ? 's' : ''}.
-          </p>
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1
+              className="text-2xl font-extrabold"
+              style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
+            >
+              Calendário Letivo {year}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+              Selecione os dias de aula. {selected.size} dia{selected.size !== 1 ? 's' : ''} selecionado{selected.size !== 1 ? 's' : ''}.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={selectAll}
+              className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-black/5"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Selecionar todos
+            </button>
+            <button
+              type="button"
+              onClick={clearAll}
+              className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-black/5"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Limpar
+            </button>
+            <Button
+              disabled={!isDirty || saving}
+              onClick={save}
+            >
+              {saving ? 'Salvando…' : 'Salvar'}
+            </Button>
+          </div>
         </div>
+
+        {/* Day-of-week selector */}
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={selectAll}
-            className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-black/5"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Selecionar todos
-          </button>
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors hover:bg-black/5"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Limpar
-          </button>
-          <Button
-            disabled={!isDirty || saving}
-            onClick={save}
-          >
-            {saving ? 'Salvando…' : 'Salvar'}
-          </Button>
+          <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Dias da semana:
+          </span>
+          <div className="flex gap-1.5">
+            {WEEKDAY_SHORT.map((label, i) => {
+              const isActive = classDaysSet.has(i)
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    const next = isActive
+                      ? classDays.filter((d) => d !== i)
+                      : [...classDays, i]
+                    if (next.length > 0) onClassDaysChange?.(next)
+                  }}
+                  className="flex items-center justify-center w-9 h-9 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    backgroundColor: isActive ? 'var(--accent)' : 'transparent',
+                    color: isActive ? '#FFFFFF' : 'var(--text-primary)',
+                    border: isActive ? 'none' : '1.5px solid var(--border)',
+                  }}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -194,6 +236,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates, loc
             key={month}
             year={year}
             month={month}
+            classDays={classDays}
             selected={selected}
             locked={locked}
             today={today}
@@ -208,6 +251,7 @@ export default function CalendarEditor({ academicYearId, year, initialDates, loc
 function MonthCard({
   year,
   month,
+  classDays,
   selected,
   locked,
   today,
@@ -215,12 +259,14 @@ function MonthCard({
 }: {
   year: number
   month: number
+  classDays: number[]
   selected: Set<string>
   locked: Set<string>
   today: string
   onToggle: (date: string) => void
 }) {
-  const cells = useMemo(() => getMonthCells(year, month), [year, month])
+  const classDaysSet = useMemo(() => new Set(classDays), [classDays])
+  const cells = useMemo(() => getMonthCells(year, month, classDays), [year, month, classDays])
 
   return (
     <div
@@ -243,7 +289,7 @@ function MonthCard({
           <div
             key={i}
             className="text-center text-[11px] font-semibold py-1"
-            style={{ color: i === 6 ? 'var(--accent)' : 'var(--text-secondary)' }}
+            style={{ color: classDaysSet.has(i) ? 'var(--accent)' : 'var(--text-secondary)' }}
           >
             {label}
           </div>
@@ -259,7 +305,7 @@ function MonthCard({
           const isLocked = locked.has(cell.date)
           const isToday = cell.date === today
 
-          if (!cell.isSaturday) {
+          if (!cell.isClassDay) {
             return (
               <div
                 key={i}

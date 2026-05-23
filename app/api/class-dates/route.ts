@@ -88,13 +88,21 @@ export async function PUT(request: NextRequest) {
 
   const { academic_year_id, dates } = result.data
 
+  const { data: academicYear } = await supabase
+    .from('academic_years')
+    .select('class_days')
+    .eq('id', academic_year_id)
+    .single()
+
+  const allowedDays: number[] = academicYear?.class_days ?? [6]
+
   const invalidDates = dates.filter((d) => {
     const day = new Date(`${d}T12:00:00`).getDay()
-    return day !== 6
+    return !allowedDays.includes(day)
   })
   if (invalidDates.length > 0) {
     return Response.json(
-      { error: `Datas não são sábados: ${invalidDates.join(', ')}` },
+      { error: `Datas não correspondem aos dias de aula configurados: ${invalidDates.join(', ')}` },
       { status: 400 }
     )
   }

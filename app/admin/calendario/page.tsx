@@ -6,7 +6,7 @@ export default async function CalendarioPage() {
 
   const { data: years, error } = await supabase
     .from('academic_years')
-    .select('id, year, is_active')
+    .select('id, year, is_active, class_days')
     .order('year', { ascending: false })
 
   if (error) {
@@ -34,10 +34,12 @@ export default async function CalendarioPage() {
     id: y.id,
     year: y.year,
     is_active: y.is_active,
+    class_days: (y.class_days as number[]) ?? [6],
     classCount: classCountMap[y.id] ?? 0,
   }))
 
   const activeYear = (years ?? []).find((y) => y.is_active) ?? null
+  const activeClassDays: number[] = activeYear ? ((activeYear.class_days as number[]) ?? [6]) : [6]
 
   let initialDates: string[] = []
   let lockedDates: string[] = []
@@ -69,6 +71,7 @@ export default async function CalendarioPage() {
     <CalendarPageView
       years={rows}
       activeYear={activeYear ? { id: activeYear.id, year: activeYear.year } : null}
+      activeClassDays={activeClassDays}
       initialDates={initialDates}
       lockedDates={lockedDates}
     />

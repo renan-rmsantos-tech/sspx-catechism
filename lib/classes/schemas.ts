@@ -4,6 +4,10 @@ import { zPgUuid } from '@/lib/z-pg-uuid'
 export const createAcademicYearSchema = z.object({
   year: z.number().int().positive('Ano letivo deve ser um número inteiro positivo'),
   is_active: z.boolean().optional().default(false),
+  class_days: z
+    .array(z.number().int().min(0).max(6))
+    .min(1, 'Selecione pelo menos um dia da semana')
+    .default([6]),
 })
 
 export const createClassSchema = z.object({
@@ -29,7 +33,11 @@ export const inviteCatechistSchema = z.object({
 })
 
 export const updateAcademicYearSchema = z.object({
-  is_active: z.boolean(),
+  is_active: z.boolean().optional(),
+  class_days: z
+    .array(z.number().int().min(0).max(6))
+    .min(1, 'Selecione pelo menos um dia da semana')
+    .optional(),
 })
 
 export type CreateAcademicYearInput = z.infer<typeof createAcademicYearSchema>

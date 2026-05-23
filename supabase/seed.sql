@@ -105,8 +105,8 @@ ON CONFLICT (id) DO UPDATE SET
 -- Omitir na nuvem se só precisar da Secção A.
 -- ############################################################################
 
-INSERT INTO academic_years (id, year, is_active) VALUES
-  ('10000000-0000-0000-0000-000000000001', 2026, TRUE)
+INSERT INTO academic_years (id, year, is_active, class_days) VALUES
+  ('10000000-0000-0000-0000-000000000001', 2026, TRUE, '{6}')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO classes (id, academic_year_id, name, level, schedule) VALUES

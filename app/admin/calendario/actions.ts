@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createAcademicYearSchema, updateAcademicYearSchema } from '@/lib/classes/schemas'
+import { z } from 'zod'
 import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export type ActionState = { error: string } | null
@@ -32,9 +33,13 @@ export async function createAcademicYearAction(
   if (!supabase) return { error: 'Acesso negado' }
 
   const yearStr = formData.get('year') as string
+  const classDaysRaw = formData.getAll('class_days')
+  const classDays = classDaysRaw.map((v) => parseInt(v as string, 10)).filter((n) => !isNaN(n))
+
   const body = {
     year: yearStr ? parseInt(yearStr, 10) : undefined,
     is_active: formData.get('is_active') === 'true',
+    class_days: classDays.length > 0 ? classDays : [6],
   }
 
   const result = createAcademicYearSchema.safeParse(body)
@@ -68,6 +73,36 @@ export async function toggleAcademicYearAction(
   const { error } = await supabase
     .from('academic_years')
     .update(result.data)
+    .eq('id', yearId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/calendario')
+  return null
+}
+
+const updateClassDaysSchema = z.object({
+  class_days: z
+    .array(z.number().int().min(0).max(6))
+    .min(1, 'Selecione pelo menos um dia da semana'),
+})
+
+export async function updateClassDaysAction(
+  yearId: string,
+  classDays: number[]
+): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const result = updateClassDaysSchema.safeParse({ class_days: classDays })
+  if (!result.success) {
+    const firstIssue = result.error.issues[0]
+    return { error: firstIssue?.message ?? 'Dados inválidos' }
+  }
+
+  const { error } = await supabase
+    .from('academic_years')
+    .update({ class_days: result.data.class_days })
     .eq('id', yearId)
 
   if (error) return { error: error.message }

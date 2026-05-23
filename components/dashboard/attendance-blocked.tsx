@@ -47,7 +47,7 @@ export default function AttendanceBlocked({ className, formattedDate }: Attendan
           className="text-sm mt-2 max-w-[280px]"
           style={{ color: 'var(--text-secondary)' }}
         >
-          Hoje não é um dia de aula programado. A chamada só pode ser registrada nos sábados definidos no calendário letivo.
+          Hoje não é um dia de aula programado. A chamada só pode ser registrada nos dias definidos no calendário letivo.
         </p>
       </div>
 
