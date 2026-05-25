@@ -81,10 +81,9 @@ describe('Sidebar', () => {
     expect(screen.getByText('CO')).toBeInTheDocument()
   })
 
-  it('renders app name and subtitle', () => {
+  it('renders app name', () => {
     render(<Sidebar />)
     expect(screen.getByText('Catequese')).toBeInTheDocument()
-    expect(screen.getByText('Paróquia São José')).toBeInTheDocument()
   })
 
   it('marks Chamadas as active for /admin/chamadas sub-paths', () => {

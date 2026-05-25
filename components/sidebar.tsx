@@ -146,9 +146,6 @@ export default function Sidebar({
         >
           Catequese
         </div>
-        <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', lineHeight: '16px' }}>
-          Paróquia São José
-        </div>
       </div>
 
       {/* Navigation */}

@@ -26,12 +26,30 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
 
 ## Regras e princípios principais
 
-- **Papéis:** **coordenador** — turmas, alunos, catequistas, relatórios; **catequista** — apenas turmas às quais está vinculado, chamada e histórico. O acesso é reforçado no banco com **RLS** (Row Level Security), não só na interface.
+- **Papéis:** **admin** — acesso total, gestão de catequistas e anos letivos; **coordenador** — turmas, alunos, catequistas, relatórios; **catequista** — apenas turmas às quais está vinculado, chamada e histórico. O acesso é reforçado no banco com **RLS** (Row Level Security), não só na interface.
 - **Offline-first na chamada:** a fila fica no dispositivo (IndexedDB) e tenta enviar ao servidor ao voltar online; em Safari/iOS o **Background Sync** pode ser limitado — há fallback com o evento `online` (ver TechSpec).
 - **LGPD:** dados de menores e responsáveis são sensíveis; apenas usuários autorizados devem acessar o sistema. Consentimento e processo paroquial ficam fora do código, mas o desenho do produto assume essa obrigação.
 - **Escopo do MVP:** uma paróquia, sem portal para pais, sem notificações automáticas de falta, sem multi-paróquia (detalhes em *Non-Goals* do PRD).
 - **Linguagem da UI:** português brasileiro, vocabulário paroquial (turma, catequista, aluno).
 - **Segredos:** `SUPABASE_SECRET_KEY` (recomendada, formato `sb_secret_…`) ou, em legado, `SUPABASE_SERVICE_ROLE_KEY` (JWT `service_role`) — **somente servidor** (nunca no client nem em `NEXT_PUBLIC_*`). Validação em `lib/supabase/config.ts`.
+
+---
+
+## Painel administrativo (`/admin`)
+
+Toda a gestão acontece no painel em `/admin`, acessível após login. A sidebar agrupa as funcionalidades em três secções:
+
+| Secção | Página | Descrição |
+| --- | --- | --- |
+| — | **Visão Geral** | Dashboard com resumo de turmas, alunos e chamadas |
+| Gestão | **Turmas** | CRUD de turmas com vinculação de catequistas |
+| Gestão | **Alunos** | Cadastro de alunos com dados pessoais e de responsáveis |
+| Gestão | **Catequistas** | Gestão de catequistas (admin apenas) |
+| Gestão | **Relatórios** | Exportação de relatórios (PDF/Excel) com preview |
+| Aulas | **Chamadas** | Registro de presença por turma (funciona offline) |
+| Aulas | **Calendário** | Calendário unificado com dias da semana configuráveis por ano letivo |
+
+O papel **admin** tem acesso a todas as páginas e pode gerenciar catequistas e anos letivos. **Coordenadores** gerenciam turmas, alunos e relatórios. **Catequistas** veem apenas as turmas vinculadas e registram chamadas.
 
 ---
 
@@ -51,20 +69,18 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
    - **CLI (recomendado):** na raiz do repo, `npm install`, `npm run supabase:link` (liga a pasta `supabase/` ao projeto), depois `npm run supabase:push` para enviar as migrações.
    - **SQL Editor:** execute [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) (schema completo, extensão `pgcrypto` e endurecimento de RPC).
 3. Se algo falhar na criação da extensão, em **Database → Extensions** ative manualmente **pgcrypto**.
-4. **Contas e dados de teste (homologação / dev):** no **SQL Editor**, execute [`supabase/seed.sql`](supabase/seed.sql) (ficheiro único: secção A = só login; secção B = turmas/alunos/chamada). Em **produção com dados reais**, não use estas palavras-passe; prefira registo pela UI ou credenciais próprias.
+4. **Conta admin inicial (homologação / dev):** no **SQL Editor**, execute [`supabase/seed.sql`](supabase/seed.sql) para criar o utilizador admin. Em **produção**, altere a senha padrão após o primeiro login. Os demais utilizadores são criados pelo admin no painel.
 5. **Authentication → URL configuration:** **Site URL** = URL principal da app (por exemplo o domínio de **Production** na Vercel). Em **Redirect URLs**, inclua as origens que a Vercel usa, por exemplo `https://seu-app.vercel.app/**` e, para previews, `https://*.vercel.app/**` (ou liste URLs fixas, conforme a política que quiser).
 
 Repita os passos 2–5 no projeto Supabase de **produção** quando for dar deploy final.
 
-### Contas de teste (após executar `seed.sql`, secção A)
+### Conta inicial (após executar `seed.sql`)
 
 | E-mail | Papel | Nome no perfil |
 | --- | --- | --- |
-| `coord@catechism.dev` | coordenador | Maria Coordenadora |
-| `catechist1@catechism.dev` | catequista | João Catequista |
-| `catechist2@catechism.dev` | catequista | Ana Catequista |
+| `admin@catechism.dev` | admin | Administrador |
 
-**Senha** (igual para as três): `password123` — apenas para ambientes de teste.
+**Senha:** `admin123` — apenas para ambientes de teste. Os demais utilizadores (coordenadores e catequistas) são criados pelo admin através do painel.
 
 ---
 
@@ -93,7 +109,7 @@ Documentação: [API keys](https://supabase.com/docs/guides/api/api-keys).
 2. Associe variáveis por ambiente (Production vs Preview) conforme a secção anterior.
 3. Faça deploy. O PWA (service worker) segue a configuração de build; em desenvolvimento local o PWA costuma estar desligado (`next.config.ts`).
 
-Confirme login, papéis coordenador/catequista e, se aplicável, chamada offline num dispositivo real.
+Confirme login com o admin, crie os demais utilizadores pelo painel e, se aplicável, teste chamada offline num dispositivo real.
 
 ---
 
@@ -109,7 +125,7 @@ npm run lint
 npm test
 ```
 
-O ficheiro [`supabase/seed.sql`](supabase/seed.sql) destina-se também ao **SQL Editor** na nuvem (secções A e opcionalmente B); no fluxo **só nuvem** sem stack local, ignore `supabase db reset` e execute o SQL no dashboard.
+O ficheiro [`supabase/seed.sql`](supabase/seed.sql) destina-se também ao **SQL Editor** na nuvem; no fluxo **só nuvem** sem stack local, ignore `supabase db reset` e execute o SQL no dashboard.
 
 ---
 
