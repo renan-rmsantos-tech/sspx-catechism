@@ -182,15 +182,6 @@ describe('0001_initial_schema.sql — extensions and Supabase RPC hardening', ()
 // ============================================================
 
 describe('seed.sql', () => {
-  it('inserts at least 1 coordinator', () => {
-    expect(seedSQL).toMatch(/'coordinator'/i)
-  })
-
-  it('inserts at least 2 catechists', () => {
-    const matches = seedSQL.match(/'catechist'/gi) ?? []
-    expect(matches.length).toBeGreaterThanOrEqual(2)
-  })
-
   it('inserts at least 1 academic year', () => {
     expect(seedSQL).toMatch(/INSERT INTO academic_years/i)
   })
@@ -229,9 +220,13 @@ describe('schema types — isValidRole', () => {
     expect(isValidRole('catechist')).toBe(true)
   })
 
+  it('returns true for admin', async () => {
+    const { isValidRole } = await import('../lib/supabase/types')
+    expect(isValidRole('admin')).toBe(true)
+  })
+
   it('returns false for unknown role', async () => {
     const { isValidRole } = await import('../lib/supabase/types')
-    expect(isValidRole('admin')).toBe(false)
     expect(isValidRole(null)).toBe(false)
     expect(isValidRole(undefined)).toBe(false)
     expect(isValidRole('')).toBe(false)
@@ -261,9 +256,9 @@ describe('schema types — isCoordinator / isCatechist', () => {
 })
 
 describe('schema types — ALL_TABLES', () => {
-  it('contains all 7 table names', async () => {
+  it('contains all 8 table names', async () => {
     const { ALL_TABLES } = await import('../lib/supabase/types')
-    expect(ALL_TABLES).toHaveLength(7)
+    expect(ALL_TABLES).toHaveLength(8)
     expect(ALL_TABLES).toContain('profiles')
     expect(ALL_TABLES).toContain('academic_years')
     expect(ALL_TABLES).toContain('classes')

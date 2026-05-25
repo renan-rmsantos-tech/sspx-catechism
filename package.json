@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx supabase db push --db-url \"$SUPABASE_DB_URL\" && next build",
     "start": "next start",
     "supabase:link": "supabase link",
     "supabase:push": "supabase db push",

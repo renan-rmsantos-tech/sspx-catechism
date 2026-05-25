@@ -1,108 +1,16 @@
--- Seed de desenvolvimento / homologação (senhas fracas — nunca em produção real).
+-- Seed de desenvolvimento — dados de exemplo para homologação.
 --
--- Uso:
---   • `supabase db reset` (stack local): aplica migrações e este ficheiro completo (`config.toml`).
---   • SQL Editor (nuvem): após migrações, execute o ficheiro inteiro, ou só a **SECÇÃO A** se quiser
---     apenas contas de teste (sem turmas/alunos/chamadas). A secção B depende dos utilizadores da A.
+-- O utilizador admin é provisionado automaticamente pelo servidor (instrumentation.ts)
+-- a partir das variáveis ADMIN_EMAIL e ADMIN_PASSWORD.
 --
--- Senha das três contas de teste: password123
+-- Este ficheiro contém apenas dados de exemplo (turmas, alunos, chamada).
+-- Execute no SQL Editor (nuvem) ou via `supabase db reset` (local).
+--
+-- NOTA: este seed assume que já existem utilizadores criados pela app.
+-- Os IDs de catequistas referenciados abaixo são placeholders para desenvolvimento.
 
 -- ############################################################################
--- SECÇÃO A — Utilizadores Auth + perfis (mínimo para login na app na nuvem)
--- ############################################################################
-
--- Opcional: remover contas de teste para um rerun limpo no SQL Editor (cloud).
-DELETE FROM auth.users WHERE id IN (
-  '00000000-0000-0000-0000-000000000000',
-  '00000000-0000-0000-0000-000000000001',
-  '00000000-0000-0000-0000-000000000002',
-  '00000000-0000-0000-0000-000000000003'
-);
-
-INSERT INTO auth.users (
-  instance_id,
-  id,
-  aud,
-  role,
-  email,
-  encrypted_password,
-  email_confirmed_at,
-  raw_app_meta_data,
-  raw_user_meta_data,
-  created_at,
-  updated_at,
-  confirmation_token,
-  email_change,
-  email_change_token_new,
-  recovery_token
-) VALUES
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'admin@catechism.dev',
-    crypt('admin123', gen_salt('bf', 10)),
-    now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Administrador","role":"admin"}',
-    now(), now(),
-    '', '', '', ''
-  ),
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '00000000-0000-0000-0000-000000000001',
-    'authenticated',
-    'authenticated',
-    'coord@catechism.dev',
-    crypt('password123', gen_salt('bf', 10)),
-    now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Maria Coordenadora","role":"coordinator"}',
-    now(), now(),
-    '', '', '', ''
-  ),
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '00000000-0000-0000-0000-000000000002',
-    'authenticated',
-    'authenticated',
-    'catechist1@catechism.dev',
-    crypt('password123', gen_salt('bf', 10)),
-    now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"João Catequista","role":"catechist"}',
-    now(), now(),
-    '', '', '', ''
-  ),
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '00000000-0000-0000-0000-000000000003',
-    'authenticated',
-    'authenticated',
-    'catechist2@catechism.dev',
-    crypt('password123', gen_salt('bf', 10)),
-    now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Ana Catequista","role":"catechist"}',
-    now(), now(),
-    '', '', '', ''
-  )
-ON CONFLICT (id) DO NOTHING;
-
--- O trigger cria sempre catechist; aqui fixamos o admin, coordenador e nomes.
-INSERT INTO profiles (id, full_name, role) VALUES
-  ('00000000-0000-0000-0000-000000000000', 'Administrador',      'admin'),
-  ('00000000-0000-0000-0000-000000000001', 'Maria Coordenadora', 'coordinator'),
-  ('00000000-0000-0000-0000-000000000002', 'João Catequista',    'catechist'),
-  ('00000000-0000-0000-0000-000000000003', 'Ana Catequista',     'catechist')
-ON CONFLICT (id) DO UPDATE SET
-  full_name = EXCLUDED.full_name,
-  role = EXCLUDED.role;
-
--- ############################################################################
--- SECÇÃO B — Dados de exemplo (ano letivo, turmas, alunos, chamada)
--- Omitir na nuvem se só precisar da Secção A.
+-- Dados de exemplo (ano letivo, turmas, alunos, chamada)
 -- ############################################################################
 
 INSERT INTO academic_years (id, year, is_active, class_days) VALUES
@@ -125,11 +33,6 @@ INSERT INTO classes (id, academic_year_id, name, level, schedule) VALUES
     'Sábados 10:30–12:00'
   )
 ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO class_catechists (class_id, catechist_id) VALUES
-  ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002'),
-  ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003')
-ON CONFLICT DO NOTHING;
 
 INSERT INTO students (id, class_id, full_name, birth_date, city, first_communion, confirmation) VALUES
   (
@@ -194,18 +97,3 @@ INSERT INTO class_dates (academic_year_id, date) VALUES
   ('10000000-0000-0000-0000-000000000001', '2026-05-30')
 ON CONFLICT (academic_year_id, date) DO NOTHING;
 
-INSERT INTO attendance_sessions (id, class_id, date, catechist_id, synced_at) VALUES
-  (
-    '40000000-0000-0000-0000-000000000001',
-    '20000000-0000-0000-0000-000000000001',
-    '2026-04-04',
-    '00000000-0000-0000-0000-000000000002',
-    now()
-  )
-ON CONFLICT (class_id, date) DO NOTHING;
-
-INSERT INTO attendance_records (id, session_id, student_id, present) VALUES
-  ('50000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', TRUE),
-  ('50000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', TRUE),
-  ('50000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', FALSE)
-ON CONFLICT (session_id, student_id) DO NOTHING;

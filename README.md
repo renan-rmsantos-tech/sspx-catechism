@@ -57,30 +57,24 @@ O papel **admin** tem acesso a todas as páginas e pode gerenciar catequistas e 
 
 - Contas **Vercel** e **Supabase**, com o repositório Git ligado à Vercel.
 - **Dois projetos Supabase** (recomendado): um para **Preview / desenvolvimento** e outro para **Production**, ambos com o mesmo schema em [`supabase/migrations/`](supabase/migrations/).
-- **Supabase CLI** para empurrar migrações a partir do repo: [instalação](https://supabase.com/docs/guides/cli) global **ou** `npm install` e uso de `npx supabase` / scripts `supabase:*` abaixo.
 - **Node.js 20+** só é necessário na sua máquina se for correr `npm run lint`, `npm test` ou a CLI via npm; a aplicação em si executa na Vercel.
+- As **migrações SQL** são aplicadas automaticamente a cada deploy (via `supabase db push` no build). O **admin** é provisionado automaticamente ao iniciar o servidor, lendo `ADMIN_EMAIL` e `ADMIN_PASSWORD` das variáveis de ambiente.
 
 ---
 
 ## Novo projeto Supabase (incluindo recriar do zero)
 
 1. Crie o projeto em [Supabase Dashboard](https://supabase.com/dashboard) e copie **URL** e chaves em **Project Settings → API Keys**.
-2. **Aplique o schema** (nesta ordem):
-   - **CLI (recomendado):** na raiz do repo, `npm install`, `npm run supabase:link` (liga a pasta `supabase/` ao projeto), depois `npm run supabase:push` para enviar as migrações.
-   - **SQL Editor:** execute [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) (schema completo, extensão `pgcrypto` e endurecimento de RPC).
+2. **Aplique o schema:** com `SUPABASE_DB_URL` configurada na Vercel, as migrações rodam automaticamente no build. Para setup manual: `npm install`, `npm run supabase:link`, `npm run supabase:push`.
 3. Se algo falhar na criação da extensão, em **Database → Extensions** ative manualmente **pgcrypto**.
-4. **Conta admin inicial (homologação / dev):** no **SQL Editor**, execute [`supabase/seed.sql`](supabase/seed.sql) para criar o utilizador admin. Em **produção**, altere a senha padrão após o primeiro login. Os demais utilizadores são criados pelo admin no painel.
+4. **Admin:** provisionado automaticamente ao iniciar o servidor a partir de `ADMIN_EMAIL` e `ADMIN_PASSWORD` (env vars). Os demais utilizadores são criados pelo admin no painel.
 5. **Authentication → URL configuration:** **Site URL** = URL principal da app (por exemplo o domínio de **Production** na Vercel). Em **Redirect URLs**, inclua as origens que a Vercel usa, por exemplo `https://seu-app.vercel.app/**` e, para previews, `https://*.vercel.app/**` (ou liste URLs fixas, conforme a política que quiser).
 
 Repita os passos 2–5 no projeto Supabase de **produção** quando for dar deploy final.
 
-### Conta inicial (após executar `seed.sql`)
+### Admin
 
-| E-mail | Papel | Nome no perfil |
-| --- | --- | --- |
-| `admin@catechism.dev` | admin | Administrador |
-
-**Senha:** `admin123` — apenas para ambientes de teste. Os demais utilizadores (coordenadores e catequistas) são criados pelo admin através do painel.
+O admin é criado automaticamente ao iniciar o servidor, com base nas variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD` configuradas na Vercel. Se o utilizador já existir, apenas garante que o profile tem role `admin`.
 
 ---
 
@@ -97,6 +91,13 @@ O projeto aceita chaves novas e legadas do Supabase:
 NEXT_PUBLIC_SUPABASE_URL=<URL do projeto>
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<sb_publishable_…>  # ou NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SECRET_KEY=<sb_secret_…>                       # ou SUPABASE_SERVICE_ROLE_KEY
+
+# Migrações automáticas no build
+SUPABASE_DB_URL=<connection string PostgreSQL>
+
+# Admin provisionado ao iniciar o servidor
+ADMIN_EMAIL=<email do admin>
+ADMIN_PASSWORD=<senha do admin>
 ```
 
 Documentação: [API keys](https://supabase.com/docs/guides/api/api-keys).
@@ -125,7 +126,7 @@ npm run lint
 npm test
 ```
 
-O ficheiro [`supabase/seed.sql`](supabase/seed.sql) destina-se também ao **SQL Editor** na nuvem; no fluxo **só nuvem** sem stack local, ignore `supabase db reset` e execute o SQL no dashboard.
+O ficheiro [`supabase/seed.sql`](supabase/seed.sql) contém dados de exemplo (turmas, alunos) para desenvolvimento — execute no **SQL Editor** se quiser popular o ambiente de homologação.
 
 ---
 
