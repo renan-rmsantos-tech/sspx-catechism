@@ -11,9 +11,13 @@ export default async function CalendarioPage() {
 
   if (error) {
     return (
-      <div className="p-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        Erro ao carregar dados.
-      </div>
+      <CalendarPageView
+        years={[]}
+        activeYear={null}
+        activeClassDays={[6]}
+        initialDates={[]}
+        lockedDates={[]}
+      />
     )
   }
 

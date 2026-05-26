@@ -76,9 +76,8 @@ describe('Sidebar', () => {
 
   it('uses defaults for user section when no props provided', () => {
     render(<Sidebar />)
-    // Both userName and userRole default to 'Coordenador'
-    expect(screen.getAllByText('Coordenador')).toHaveLength(2)
-    expect(screen.getByText('CO')).toBeInTheDocument()
+    expect(screen.getAllByText('Admin')).toHaveLength(2)
+    expect(screen.getByText('AD')).toBeInTheDocument()
   })
 
   it('renders app name', () => {

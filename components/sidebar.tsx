@@ -125,9 +125,9 @@ export interface SidebarProps {
 }
 
 export default function Sidebar({
-  userName = 'Coordenador',
-  userRole = 'Coordenador',
-  userInitials = 'CO',
+  userName = 'Admin',
+  userRole = 'Admin',
+  userInitials = 'AD',
 }: SidebarProps) {
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
