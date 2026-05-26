@@ -383,6 +383,7 @@ describe('ClassCard', () => {
         studentCount={18}
         attendanceDone={true}
         presencePercent={78}
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Chamada feita')).toBeInTheDocument()
@@ -398,6 +399,7 @@ describe('ClassCard', () => {
         studentCount={14}
         attendanceDone={false}
         presencePercent={64}
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Pendente')).toBeInTheDocument()

@@ -222,6 +222,28 @@ function makeInsertChain(resolvedValue: { data: unknown; error: unknown }) {
   return { insert, selectAfterInsert, single }
 }
 
+function makeClassesTableMock() {
+  return {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: { academic_year_id: 'ay-1' }, error: null }),
+      }),
+    }),
+  }
+}
+
+function makeClassDatesTableMock(scheduled = true) {
+  return {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: scheduled ? { id: 'cd-1' } : null, error: null }),
+        }),
+      }),
+    }),
+  }
+}
+
 // ============================================================
 // Integration Tests — GET /api/attendance
 // ============================================================
@@ -425,6 +447,8 @@ describe('POST /api/attendance — creates session and records', () => {
         }),
       },
       from: vi.fn((table: string) => {
+        if (table === 'classes') return makeClassesTableMock()
+        if (table === 'class_dates') return makeClassDatesTableMock()
         if (table === 'attendance_sessions') {
           return {
             // maybeSingle returns null = no existing session
@@ -482,6 +506,8 @@ describe('POST /api/attendance — creates session and records', () => {
         }),
       },
       from: vi.fn((table: string) => {
+        if (table === 'classes') return makeClassesTableMock()
+        if (table === 'class_dates') return makeClassDatesTableMock()
         if (table === 'attendance_sessions') {
           return {
             // Existing session found → skip
@@ -539,6 +565,8 @@ describe('POST /api/attendance — creates session and records', () => {
         }),
       },
       from: vi.fn((table: string) => {
+        if (table === 'classes') return makeClassesTableMock()
+        if (table === 'class_dates') return makeClassDatesTableMock()
         if (table === 'attendance_sessions') {
           return {
             select: vi.fn().mockReturnValue({
@@ -595,6 +623,8 @@ describe('POST /api/attendance — creates session and records', () => {
         }),
       },
       from: vi.fn((table: string) => {
+        if (table === 'classes') return makeClassesTableMock()
+        if (table === 'class_dates') return makeClassDatesTableMock()
         if (table === 'attendance_sessions') {
           return {
             select: vi.fn().mockReturnValue({

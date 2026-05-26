@@ -40,6 +40,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Visão Geral')).toBeInTheDocument()
@@ -52,6 +53,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText(/Ano letivo 2026/)).toBeInTheDocument()
@@ -65,6 +67,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     const statsRow = screen.getByTestId('stats-row')
@@ -82,6 +85,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('3')).toBeInTheDocument()
@@ -96,6 +100,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     const table = screen.getByTestId('classes-table')
@@ -113,6 +118,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Maria Rosa')).toBeInTheDocument()
@@ -126,6 +132,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('18')).toBeInTheDocument()
@@ -139,6 +146,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getAllByText('Feita')).toHaveLength(1)
@@ -152,6 +160,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Sábados às 9h')).toBeInTheDocument()
@@ -165,6 +174,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     const bars = screen.getAllByRole('progressbar')
@@ -180,6 +190,7 @@ describe('DashboardView', () => {
         classes={[]}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.queryByTestId('classes-table')).not.toBeInTheDocument()
@@ -202,6 +213,7 @@ describe('DashboardView', () => {
         classes={[noAssignment]}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('—')).toBeInTheDocument()
@@ -214,6 +226,7 @@ describe('DashboardView', () => {
         classes={defaultClasses}
         academicYearLabel="Ano letivo 2026"
         dateLabel="Segunda-feira, 4 de maio"
+        isScheduledDay={true}
       />
     )
     expect(screen.getByText('Novo Aluno')).toBeInTheDocument()
