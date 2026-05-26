@@ -1,11 +1,8 @@
 -- Migration: 0001_initial_schema
--- Full schema for the catechism attendance system: tables, indexes, auth trigger → profiles,
--- RLS helpers in schema `private` (not exposed by PostgREST by default), policies, RPC revokes
--- (handle_new_user + optional rls_auto_enable).
+-- Schema completo do sistema de catequese: tabelas, indexes, triggers, RLS e hardening.
 
 -- ============================================================
 -- EXTENSIONS
--- pgcrypto: gen_random_uuid() em versões onde não é built-in; crypt() em supabase/seed.sql
 -- ============================================================
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
@@ -13,22 +10,21 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 -- TABLES
 -- ============================================================
 
--- User profiles (linked to Supabase Auth users)
 CREATE TABLE profiles (
   id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name  TEXT NOT NULL,
-  role       TEXT NOT NULL CHECK (role IN ('coordinator', 'catechist')),
+  role       TEXT NOT NULL CHECK (role IN ('coordinator', 'catechist', 'admin')),
+  is_active  BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Academic years
 CREATE TABLE academic_years (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   year       INT UNIQUE NOT NULL,
-  is_active  BOOLEAN DEFAULT FALSE
+  is_active  BOOLEAN DEFAULT FALSE,
+  class_days INT[] NOT NULL DEFAULT '{6}'
 );
 
--- Classes (turmas)
 CREATE TABLE classes (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   academic_year_id UUID NOT NULL REFERENCES academic_years(id) ON DELETE RESTRICT,
@@ -39,14 +35,12 @@ CREATE TABLE classes (
   created_at       TIMESTAMPTZ DEFAULT now()
 );
 
--- Catechists assigned to classes (N:N)
 CREATE TABLE class_catechists (
   class_id     UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
   catechist_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   PRIMARY KEY (class_id, catechist_id)
 );
 
--- Students
 CREATE TABLE students (
   id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   class_id             UUID NOT NULL REFERENCES classes(id) ON DELETE RESTRICT,
@@ -60,10 +54,10 @@ CREATE TABLE students (
   guardian_father_name TEXT,
   guardian_mother_name TEXT,
   guardian_phone       TEXT,
+  is_active            BOOLEAN DEFAULT TRUE,
   created_at           TIMESTAMPTZ DEFAULT now()
 );
 
--- Attendance sessions (one per class per date, idempotent)
 CREATE TABLE attendance_sessions (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   class_id     UUID NOT NULL REFERENCES classes(id) ON DELETE RESTRICT,
@@ -73,7 +67,6 @@ CREATE TABLE attendance_sessions (
   UNIQUE (class_id, date)
 );
 
--- Individual attendance records
 CREATE TABLE attendance_records (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID NOT NULL REFERENCES attendance_sessions(id) ON DELETE CASCADE,
@@ -82,17 +75,25 @@ CREATE TABLE attendance_records (
   UNIQUE (session_id, student_id)
 );
 
+CREATE TABLE class_dates (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  academic_year_id UUID NOT NULL REFERENCES academic_years(id) ON DELETE CASCADE,
+  date             DATE NOT NULL,
+  UNIQUE (academic_year_id, date)
+);
+
 -- ============================================================
 -- INDEXES
 -- ============================================================
 
 CREATE INDEX idx_students_full_name ON students (full_name);
 CREATE INDEX idx_attendance_sessions_class_date ON attendance_sessions (class_id, date);
+CREATE INDEX idx_class_dates_year ON class_dates (academic_year_id, date);
 
 -- ============================================================
 -- TRIGGER: handle_new_user
--- Inserts a row into profiles when a new auth.users record is created.
--- Uses raw_user_meta_data for full_name only; role is always catechist (see function body).
+-- Inserts a profile when a new auth.users record is created.
+-- Role is always catechist; privileged roles are set via admin panel.
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -102,10 +103,6 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-  -- Não usar raw_user_meta_data para papel: utilizadores poderiam definir
-  -- "coordinator" no registo público. Coordenadores são promovidos fora do
-  -- fluxo de signup (dashboard, SQL ou API com service_role). Perfis com
-  -- outro papel são corrigidos em seeds / scripts manuais (UPSERT).
   INSERT INTO public.profiles (id, full_name, role)
   VALUES (
     NEW.id,
@@ -121,6 +118,45 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- ============================================================
+-- TRIGGER: validate_class_date_day
+-- Ensures class_dates fall on days configured in academic_years.class_days.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION validate_class_date_day()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  allowed_days INT[];
+  date_dow INT;
+BEGIN
+  SELECT ay.class_days INTO allowed_days
+  FROM public.academic_years ay
+  WHERE ay.id = NEW.academic_year_id;
+
+  IF allowed_days IS NULL THEN
+    RAISE EXCEPTION 'Ano letivo não encontrado';
+  END IF;
+
+  date_dow := EXTRACT(DOW FROM NEW.date)::INT;
+
+  IF NOT (date_dow = ANY(allowed_days)) THEN
+    RAISE EXCEPTION 'Data % cai no dia da semana %, que não está configurado para este ano letivo (dias permitidos: %)',
+      NEW.date, date_dow, allowed_days;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_validate_class_date_day
+  BEFORE INSERT ON class_dates
+  FOR EACH ROW EXECUTE FUNCTION validate_class_date_day();
+
+-- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
 
@@ -131,11 +167,11 @@ ALTER TABLE class_catechists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_dates ENABLE ROW LEVEL SECURITY;
 
--- Helpers in schema "private" — not exposed by PostgREST when API "Exposed schemas" is only "public".
+-- RLS helpers in schema "private" (not exposed by PostgREST)
 CREATE SCHEMA IF NOT EXISTS private;
 
--- Helper: check if the current user is a coordinator
 CREATE OR REPLACE FUNCTION private.is_coordinator()
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -146,11 +182,10 @@ AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = (SELECT auth.uid())
-      AND role = 'coordinator'
+      AND role IN ('coordinator', 'admin')
   );
 $$;
 
--- Helper: check if the current user is a catechist for a given class
 CREATE OR REPLACE FUNCTION private.is_class_catechist(p_class_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -170,19 +205,15 @@ GRANT EXECUTE ON FUNCTION private.is_coordinator() TO authenticated, service_rol
 GRANT EXECUTE ON FUNCTION private.is_class_catechist(UUID) TO authenticated, service_role;
 
 -- ---- profiles ----
--- Users read their own profile; coordinator reads all.
 CREATE POLICY profiles_select ON profiles
   FOR SELECT TO authenticated
   USING (id = auth.uid() OR private.is_coordinator());
 
--- Only trigger/service-role inserts profiles (no direct user insert policy needed).
--- Coordinator can update any profile; user updates own.
 CREATE POLICY profiles_update ON profiles
   FOR UPDATE TO authenticated
   USING (id = auth.uid() OR private.is_coordinator());
 
 -- ---- academic_years ----
--- All authenticated users can view; only coordinator can write.
 CREATE POLICY academic_years_select ON academic_years
   FOR SELECT TO authenticated
   USING (auth.uid() IS NOT NULL);
@@ -200,7 +231,6 @@ CREATE POLICY academic_years_delete ON academic_years
   USING (private.is_coordinator());
 
 -- ---- classes ----
--- Catechist sees only their classes; coordinator sees all.
 CREATE POLICY classes_select ON classes
   FOR SELECT TO authenticated
   USING (
@@ -221,7 +251,6 @@ CREATE POLICY classes_delete ON classes
   USING (private.is_coordinator());
 
 -- ---- class_catechists ----
--- Catechist sees own assignments; coordinator sees all.
 CREATE POLICY class_catechists_select ON class_catechists
   FOR SELECT TO authenticated
   USING (
@@ -238,7 +267,6 @@ CREATE POLICY class_catechists_delete ON class_catechists
   USING (private.is_coordinator());
 
 -- ---- students ----
--- Catechist sees students in their classes; coordinator sees all.
 CREATE POLICY students_select ON students
   FOR SELECT TO authenticated
   USING (
@@ -259,7 +287,6 @@ CREATE POLICY students_delete ON students
   USING (private.is_coordinator());
 
 -- ---- attendance_sessions ----
--- Catechist sees sessions for their classes; coordinator sees all.
 CREATE POLICY attendance_sessions_select ON attendance_sessions
   FOR SELECT TO authenticated
   USING (
@@ -267,7 +294,6 @@ CREATE POLICY attendance_sessions_select ON attendance_sessions
     OR private.is_class_catechist(class_id)
   );
 
--- Catechist can only insert sessions where they are the catechist and assigned to the class.
 CREATE POLICY attendance_sessions_insert ON attendance_sessions
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -287,7 +313,6 @@ CREATE POLICY attendance_sessions_delete ON attendance_sessions
   USING (private.is_coordinator());
 
 -- ---- attendance_records ----
--- Linked to sessions; access mirrors session access.
 CREATE POLICY attendance_records_select ON attendance_records
   FOR SELECT TO authenticated
   USING (
@@ -326,17 +351,26 @@ CREATE POLICY attendance_records_delete ON attendance_records
   FOR DELETE TO authenticated
   USING (private.is_coordinator());
 
+-- ---- class_dates ----
+CREATE POLICY class_dates_select ON class_dates
+  FOR SELECT TO authenticated
+  USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY class_dates_insert ON class_dates
+  FOR INSERT TO authenticated
+  WITH CHECK (private.is_coordinator());
+
+CREATE POLICY class_dates_delete ON class_dates
+  FOR DELETE TO authenticated
+  USING (private.is_coordinator());
+
 -- ============================================================
 -- RPC hardening
--- Trigger-only SECURITY DEFINER must not be callable via /rest/v1/rpc/.
 -- ============================================================
 
 REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION validate_class_date_day() FROM PUBLIC, anon, authenticated;
 
--- rls_auto_enable() is an EVENT_TRIGGER helper (SECURITY DEFINER) from Supabase's
--- "auto-enable RLS for new tables" pattern. It must only run via ddl_command_end,
--- not as PostgREST /rest/v1/rpc/ for anon, authenticated, or PUBLIC (same REVOKE
--- clears both linter findings: anonymous and signed-in RPC).
 DO $body$
 BEGIN
   IF EXISTS (

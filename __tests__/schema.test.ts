@@ -26,15 +26,16 @@ describe('0001_initial_schema.sql — tables', () => {
     'students',
     'attendance_sessions',
     'attendance_records',
+    'class_dates',
   ]
 
   it.each(tables)('creates table %s', (table) => {
     expect(migrationSQL).toMatch(new RegExp(`CREATE TABLE ${table}`, 'i'))
   })
 
-  it('has 7 CREATE TABLE statements', () => {
+  it('has 8 CREATE TABLE statements', () => {
     const matches = migrationSQL.match(/CREATE TABLE \w+/gi) ?? []
-    expect(matches).toHaveLength(7)
+    expect(matches).toHaveLength(8)
   })
 })
 
@@ -51,8 +52,8 @@ describe('0001_initial_schema.sql — constraints', () => {
     expect(migrationSQL).toMatch(/PRIMARY KEY\s*\(\s*class_id\s*,\s*catechist_id\s*\)/i)
   })
 
-  it('enforces role CHECK on profiles', () => {
-    expect(migrationSQL).toMatch(/CHECK\s*\(\s*role\s+IN\s*\(\s*'coordinator'\s*,\s*'catechist'\s*\)\s*\)/i)
+  it('enforces role CHECK on profiles (including admin)', () => {
+    expect(migrationSQL).toMatch(/CHECK\s*\(\s*role\s+IN\s*\(\s*'coordinator'\s*,\s*'catechist'\s*,\s*'admin'\s*\)\s*\)/i)
   })
 
   it('has ON DELETE CASCADE on profiles (auth.users FK)', () => {
@@ -122,15 +123,16 @@ describe('0001_initial_schema.sql — Row Level Security', () => {
     'students',
     'attendance_sessions',
     'attendance_records',
+    'class_dates',
   ]
 
   it.each(tables)('enables RLS on %s', (table) => {
     expect(migrationSQL).toMatch(new RegExp(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`, 'i'))
   })
 
-  it('RLS is enabled on all 7 tables', () => {
+  it('RLS is enabled on all 8 tables', () => {
     const matches = migrationSQL.match(/ENABLE ROW LEVEL SECURITY/gi) ?? []
-    expect(matches).toHaveLength(7)
+    expect(matches).toHaveLength(8)
   })
 
   it('defines catechist class access policy (is_class_catechist)', () => {
