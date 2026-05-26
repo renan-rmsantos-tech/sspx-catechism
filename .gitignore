@@ -22,7 +22,7 @@
 /out/
 next-env.d.ts
 
-# PWA — gerado em `npm run build` (@ducanh2912/next-pwa → public/)
+# PWA — gerado em `npm run build` (@serwist/next → public/)
 /public/sw.js
 /public/sw.js.map
 /public/workbox-*.js

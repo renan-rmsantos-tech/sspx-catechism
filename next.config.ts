@@ -1,14 +1,8 @@
-import withPWA from '@ducanh2912/next-pwa'
+import { withSerwist } from '@serwist/turbopack'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   turbopack: {},
 }
 
-export default withPWA({
-  dest: 'public',
-  disable: process.env.NODE_ENV !== 'production',
-  workboxOptions: {
-    disableDevLogs: true,
-  },
-})(nextConfig)
+export default withSerwist(nextConfig)
