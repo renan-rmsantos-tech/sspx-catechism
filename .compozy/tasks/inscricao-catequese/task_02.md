@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: backend
 type: feature
 scope: enrollment
@@ -22,10 +22,10 @@ Criar os schemas de validação Zod e funções helper para extrair dados de for
 
 ## Subtasks
 
-- [ ] Criar `lib/enrollments/schemas.ts` com `enrollmentSchema` e tipos exportados
-- [ ] Criar `lib/enrollments/helpers.ts` com `extractEnrollmentBody`
-- [ ] Escrever testes unitários para o schema (campos obrigatórios, formatos, opcionais)
-- [ ] Escrever testes para `extractEnrollmentBody` (conversão de FormData)
+- [x] Criar `lib/enrollments/schemas.ts` com `enrollmentSchema` e tipos exportados
+- [x] Criar `lib/enrollments/helpers.ts` com `extractEnrollmentBody`
+- [x] Escrever testes unitários para o schema (campos obrigatórios, formatos, opcionais)
+- [x] Escrever testes para `extractEnrollmentBody` (conversão de FormData)
 
 ## Implementation Details
 
@@ -54,10 +54,10 @@ Criar os schemas de validação Zod e funções helper para extrair dados de for
 
 ## Deliverables
 
-- [ ] `enrollmentSchema` Zod com todos os campos do formulário
-- [ ] `EnrollmentInput` type exportado
-- [ ] `extractEnrollmentBody` helper funcional
-- [ ] Testes com ≥80% cobertura do schema e helper
+- [x] `enrollmentSchema` Zod com todos os campos do formulário
+- [x] `EnrollmentInput` type exportado
+- [x] `extractEnrollmentBody` helper funcional
+- [x] Testes com ≥80% cobertura do schema e helper (19/19 tests passing)
 
 ## Tests
 
