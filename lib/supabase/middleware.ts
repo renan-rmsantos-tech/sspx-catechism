@@ -29,7 +29,7 @@ export async function updateSession(request: NextRequest) {
 
 export async function getProxyUser(
   request: NextRequest
-): Promise<{ response: NextResponse; user: User | null }> {
+): Promise<{ response: NextResponse; user: User | null; supabase: ReturnType<typeof createServerClient> }> {
   const { url, anonKey } = getPublicEnv()
   let supabaseResponse = NextResponse.next({ request })
 
@@ -52,5 +52,5 @@ export async function getProxyUser(
     data: { user },
   } = await supabase.auth.getUser()
 
-  return { response: supabaseResponse, user }
+  return { response: supabaseResponse, user, supabase }
 }
