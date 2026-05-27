@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { getPublicEnv } from '@/lib/supabase/config'
 import { getProxyUser } from '@/lib/supabase/middleware'
-import { getUnauthenticatedRedirect, getRoleRedirect } from '@/lib/auth/routing'
+import { getUnauthenticatedRedirect, getRoleRedirect, isPublicPath } from '@/lib/auth/routing'
 import { isValidRole } from '@/lib/supabase/types'
 
 export async function proxy(request: NextRequest) {
@@ -36,6 +36,7 @@ export async function proxy(request: NextRequest) {
   const role = profile?.role && isValidRole(profile.role) ? profile.role : null
 
   if (!role) {
+    if (isPublicPath(pathname)) return response
     return NextResponse.redirect(new URL('/', request.url))
   }
 
