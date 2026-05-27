@@ -100,21 +100,28 @@ function BooleanToggle({
   defaultValue?: boolean
   onChange?: (value: boolean) => void
 }) {
+  const [selected, setSelected] = useState(defaultValue)
+
+  function handleChange(val: boolean) {
+    setSelected(val)
+    onChange?.(val)
+  }
+
   return (
     <div className="flex gap-2">
       <ToggleButton
         name={name}
         value="true"
         label="Sim"
-        defaultChecked={defaultValue === true}
-        onChange={() => onChange?.(true)}
+        checked={selected === true}
+        onChange={() => handleChange(true)}
       />
       <ToggleButton
         name={name}
         value="false"
         label="Não"
-        defaultChecked={defaultValue === false}
-        onChange={() => onChange?.(false)}
+        checked={selected === false}
+        onChange={() => handleChange(false)}
       />
     </div>
   )
@@ -124,29 +131,29 @@ function ToggleButton({
   name,
   value,
   label,
-  defaultChecked,
+  checked,
   onChange,
 }: {
   name: string
   value: string
   label: string
-  defaultChecked: boolean
-  onChange?: () => void
+  checked: boolean
+  onChange: () => void
 }) {
   return (
     <label
       className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium cursor-pointer"
       style={{
         border: '1.5px solid var(--border)',
-        backgroundColor: defaultChecked ? 'var(--accent-light)' : 'var(--surface)',
-        color: defaultChecked ? 'var(--accent)' : 'var(--text-secondary)',
+        backgroundColor: checked ? 'var(--accent-light)' : 'var(--surface)',
+        color: checked ? 'var(--accent)' : 'var(--text-secondary)',
       }}
     >
       <input
         type="radio"
         name={name}
         value={value}
-        defaultChecked={defaultChecked}
+        checked={checked}
         className="sr-only"
         onChange={onChange}
       />
