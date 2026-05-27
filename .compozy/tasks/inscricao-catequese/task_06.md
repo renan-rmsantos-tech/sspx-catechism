@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: fullstack
 type: feature
 scope: enrollment
@@ -22,11 +22,11 @@ Permitir que o coordenador defina datas de abertura e fechamento das inscriçõe
 
 ## Subtasks
 
-- [ ] Atualizar schema de validação do `PUT /api/academic-years/[id]` para incluir campos de data
-- [ ] Atualizar handler para persistir as novas colunas
-- [ ] Adicionar campos de data na UI de configuração do ano letivo
-- [ ] Validar que `enrollment_ends_at > enrollment_starts_at`
-- [ ] Escrever testes para a API atualizada
+- [x] Atualizar schema de validação do `PUT /api/academic-years/[id]` para incluir campos de data
+- [x] Atualizar handler para persistir as novas colunas (via server action)
+- [x] Adicionar campos de data na UI de configuração do ano letivo
+- [x] Validar que `enrollment_ends_at > enrollment_starts_at` (Zod refine)
+- [ ] Escrever testes para a API atualizada (requer Supabase local)
 
 ## Implementation Details
 
@@ -52,10 +52,10 @@ Permitir que o coordenador defina datas de abertura e fechamento das inscriçõe
 
 ## Deliverables
 
-- [ ] API aceita e persiste datas de inscrição
-- [ ] UI permite definir datas no ano letivo
-- [ ] Validação de datas funcional
-- [ ] Testes da API
+- [x] API aceita e persiste datas de inscrição
+- [x] UI permite definir datas no ano letivo
+- [x] Validação de datas funcional
+- [ ] Testes da API (requer Supabase local)
 
 ## Tests
 

@@ -32,13 +32,36 @@ export const inviteCatechistSchema = z.object({
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
 })
 
-export const updateAcademicYearSchema = z.object({
-  is_active: z.boolean().optional(),
-  class_days: z
-    .array(z.number().int().min(0).max(6))
-    .min(1, 'Selecione pelo menos um dia da semana')
-    .optional(),
-})
+export const updateAcademicYearSchema = z
+  .object({
+    is_active: z.boolean().optional(),
+    class_days: z
+      .array(z.number().int().min(0).max(6))
+      .min(1, 'Selecione pelo menos um dia da semana')
+      .optional(),
+    enrollment_starts_at: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida')
+      .nullable()
+      .optional(),
+    enrollment_ends_at: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida')
+      .nullable()
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.enrollment_starts_at && data.enrollment_ends_at) {
+        return data.enrollment_ends_at > data.enrollment_starts_at
+      }
+      return true
+    },
+    {
+      message: 'A data de encerramento deve ser posterior à data de abertura',
+      path: ['enrollment_ends_at'],
+    }
+  )
 
 export type CreateAcademicYearInput = z.infer<typeof createAcademicYearSchema>
 export type UpdateAcademicYearInput = z.infer<typeof updateAcademicYearSchema>

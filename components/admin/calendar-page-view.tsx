@@ -6,6 +6,7 @@ import {
   toggleAcademicYearAction,
   deleteAcademicYearAction,
   updateClassDaysAction,
+  updateEnrollmentPeriodAction,
 } from '@/app/admin/calendario/actions'
 import type { ActionState } from '@/app/admin/calendario/actions'
 
@@ -27,6 +28,8 @@ export interface CalendarPageViewProps {
   activeClassDays: number[]
   initialDates: string[]
   lockedDates: string[]
+  enrollmentStartsAt: string | null
+  enrollmentEndsAt: string | null
 }
 
 function formatClassDays(days: number[]): string {
@@ -40,10 +43,13 @@ export default function CalendarPageView({
   activeClassDays,
   initialDates,
   lockedDates,
+  enrollmentStartsAt,
+  enrollmentEndsAt,
 }: CalendarPageViewProps) {
   const [showForm, setShowForm] = useState(false)
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(createAcademicYearAction, null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [enrollmentSaving, setEnrollmentSaving] = useState(false)
 
   async function handleToggle(yearId: string, isActive: boolean) {
     setActionError(null)
@@ -251,6 +257,87 @@ export default function CalendarPageView({
           </ul>
         )}
       </div>
+
+      {/* Enrollment period for active year */}
+      {activeYear && (
+        <div
+          className="rounded-2xl p-6"
+          style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Período de Inscrições — {activeYear.year}
+            </h2>
+          </div>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={async (e) => {
+              e.preventDefault()
+              setEnrollmentSaving(true)
+              setActionError(null)
+              const fd = new FormData(e.currentTarget)
+              const startsAt = (fd.get('enrollment_starts_at') as string) || null
+              const endsAt = (fd.get('enrollment_ends_at') as string) || null
+              const result = await updateEnrollmentPeriodAction(activeYear.id, startsAt, endsAt)
+              if (result?.error) setActionError(result.error)
+              setEnrollmentSaving(false)
+            }}
+          >
+            <div className="flex items-end gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="enrollment_starts_at"
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  Abertura das Inscrições
+                </label>
+                <input
+                  id="enrollment_starts_at"
+                  name="enrollment_starts_at"
+                  type="date"
+                  defaultValue={enrollmentStartsAt ?? ''}
+                  className="rounded-lg px-3 py-2 text-sm"
+                  style={{
+                    backgroundColor: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="enrollment_ends_at"
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  Encerramento das Inscrições
+                </label>
+                <input
+                  id="enrollment_ends_at"
+                  name="enrollment_ends_at"
+                  type="date"
+                  defaultValue={enrollmentEndsAt ?? ''}
+                  className="rounded-lg px-3 py-2 text-sm"
+                  style={{
+                    backgroundColor: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={enrollmentSaving}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: 'var(--accent)' }}
+              >
+                {enrollmentSaving ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Calendar editor for active year */}
       {activeYear ? (

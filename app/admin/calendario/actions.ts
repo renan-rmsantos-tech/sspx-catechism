@@ -111,6 +111,37 @@ export async function updateClassDaysAction(
   return null
 }
 
+export async function updateEnrollmentPeriodAction(
+  yearId: string,
+  enrollmentStartsAt: string | null,
+  enrollmentEndsAt: string | null
+): Promise<ActionState> {
+  const supabase = await getCoordinatorClient()
+  if (!supabase) return { error: 'Acesso negado' }
+
+  const result = updateAcademicYearSchema.safeParse({
+    enrollment_starts_at: enrollmentStartsAt,
+    enrollment_ends_at: enrollmentEndsAt,
+  })
+  if (!result.success) {
+    const firstIssue = result.error.issues[0]
+    return { error: firstIssue?.message ?? 'Dados inválidos' }
+  }
+
+  const { error } = await supabase
+    .from('academic_years')
+    .update({
+      enrollment_starts_at: result.data.enrollment_starts_at ?? null,
+      enrollment_ends_at: result.data.enrollment_ends_at ?? null,
+    })
+    .eq('id', yearId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/calendario')
+  return null
+}
+
 export async function deleteAcademicYearAction(yearId: string): Promise<ActionState> {
   const supabase = await getCoordinatorClient()
   if (!supabase) return { error: 'Acesso negado' }
