@@ -29,9 +29,13 @@ export async function loginAction(
   const admin = createSupabaseAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('role')
+    .select('role, must_change_password')
     .eq('id', user.id)
     .single()
+
+  if (profile?.must_change_password) {
+    redirect('/trocar-senha')
+  }
 
   const role = profile?.role
   redirect(isCoordinatorOrAdmin(role) ? '/admin' : '/dashboard')

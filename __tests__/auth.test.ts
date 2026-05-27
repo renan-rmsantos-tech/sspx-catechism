@@ -332,14 +332,16 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('../lib/supabase/server', () => ({
   createSupabaseServerClient: vi.fn(),
+  createSupabaseAdminClient: vi.fn(),
 }))
 
 function makeSupabaseMock(overrides: {
   signInError?: { message: string } | null
   user?: { id: string; email: string } | null
   profileRole?: string | null
+  mustChangePassword?: boolean
 } = {}) {
-  const { signInError = null, user = null, profileRole = null } = overrides
+  const { signInError = null, user = null, profileRole = null, mustChangePassword = false } = overrides
   return {
     auth: {
       signInWithPassword: vi.fn().mockResolvedValue({ error: signInError }),
@@ -349,7 +351,9 @@ function makeSupabaseMock(overrides: {
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: profileRole ? { role: profileRole } : null }),
+      single: vi.fn().mockResolvedValue({
+        data: profileRole ? { role: profileRole, must_change_password: mustChangePassword } : null,
+      }),
     }),
   }
 }
@@ -373,12 +377,15 @@ describe('loginAction — integration (mocked Supabase)', () => {
 
   it('redirects coordinator to /admin on successful login', async () => {
     vi.resetModules()
-    const { createSupabaseServerClient } = await import('../lib/supabase/server')
+    const { createSupabaseServerClient, createSupabaseAdminClient } = await import('../lib/supabase/server')
     ;(createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeSupabaseMock({
         user: { id: 'coord-1', email: 'coord@test.com' },
         profileRole: 'coordinator',
       })
+    )
+    ;(createSupabaseAdminClient as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeSupabaseMock({ profileRole: 'coordinator' })
     )
     const { loginAction } = await import('../app/(auth)/login/actions')
     const formData = new FormData()
@@ -389,12 +396,15 @@ describe('loginAction — integration (mocked Supabase)', () => {
 
   it('redirects catechist to /dashboard on successful login', async () => {
     vi.resetModules()
-    const { createSupabaseServerClient } = await import('../lib/supabase/server')
+    const { createSupabaseServerClient, createSupabaseAdminClient } = await import('../lib/supabase/server')
     ;(createSupabaseServerClient as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeSupabaseMock({
         user: { id: 'cat-1', email: 'cat@test.com' },
         profileRole: 'catechist',
       })
+    )
+    ;(createSupabaseAdminClient as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeSupabaseMock({ profileRole: 'catechist' })
     )
     const { loginAction } = await import('../app/(auth)/login/actions')
     const formData = new FormData()

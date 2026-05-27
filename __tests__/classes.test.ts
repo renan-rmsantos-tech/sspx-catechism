@@ -118,22 +118,22 @@ describe('updateClassSchema — is_archived', () => {
   })
 })
 
-describe('inviteCatechistSchema', () => {
+describe('createCatechistSchema', () => {
   it('rejects invalid email', async () => {
-    const { inviteCatechistSchema } = await import('../lib/classes/schemas')
-    const result = inviteCatechistSchema.safeParse({ email: 'not-email', full_name: 'Maria' })
+    const { createCatechistSchema } = await import('../lib/classes/schemas')
+    const result = createCatechistSchema.safeParse({ email: 'not-email', full_name: 'Maria' })
     expect(result.success).toBe(false)
   })
 
   it('rejects empty full_name', async () => {
-    const { inviteCatechistSchema } = await import('../lib/classes/schemas')
-    const result = inviteCatechistSchema.safeParse({ email: 'a@b.com', full_name: '' })
+    const { createCatechistSchema } = await import('../lib/classes/schemas')
+    const result = createCatechistSchema.safeParse({ email: 'a@b.com', full_name: '' })
     expect(result.success).toBe(false)
   })
 
   it('accepts valid input', async () => {
-    const { inviteCatechistSchema } = await import('../lib/classes/schemas')
-    const result = inviteCatechistSchema.safeParse({ email: 'maria@church.com', full_name: 'Maria Rosa' })
+    const { createCatechistSchema } = await import('../lib/classes/schemas')
+    const result = createCatechistSchema.safeParse({ email: 'maria@church.com', full_name: 'Maria Rosa' })
     expect(result.success).toBe(true)
   })
 })
@@ -528,7 +528,7 @@ describe('createSupabaseAdminClient', () => {
   it('creates a client with the service role key', async () => {
     vi.resetModules()
     const { createClient } = await import('@supabase/supabase-js')
-    const mockAdminClient = { auth: { admin: { inviteUserByEmail: vi.fn() } } }
+    const mockAdminClient = { auth: { admin: { createUser: vi.fn() } } }
     ;(createClient as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminClient)
 
     const { createSupabaseAdminClient } = await import('../lib/supabase/server')

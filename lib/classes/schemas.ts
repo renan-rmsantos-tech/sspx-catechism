@@ -27,7 +27,7 @@ export const updateClassSchema = z.object({
   catechist_ids: z.array(zPgUuid()).optional(),
 })
 
-export const inviteCatechistSchema = z.object({
+export const createCatechistSchema = z.object({
   email: z.string().email('E-mail inválido'),
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
 })
@@ -67,4 +67,4 @@ export type CreateAcademicYearInput = z.infer<typeof createAcademicYearSchema>
 export type UpdateAcademicYearInput = z.infer<typeof updateAcademicYearSchema>
 export type CreateClassInput = z.infer<typeof createClassSchema>
 export type UpdateClassInput = z.infer<typeof updateClassSchema>
-export type InviteCatechistInput = z.infer<typeof inviteCatechistSchema>
+export type CreateCatechistInput = z.infer<typeof createCatechistSchema>

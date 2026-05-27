@@ -2,10 +2,23 @@
 
 import { revalidatePath } from 'next/cache'
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
-import { inviteCatechistSchema } from '@/lib/classes/schemas'
+import { createCatechistSchema } from '@/lib/classes/schemas'
 import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export type ActionState = { error: string } | null
+export type CreateCatechistResult = { password: string; email: string } | { error: string } | null
+
+const WORDS = [
+  'sol', 'lua', 'mar', 'rio', 'luz', 'paz', 'flor', 'cafe', 'neve', 'rosa',
+  'vida', 'arte', 'mel', 'ceu', 'dia', 'lar', 'rei', 'som', 'cor', 'asa',
+  'fogo', 'pao', 'uva', 'ovo', 'cha', 'bem', 'dom', 'fio', 'giz', 'lei',
+]
+
+function generateSimplePassword(): string {
+  const pick = () => WORDS[Math.floor(Math.random() * WORDS.length)]
+  const digits = String(Math.floor(Math.random() * 90) + 10)
+  return `${pick()}-${pick()}-${pick()}${digits}`
+}
 
 async function getCoordinatorClient() {
   const supabase = await createSupabaseServerClient()
@@ -24,10 +37,10 @@ async function getCoordinatorClient() {
   return supabase
 }
 
-export async function inviteCatechistAction(
-  _prev: ActionState,
+export async function createCatechistAction(
+  _prev: CreateCatechistResult,
   formData: FormData
-): Promise<ActionState> {
+): Promise<CreateCatechistResult> {
   const supabase = await getCoordinatorClient()
   if (!supabase) return { error: 'Acesso negado' }
 
@@ -36,21 +49,31 @@ export async function inviteCatechistAction(
     full_name: (formData.get('full_name') as string)?.trim(),
   }
 
-  const result = inviteCatechistSchema.safeParse(body)
+  const result = createCatechistSchema.safeParse(body)
   if (!result.success) {
     const firstIssue = result.error.issues[0]
     return { error: firstIssue?.message ?? 'Dados inválidos' }
   }
 
+  const password = generateSimplePassword()
   const admin = createSupabaseAdminClient()
-  const { error } = await admin.auth.admin.inviteUserByEmail(result.data.email, {
-    data: { full_name: result.data.full_name, role: 'catechist' },
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email: result.data.email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: result.data.full_name, role: 'catechist' },
   })
 
   if (error) return { error: error.message }
 
+  await admin
+    .from('profiles')
+    .update({ must_change_password: true })
+    .eq('id', data.user.id)
+
   revalidatePath('/admin/catequistas')
-  return null
+  return { password, email: result.data.email }
 }
 
 export async function promoteToCoordinatorAction(userId: string): Promise<ActionState> {

@@ -1,14 +1,14 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState, useRef } from 'react'
 import {
-  inviteCatechistAction,
+  createCatechistAction,
   promoteToCoordinatorAction,
   deactivateCatechistAction,
   activateCatechistAction,
   deleteCatechistAction,
 } from '@/app/admin/catequistas/actions'
-import type { ActionState } from '@/app/admin/catequistas/actions'
+import type { ActionState, CreateCatechistResult } from '@/app/admin/catequistas/actions'
 
 export interface CatechistRow {
   id: string
@@ -45,13 +45,88 @@ function RoleBadge({ role }: { role: string }) {
   )
 }
 
+function CreatedPasswordCard({ email, password, onClose }: { email: string; password: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(password)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: '#F0FDF4', border: '1.5px solid #BBF7D0' }}
+    >
+      <h2 className="text-sm font-semibold mb-1" style={{ color: '#166534' }}>
+        Catequista cadastrado com sucesso!
+      </h2>
+      <p className="text-xs mb-4" style={{ color: '#15803D' }}>
+        Salve a senha abaixo e repasse para o catequista. Ele deverá trocar a senha no primeiro login.
+      </p>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium" style={{ color: '#166534' }}>E-mail:</span>
+          <span className="text-sm font-mono" style={{ color: '#166534' }}>{email}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium" style={{ color: '#166534' }}>Senha:</span>
+          <code
+            className="rounded px-2 py-1 text-sm font-mono font-bold select-all"
+            style={{ backgroundColor: '#DCFCE7', color: '#166534' }}
+          >
+            {password}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="rounded px-2 py-1 text-xs font-medium"
+            style={{ backgroundColor: '#166534', color: 'white' }}
+          >
+            {copied ? 'Copiado!' : 'Copiar'}
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-4 text-xs font-medium hover:underline"
+        style={{ color: '#166534' }}
+      >
+        Fechar
+      </button>
+    </div>
+  )
+}
+
 export default function CatechistsView({ catechists, currentUserId }: CatechistsViewProps) {
   const [showForm, setShowForm] = useState(false)
-  const [state, formAction, isPending] = useActionState<ActionState, FormData>(inviteCatechistAction, null)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [createdResult, setCreatedResult] = useState<{ email: string; password: string } | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const active = catechists.filter((c) => c.is_active)
   const inactive = catechists.filter((c) => !c.is_active)
+
+  async function handleCreateSubmit(formData: FormData) {
+    setIsSubmitting(true)
+    setFormError(null)
+    const result = await createCatechistAction(null, formData)
+    setIsSubmitting(false)
+
+    if (result && 'error' in result) {
+      setFormError(result.error)
+    } else if (result && 'password' in result) {
+      setCreatedResult({ email: result.email, password: result.password })
+      setShowForm(false)
+      formRef.current?.reset()
+    }
+  }
 
   async function handlePromote(userId: string, name: string) {
     if (!confirm(`Promover ${name} a Coordenador(a)?`)) return
@@ -104,9 +179,17 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          Convidar Catequista
+          Cadastrar Catequista
         </button>
       </div>
+
+      {createdResult && (
+        <CreatedPasswordCard
+          email={createdResult.email}
+          password={createdResult.password}
+          onClose={() => setCreatedResult(null)}
+        />
+      )}
 
       {showForm && (
         <div
@@ -114,9 +197,9 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
           style={{ backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)' }}
         >
           <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-            Convidar por e-mail
+            Novo catequista
           </h2>
-          <form action={formAction} className="flex items-end gap-4">
+          <form ref={formRef} action={handleCreateSubmit} className="flex items-end gap-4">
             <div className="flex flex-col gap-1.5 flex-1">
               <label htmlFor="full_name" className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                 Nome completo
@@ -147,15 +230,15 @@ export default function CatechistsView({ catechists, currentUserId }: Catechists
             </div>
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isSubmitting}
               className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               style={{ backgroundColor: 'var(--accent)' }}
             >
-              {isPending ? 'Enviando...' : 'Enviar Convite'}
+              {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
             </button>
           </form>
-          {state?.error && (
-            <p className="mt-3 text-sm" style={{ color: 'var(--error)' }}>{state.error}</p>
+          {formError && (
+            <p className="mt-3 text-sm" style={{ color: 'var(--error)' }}>{formError}</p>
           )}
         </div>
       )}
