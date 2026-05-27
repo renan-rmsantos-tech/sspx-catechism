@@ -26,11 +26,27 @@ try {
   `)
 
   const { rows: applied } = await client.query('SELECT name FROM schema_migrations')
-  const appliedSet = new Set(applied.map((r) => r.name))
+  let appliedSet = new Set(applied.map((r) => r.name))
 
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith('.sql'))
     .sort()
+
+  // Baseline: se a tabela schema_migrations está vazia mas o banco já tem tabelas
+  // das migrations anteriores, registra-as sem executar
+  if (appliedSet.size === 0) {
+    const { rows } = await client.query(
+      "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'profiles'"
+    )
+    if (rows.length > 0) {
+      console.log('[migrate] Banco já existe sem registros — criando baseline')
+      for (const file of files) {
+        await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file])
+        console.log(`[migrate] ✓ ${file} (baseline)`)
+      }
+      appliedSet = new Set(files)
+    }
+  }
 
   let count = 0
   for (const file of files) {
