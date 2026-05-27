@@ -23,9 +23,9 @@ export function getPublicEnv(): { url: string; anonKey: string } {
   return { url, anonKey }
 }
 
-/** Supabase secret key (`sb_secret_...`, recommended) or legacy JWT `service_role`. */
+/** Supabase service role JWT for PostgREST, or newer sb_secret_ key as fallback. */
 export function getSupabaseSecretKey(): string {
-  const key = firstNonEmptyEnv('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY')
+  const key = firstNonEmptyEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY')
   if (!key) {
     throw new Error(
       'Missing required environment variable: SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY',

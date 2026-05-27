@@ -5,9 +5,10 @@ import { isValidRole } from '@/lib/supabase/types'
 
 async function fetchRole(userId: string): Promise<string | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  // PostgREST requer JWT (eyJ...). sb_secret_ não funciona com REST API.
   const key =
-    process.env.SUPABASE_SECRET_KEY?.trim() ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+    process.env.SUPABASE_SECRET_KEY?.trim()
 
   console.log('[proxy] fetchRole', { userId, hasUrl: !!url, hasKey: !!key, keyPrefix: key?.slice(0, 10) })
 
