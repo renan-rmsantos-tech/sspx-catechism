@@ -10,8 +10,6 @@ async function fetchRole(userId: string): Promise<string | null> {
     process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
     process.env.SUPABASE_SECRET_KEY?.trim()
 
-  console.log('[proxy] fetchRole', { userId, hasUrl: !!url, hasKey: !!key, keyPrefix: key?.slice(0, 10) })
-
   if (!url || !key) return null
 
   const res = await fetch(
@@ -24,11 +22,8 @@ async function fetchRole(userId: string): Promise<string | null> {
     },
   )
 
-  const body = await res.text()
-  console.log('[proxy] fetchRole response', { status: res.status, body })
-
   if (!res.ok) return null
-  const rows = JSON.parse(body)
+  const rows = await res.json()
   return rows?.[0]?.role ?? null
 }
 

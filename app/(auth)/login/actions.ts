@@ -27,18 +27,14 @@ export async function loginAction(
   }
 
   const admin = createSupabaseAdminClient()
-  const { data: profile, error: profileError } = await admin
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  console.log('[login] profile query', { userId: user.id, role: profile?.role, error: profileError?.message })
-
   const role = profile?.role
-  const target = isCoordinatorOrAdmin(role) ? '/admin' : '/dashboard'
-  console.log('[login] redirecting to', target)
-  redirect(target)
+  redirect(isCoordinatorOrAdmin(role) ? '/admin' : '/dashboard')
 }
 
 export async function logoutAction(): Promise<void> {
