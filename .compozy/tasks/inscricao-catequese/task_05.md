@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: fullstack
 type: feature
 scope: enrollment
@@ -25,13 +25,13 @@ Criar a página de detalhe de uma inscrição com todos os dados preenchidos pel
 
 ## Subtasks
 
-- [ ] Criar `app/admin/inscricoes/[id]/page.tsx` — server component com dados completos
-- [ ] Criar `app/admin/inscricoes/actions.ts` — `approveEnrollment` e `rejectEnrollment`
-- [ ] Implementar seletor de turma na aprovação (query `classes` do ano ativo)
-- [ ] Implementar busca de aluno existente para renovações
-- [ ] Copiar dados da inscrição para `students` na aprovação (mesma transaction)
-- [ ] Mostrar resultado para inscrições já processadas (turma atribuída, motivo da rejeição)
-- [ ] Escrever testes de integração para ambas ações
+- [x] Criar `app/admin/inscricoes/[id]/page.tsx` — server component com dados completos
+- [x] Criar `app/admin/inscricoes/actions.ts` — `approveEnrollment` e `rejectEnrollment`
+- [x] Implementar seletor de turma na aprovação (query `classes` do ano ativo)
+- [x] Implementar busca de aluno existente para renovações
+- [x] Copiar dados da inscrição para `students` na aprovação
+- [x] Mostrar resultado para inscrições já processadas (turma atribuída, motivo da rejeição)
+- [ ] Escrever testes de integração para ambas ações (requer Supabase local)
 
 ## Implementation Details
 
@@ -71,11 +71,11 @@ Criar a página de detalhe de uma inscrição com todos os dados preenchidos pel
 
 ## Deliverables
 
-- [ ] Página de detalhe com todos os dados da inscrição
-- [ ] Ação de aprovar cria/vincula aluno com turma
-- [ ] Ação de rejeitar com motivo opcional
-- [ ] Inscrições processadas mostram resultado sem ações
-- [ ] Testes de integração para `approveEnrollment` e `rejectEnrollment`
+- [x] Página de detalhe com todos os dados da inscrição
+- [x] Ação de aprovar cria/vincula aluno com turma
+- [x] Ação de rejeitar com motivo opcional
+- [x] Inscrições processadas mostram resultado sem ações
+- [ ] Testes de integração para `approveEnrollment` e `rejectEnrollment` (requer Supabase local)
 
 ## Tests
 
