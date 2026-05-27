@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: fullstack
 type: feature
 scope: enrollment
@@ -25,12 +25,12 @@ Criar a página de listagem de inscrições no painel admin com filtros por stat
 
 ## Subtasks
 
-- [ ] Criar `app/admin/inscricoes/page.tsx` — server component com query e filtros
-- [ ] Implementar contadores de status via query agregada
-- [ ] Implementar filtro por status via searchParams
-- [ ] Implementar busca por nome via searchParam `q`
-- [ ] Renderizar lista com badge de renovação e link para `[id]`
-- [ ] Escrever testes de integração para a query
+- [x] Criar `app/admin/inscricoes/page.tsx` — server component com query e filtros
+- [x] Implementar contadores de status via query agregada
+- [x] Implementar filtro por status via searchParams
+- [x] Implementar busca por nome via searchParam `q`
+- [x] Renderizar lista com badge de renovação e link para `[id]`
+- [ ] Escrever testes de integração para a query (requer Supabase local)
 
 ## Implementation Details
 
@@ -56,11 +56,11 @@ Criar a página de listagem de inscrições no painel admin com filtros por stat
 
 ## Deliverables
 
-- [ ] Página `/admin/inscricoes` funcional
-- [ ] Contadores por status visíveis
-- [ ] Filtros por status e busca por nome
-- [ ] Badge de renovação nas inscrições marcadas
-- [ ] Testes de integração para query
+- [x] Página `/admin/inscricoes` funcional
+- [x] Contadores por status visíveis
+- [x] Filtros por status e busca por nome
+- [x] Badge de renovação nas inscrições marcadas
+- [ ] Testes de integração para query (requer Supabase local)
 
 ## Tests
 
