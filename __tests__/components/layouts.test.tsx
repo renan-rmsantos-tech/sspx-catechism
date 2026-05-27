@@ -14,42 +14,41 @@ vi.mock('next/link', () => ({
   ),
 }))
 
+vi.mock('@/lib/supabase/server', () => ({
+  createSupabaseServerClient: vi.fn().mockResolvedValue({
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ count: 0 }),
+      }),
+    }),
+  }),
+}))
+
 describe('AdminLayout', () => {
-  it('renders children inside main', () => {
-    render(
-      <AdminLayout>
-        <div>Page Content</div>
-      </AdminLayout>
-    )
+  async function renderAdminLayout(children: React.ReactNode) {
+    const jsx = await AdminLayout({ children })
+    render(jsx)
+  }
+
+  it('renders children inside main', async () => {
+    await renderAdminLayout(<div>Page Content</div>)
     expect(screen.getByText('Page Content')).toBeInTheDocument()
   })
 
-  it('renders the sidebar component (desktop layout)', () => {
-    render(
-      <AdminLayout>
-        <div>Content</div>
-      </AdminLayout>
-    )
+  it('renders the sidebar component (desktop layout)', async () => {
+    await renderAdminLayout(<div>Content</div>)
     expect(screen.getByTestId('sidebar')).toBeInTheDocument()
   })
 
-  it('sidebar has hidden class (hidden on mobile, shown on lg+)', () => {
-    render(
-      <AdminLayout>
-        <div>Content</div>
-      </AdminLayout>
-    )
+  it('sidebar has hidden class (hidden on mobile, shown on lg+)', async () => {
+    await renderAdminLayout(<div>Content</div>)
     const sidebar = screen.getByTestId('sidebar')
     expect(sidebar).toHaveClass('hidden')
     expect(sidebar).toHaveClass('lg:flex')
   })
 
-  it('admin layout does not contain dashboard-header', () => {
-    render(
-      <AdminLayout>
-        <div>Content</div>
-      </AdminLayout>
-    )
+  it('admin layout does not contain dashboard-header', async () => {
+    await renderAdminLayout(<div>Content</div>)
     expect(screen.queryByTestId('dashboard-header')).not.toBeInTheDocument()
   })
 })

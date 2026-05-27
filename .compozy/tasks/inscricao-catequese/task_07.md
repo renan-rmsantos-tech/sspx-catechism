@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: fullstack
 type: enhancement
 scope: enrollment
@@ -23,12 +23,12 @@ Integrar o campo `guardian_email` nos formulários e schemas existentes de aluno
 
 ## Subtasks
 
-- [ ] Adicionar `guardian_email` a `createStudentSchema` e `updateStudentSchema`
-- [ ] Atualizar `extractStudentBody` em `app/admin/alunos/actions.ts`
-- [ ] Adicionar campo de email no `student-form.tsx` na seção "Responsáveis"
-- [ ] Adicionar item "Inscrições" na sidebar no grupo "Gestão" após "Alunos"
-- [ ] Implementar badge de contagem de pendentes na sidebar (query server-side)
-- [ ] Atualizar testes existentes de students para incluir `guardian_email`
+- [x] Adicionar `guardian_email` a `createStudentSchema` e `updateStudentSchema`
+- [x] Atualizar `extractStudentBody` em `app/admin/alunos/actions.ts`
+- [x] Adicionar campo de email no `student-form.tsx` na seção "Responsáveis"
+- [x] Adicionar item "Inscrições" na sidebar no grupo "Gestão" após "Alunos"
+- [x] Implementar badge de contagem de pendentes na sidebar (query server-side)
+- [x] Atualizar testes existentes de students para incluir `guardian_email`
 
 ## Implementation Details
 
@@ -60,18 +60,18 @@ Nenhum — esta é a última tarefa da cadeia.
 
 ## Deliverables
 
-- [ ] Campo `guardian_email` funcional no formulário de alunos (criar e editar)
-- [ ] Link "Inscrições" na sidebar admin
-- [ ] Badge de pendentes na sidebar
-- [ ] Testes existentes atualizados
+- [x] Campo `guardian_email` funcional no formulário de alunos (criar e editar)
+- [x] Link "Inscrições" na sidebar admin
+- [x] Badge de pendentes na sidebar
+- [x] Testes existentes atualizados
 
 ## Tests
 
 ### Unitários
 
-- [ ] `createStudentSchema` aceita `guardian_email` válido
-- [ ] `createStudentSchema` rejeita `guardian_email` inválido
-- [ ] `extractStudentBody` inclui `guardian_email`
+- [x] `createStudentSchema` aceita `guardian_email` válido
+- [x] `createStudentSchema` rejeita `guardian_email` inválido
+- [x] `extractStudentBody` inclui `guardian_email`
 
 ### Manual — UI
 

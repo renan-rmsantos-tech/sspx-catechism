@@ -10,7 +10,7 @@
 | 04 | Painel admin — lista de inscrições (`/admin/inscricoes`) | completed | medium | 01, 02 |
 | 05 | Painel admin — detalhe e ações aprovar/rejeitar (`/admin/inscricoes/[id]`) | completed | high | 04 |
 | 06 | Configuração do período de inscrição no ano letivo | completed | medium | 01 |
-| 07 | Integração: campo guardian_email em students + sidebar admin | pending | low | 01, 05 |
+| 07 | Integração: campo guardian_email em students + sidebar admin | completed | low | 01, 05 |
 
 ## Dependency Graph
 

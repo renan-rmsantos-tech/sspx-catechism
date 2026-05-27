@@ -174,6 +174,54 @@ describe('createStudentSchema — guardian_phone validation', () => {
   })
 })
 
+describe('createStudentSchema — guardian_email validation', () => {
+  it('accepts valid email', async () => {
+    const { createStudentSchema } = await import('../lib/students/schemas')
+    const result = createStudentSchema.safeParse({
+      class_id: VALID_CLASS_UUID,
+      full_name: 'Ana Clara',
+      guardian_email: 'mae@exemplo.com',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.guardian_email).toBe('mae@exemplo.com')
+    }
+  })
+
+  it('rejects invalid email', async () => {
+    const { createStudentSchema } = await import('../lib/students/schemas')
+    const result = createStudentSchema.safeParse({
+      class_id: VALID_CLASS_UUID,
+      full_name: 'Ana Clara',
+      guardian_email: 'not-an-email',
+    })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const err = result.error.issues.find((i) => i.path[0] === 'guardian_email')
+      expect(err).toBeDefined()
+    }
+  })
+
+  it('accepts null guardian_email (optional)', async () => {
+    const { createStudentSchema } = await import('../lib/students/schemas')
+    const result = createStudentSchema.safeParse({
+      class_id: VALID_CLASS_UUID,
+      full_name: 'Ana Clara',
+      guardian_email: null,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts omitted guardian_email', async () => {
+    const { createStudentSchema } = await import('../lib/students/schemas')
+    const result = createStudentSchema.safeParse({
+      class_id: VALID_CLASS_UUID,
+      full_name: 'Ana Clara',
+    })
+    expect(result.success).toBe(true)
+  })
+})
+
 describe('createStudentSchema — boolean toggles', () => {
   it('defaults first_communion to false', async () => {
     const { createStudentSchema } = await import('../lib/students/schemas')

@@ -20,6 +20,7 @@ interface StudentFormDefaultValues {
   guardian_father_name?: string | null
   guardian_mother_name?: string | null
   guardian_phone?: string | null
+  guardian_email?: string | null
 }
 
 interface StudentFormProps {
@@ -324,6 +325,16 @@ export default function StudentForm({
               placeholder="(11) 99999-9999"
             />
           </div>
+        </div>
+        <div>
+          <FieldLabel htmlFor="guardian_email">E-mail do Responsável</FieldLabel>
+          <TextInput
+            id="guardian_email"
+            name="guardian_email"
+            type="email"
+            defaultValue={defaultValues.guardian_email}
+            placeholder="email@exemplo.com"
+          />
         </div>
       </div>
 

@@ -23,6 +23,7 @@ function extractStudentBody(formData: FormData) {
     guardian_father_name: (formData.get('guardian_father_name') as string | null)?.trim() || null,
     guardian_mother_name: (formData.get('guardian_mother_name') as string | null)?.trim() || null,
     guardian_phone: phone,
+    guardian_email: (formData.get('guardian_email') as string | null)?.trim() || null,
   }
 }
 

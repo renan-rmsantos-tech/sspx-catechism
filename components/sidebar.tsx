@@ -10,6 +10,7 @@ interface NavItem {
   href: string
   label: string
   icon: React.ReactNode
+  badge?: number
 }
 
 interface NavGroup {
@@ -55,6 +56,18 @@ const navGroups: NavGroup[] = [
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
+          </svg>
+        ),
+      },
+      {
+        href: '/admin/inscricoes',
+        label: 'Inscrições',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+            <line x1="9" y1="12" x2="15" y2="12" />
+            <line x1="9" y1="16" x2="15" y2="16" />
           </svg>
         ),
       },
@@ -122,14 +135,25 @@ export interface SidebarProps {
   userName?: string
   userRole?: string
   userInitials?: string
+  pendingEnrollments?: number
 }
 
 export default function Sidebar({
   userName = 'Admin',
   userRole = 'Admin',
   userInitials = 'AD',
+  pendingEnrollments = 0,
 }: SidebarProps) {
   const pathname = usePathname()
+
+  const navGroupsWithBadges = navGroups.map((group) => ({
+    ...group,
+    items: group.items.map((item) =>
+      item.href === '/admin/inscricoes' && pendingEnrollments > 0
+        ? { ...item, badge: pendingEnrollments }
+        : item
+    ),
+  }))
   const [isPending, startTransition] = useTransition()
 
   return (
@@ -150,7 +174,7 @@ export default function Sidebar({
 
       {/* Navigation */}
       <nav className="flex flex-col gap-4 px-3" aria-label="Navegação principal">
-        {navGroups.map((group, gi) => (
+        {navGroupsWithBadges.map((group, gi) => (
           <div key={gi} className="flex flex-col gap-0.5">
             {group.label && (
               <div
@@ -187,6 +211,19 @@ export default function Sidebar({
                     {item.icon}
                   </span>
                   {item.label}
+                  {item.badge != null && item.badge > 0 && (
+                    <span
+                      className="ml-auto shrink-0 flex items-center justify-center rounded-full text-[11px] font-bold text-white"
+                      style={{
+                        backgroundColor: 'var(--accent)',
+                        minWidth: '20px',
+                        height: '20px',
+                        padding: '0 6px',
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               )
             })}

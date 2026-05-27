@@ -23,6 +23,7 @@ export const createStudentSchema = z.object({
     .regex(phoneRegex, 'Telefone inválido. Use o formato (11) 99999-9999')
     .nullable()
     .optional(),
+  guardian_email: z.string().email('E-mail inválido').nullable().optional(),
 })
 
 export const updateStudentSchema = z.object({
@@ -45,6 +46,7 @@ export const updateStudentSchema = z.object({
     .regex(phoneRegex, 'Telefone inválido. Use o formato (11) 99999-9999')
     .nullable()
     .optional(),
+  guardian_email: z.string().email('E-mail inválido').nullable().optional(),
 })
 
 export type CreateStudentInput = z.infer<typeof createStudentSchema>
