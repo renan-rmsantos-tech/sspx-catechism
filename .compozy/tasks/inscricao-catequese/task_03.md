@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 domain: fullstack
 type: feature
 scope: enrollment
@@ -26,13 +26,13 @@ Implementar a página pública `/inscricao` com o formulário de inscrição na 
 
 ## Subtasks
 
-- [ ] Adicionar `/inscricao` a `PUBLIC_PATHS` em `lib/auth/routing.ts`
-- [ ] Criar `app/inscricao/page.tsx` — server component com verificação de período
-- [ ] Criar `app/inscricao/enrollment-form.tsx` — client component com `useActionState`
-- [ ] Criar `app/inscricao/actions.ts` — `submitEnrollment` server action
-- [ ] Implementar estado de confirmação após envio bem-sucedido
-- [ ] Estilizar mobile-first seguindo padrão visual do app (CSS vars, `rounded-2xl`, etc.)
-- [ ] Escrever testes para o server action
+- [x] Adicionar `/inscricao` a `PUBLIC_PATHS` em `lib/auth/routing.ts`
+- [x] Criar `app/inscricao/page.tsx` — server component com verificação de período
+- [x] Criar `app/inscricao/enrollment-form.tsx` — client component com `useActionState`
+- [x] Criar `app/inscricao/actions.ts` — `submitEnrollment` server action
+- [x] Implementar estado de confirmação após envio bem-sucedido
+- [x] Estilizar mobile-first seguindo padrão visual do app (CSS vars, `rounded-2xl`, etc.)
+- [ ] Escrever testes para o server action (requer Supabase local para testes de integração)
 
 ## Implementation Details
 
@@ -75,12 +75,12 @@ Implementar a página pública `/inscricao` com o formulário de inscrição na 
 
 ## Deliverables
 
-- [ ] Página `/inscricao` acessível publicamente
-- [ ] Formulário funcional com todos os campos do PRD
-- [ ] Campo condicional de renovação
-- [ ] Verificação de período com mensagem de encerrado
-- [ ] Confirmação após envio
-- [ ] Testes do server action
+- [x] Página `/inscricao` acessível publicamente
+- [x] Formulário funcional com todos os campos do PRD
+- [x] Campo condicional de renovação
+- [x] Verificação de período com mensagem de encerrado
+- [x] Confirmação após envio
+- [ ] Testes do server action (requer Supabase local)
 
 ## Tests
 

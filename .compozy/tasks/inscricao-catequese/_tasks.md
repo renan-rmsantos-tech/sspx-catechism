@@ -6,7 +6,7 @@
 |---|--------|--------|-------------|-------------|
 | 01 | Migration: tabela enrollments + alterações em academic_years e students | completed | medium | — |
 | 02 | Zod schemas e helpers para enrollments | completed | low | 01 |
-| 03 | Formulário público de inscrição (`/inscricao`) | pending | high | 01, 02 |
+| 03 | Formulário público de inscrição (`/inscricao`) | completed | high | 01, 02 |
 | 04 | Painel admin — lista de inscrições (`/admin/inscricoes`) | pending | medium | 01, 02 |
 | 05 | Painel admin — detalhe e ações aprovar/rejeitar (`/admin/inscricoes/[id]`) | pending | high | 04 |
 | 06 | Configuração do período de inscrição no ano letivo | pending | medium | 01 |

@@ -1,7 +1,7 @@
 import type { UserRole } from '@/lib/supabase/types'
 import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
-const PUBLIC_PATHS = ['/', '/login']
+const PUBLIC_PATHS = ['/', '/login', '/inscricao']
 const PROTECTED_PATHS = ['/admin', '/dashboard'] as const
 
 export function isPublicPath(pathname: string): boolean {
