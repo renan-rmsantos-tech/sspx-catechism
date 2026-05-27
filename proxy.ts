@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { getPublicEnv } from '@/lib/supabase/config'
+import { createClient } from '@supabase/supabase-js'
+import { getPublicEnv, getSupabaseSecretKey } from '@/lib/supabase/config'
 import { getProxyUser } from '@/lib/supabase/middleware'
 import { getUnauthenticatedRedirect, getRoleRedirect, isPublicPath } from '@/lib/auth/routing'
 import { isValidRole } from '@/lib/supabase/types'
@@ -17,17 +17,12 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
-  const { url, anonKey } = getPublicEnv()
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll()
-      },
-      setAll() {},
-    },
+  const { url } = getPublicEnv()
+  const admin = createClient(url, getSupabaseSecretKey(), {
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
     .eq('id', user.id)
