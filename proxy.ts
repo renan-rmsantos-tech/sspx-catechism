@@ -3,9 +3,32 @@ import { getProxyUser } from '@/lib/supabase/middleware'
 import { getUnauthenticatedRedirect, getRoleRedirect, isPublicPath } from '@/lib/auth/routing'
 import { isValidRole } from '@/lib/supabase/types'
 
+async function fetchRole(userId: string): Promise<string | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  const key =
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+
+  if (!url || !key) return null
+
+  const res = await fetch(
+    `${url}/rest/v1/profiles?id=eq.${userId}&select=role`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+    },
+  )
+
+  if (!res.ok) return null
+  const rows = await res.json()
+  return rows?.[0]?.role ?? null
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const { response, user, supabase } = await getProxyUser(request)
+  const { response, user } = await getProxyUser(request)
 
   if (!user) {
     const redirect = getUnauthenticatedRedirect(pathname)
@@ -15,15 +38,9 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const role = await fetchRole(user.id)
 
-  const role = profile?.role && isValidRole(profile.role) ? profile.role : null
-
-  if (!role) {
+  if (!role || !isValidRole(role)) {
     if (isPublicPath(pathname)) return response
     return NextResponse.redirect(new URL('/', request.url))
   }

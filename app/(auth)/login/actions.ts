@@ -1,7 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
 import { isCoordinatorOrAdmin } from '@/lib/auth/helpers'
 
 export async function loginAction(
@@ -26,7 +26,8 @@ export async function loginAction(
     return { error: 'Erro ao obter usuário após login.' }
   }
 
-  const { data: profile } = await supabase
+  const admin = createSupabaseAdminClient()
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
     .eq('id', user.id)
