@@ -50,6 +50,18 @@ function formatDate(dateStr: string | null) {
   })
 }
 
+function calcAge(birthDate: string | null): number | null {
+  if (!birthDate) return null
+  const birth = new Date(birthDate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
 function formatDateTime(dateStr: string | null) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleString('pt-BR', {
@@ -170,7 +182,14 @@ export default async function EnrollmentDetailPage({
           <SectionHeader title="Dados do Catequizando" />
           <div className="grid grid-cols-2 gap-4">
             <DataField label="Nome Completo" value={enrollment.full_name} />
-            <DataField label="Data de Nascimento" value={formatDate(enrollment.birth_date)} />
+            <DataField
+              label="Data de Nascimento"
+              value={
+                enrollment.birth_date
+                  ? `${formatDate(enrollment.birth_date)} (${calcAge(enrollment.birth_date)} anos)`
+                  : null
+              }
+            />
             <DataField label="Cidade" value={enrollment.city} />
             <BooleanField label="Primeira Comunhão" value={enrollment.first_communion} />
             <BooleanField label="Crisma" value={enrollment.confirmation} />

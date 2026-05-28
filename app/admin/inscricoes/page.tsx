@@ -55,6 +55,18 @@ function formatDate(dateStr: string) {
   })
 }
 
+function calcAge(birthDate: string | null): number | null {
+  if (!birthDate) return null
+  const birth = new Date(birthDate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
 export default async function InscricoesPage({
   searchParams,
 }: {
@@ -100,7 +112,7 @@ export default async function InscricoesPage({
   let query = supabase
     .from('enrollments')
     .select(
-      'id, full_name, status, is_renewal, created_at'
+      'id, full_name, birth_date, status, is_renewal, created_at'
     )
     .eq('academic_year_id', activeYear.id)
     .eq('status', currentStatus)
@@ -225,6 +237,14 @@ export default async function InscricoesPage({
                     >
                       {enrollment.full_name}
                     </p>
+                    {calcAge(enrollment.birth_date) != null && (
+                      <span
+                        className="text-xs font-medium"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        {calcAge(enrollment.birth_date)} anos
+                      </span>
+                    )}
                     {enrollment.is_renewal && <RenewalBadge />}
                   </div>
                   <p

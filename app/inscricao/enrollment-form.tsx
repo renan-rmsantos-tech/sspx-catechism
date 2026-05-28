@@ -52,12 +52,14 @@ function TextInput({
   placeholder,
   type = 'text',
   required,
+  defaultValue,
 }: {
   id: string
   name: string
   placeholder?: string
   type?: string
   required?: boolean
+  defaultValue?: string
 }) {
   return (
     <input
@@ -66,6 +68,7 @@ function TextInput({
       type={type}
       placeholder={placeholder}
       required={required}
+      defaultValue={defaultValue}
       style={inputStyle}
     />
   )
@@ -75,16 +78,19 @@ function Textarea({
   id,
   name,
   placeholder,
+  defaultValue,
 }: {
   id: string
   name: string
   placeholder?: string
+  defaultValue?: string
 }) {
   return (
     <textarea
       id={id}
       name={name}
       placeholder={placeholder}
+      defaultValue={defaultValue}
       rows={3}
       style={{ ...inputStyle, resize: 'vertical' }}
     />
@@ -204,7 +210,8 @@ export default function EnrollmentForm() {
     submitEnrollment,
     null
   )
-  const [isRenewal, setIsRenewal] = useState(false)
+  const saved = state && 'values' in state ? state.values : ({} as Record<string, string>)
+  const [isRenewal, setIsRenewal] = useState(saved.is_renewal === 'true')
 
   if (state && 'success' in state) {
     return <SuccessMessage />
@@ -241,16 +248,17 @@ export default function EnrollmentForm() {
               name="full_name"
               placeholder="Ex: Ana Clara Souza"
               required
+              defaultValue={saved.full_name}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <FieldLabel htmlFor="birth_date">Data de Nascimento</FieldLabel>
-              <TextInput id="birth_date" name="birth_date" type="date" />
+              <TextInput id="birth_date" name="birth_date" type="date" defaultValue={saved.birth_date} />
             </div>
             <div className="flex-1">
               <FieldLabel htmlFor="city">Cidade</FieldLabel>
-              <TextInput id="city" name="city" placeholder="Ex: São Paulo" />
+              <TextInput id="city" name="city" placeholder="Ex: São Paulo" defaultValue={saved.city} />
             </div>
           </div>
         </div>
@@ -271,13 +279,13 @@ export default function EnrollmentForm() {
               <FieldLabel htmlFor="first_communion">
                 Já fez a Primeira Comunhão?
               </FieldLabel>
-              <BooleanToggle name="first_communion" defaultValue={false} />
+              <BooleanToggle name="first_communion" defaultValue={saved.first_communion === 'true'} />
             </div>
             <div className="flex-1">
               <FieldLabel htmlFor="confirmation">
                 Já recebeu o Crisma?
               </FieldLabel>
-              <BooleanToggle name="confirmation" defaultValue={false} />
+              <BooleanToggle name="confirmation" defaultValue={saved.confirmation === 'true'} />
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -289,6 +297,7 @@ export default function EnrollmentForm() {
                 id="previous_catechism"
                 name="previous_catechism"
                 placeholder="Descreva brevemente..."
+                defaultValue={saved.previous_catechism}
               />
             </div>
             <div className="flex-1">
@@ -299,6 +308,7 @@ export default function EnrollmentForm() {
                 id="religious_books"
                 name="religious_books"
                 placeholder="Descreva brevemente..."
+                defaultValue={saved.religious_books}
               />
             </div>
           </div>
@@ -322,6 +332,7 @@ export default function EnrollmentForm() {
                 id="guardian_father_name"
                 name="guardian_father_name"
                 placeholder="Nome completo"
+                defaultValue={saved.guardian_father_name}
               />
             </div>
             <div className="flex-1">
@@ -332,6 +343,7 @@ export default function EnrollmentForm() {
                 id="guardian_mother_name"
                 name="guardian_mother_name"
                 placeholder="Nome completo"
+                defaultValue={saved.guardian_mother_name}
               />
             </div>
           </div>
@@ -345,6 +357,7 @@ export default function EnrollmentForm() {
                 name="guardian_phone"
                 placeholder="(11) 99999-9999"
                 required
+                defaultValue={saved.guardian_phone}
               />
             </div>
             <div className="flex-1">
@@ -357,6 +370,7 @@ export default function EnrollmentForm() {
                 type="email"
                 placeholder="email@exemplo.com"
                 required
+                defaultValue={saved.guardian_email}
               />
             </div>
           </div>
@@ -379,7 +393,7 @@ export default function EnrollmentForm() {
             </FieldLabel>
             <BooleanToggle
               name="is_renewal"
-              defaultValue={false}
+              defaultValue={saved.is_renewal === 'true'}
               onChange={setIsRenewal}
             />
           </div>
@@ -392,6 +406,7 @@ export default function EnrollmentForm() {
                 id="previous_name"
                 name="previous_name"
                 placeholder="Nome usado no cadastro anterior"
+                defaultValue={saved.previous_name}
               />
             </div>
           )}

@@ -5,7 +5,7 @@ import { enrollmentSchema } from '@/lib/enrollments/schemas'
 import { extractEnrollmentBody } from '@/lib/enrollments/helpers'
 
 export type EnrollmentActionState =
-  | { error: string }
+  | { error: string; values: Record<string, string> }
   | { success: true }
   | null
 
@@ -14,10 +14,13 @@ export async function submitEnrollment(
   formData: FormData
 ): Promise<EnrollmentActionState> {
   const body = extractEnrollmentBody(formData)
+  const values: Record<string, string> = {}
+  formData.forEach((v, k) => { if (typeof v === 'string') values[k] = v })
+
   const result = enrollmentSchema.safeParse(body)
   if (!result.success) {
     const firstIssue = result.error.issues[0]
-    return { error: firstIssue?.message ?? 'Dados inválidos' }
+    return { error: firstIssue?.message ?? 'Dados inválidos', values }
   }
 
   const supabase = createSupabaseAdminClient()
@@ -29,7 +32,7 @@ export async function submitEnrollment(
     .single()
 
   if (yearError || !activeYear) {
-    return { error: 'Não foi possível encontrar o ano letivo ativo.' }
+    return { error: 'Não foi possível encontrar o ano letivo ativo.', values }
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -41,7 +44,7 @@ export async function submitEnrollment(
     today < enrollment_starts_at ||
     today > enrollment_ends_at
   ) {
-    return { error: 'O período de inscrições não está aberto.' }
+    return { error: 'O período de inscrições não está aberto.', values }
   }
 
   const { error: insertError } = await supabase.from('enrollments').insert({
@@ -50,7 +53,7 @@ export async function submitEnrollment(
   })
 
   if (insertError) {
-    return { error: 'Erro ao enviar inscrição. Tente novamente.' }
+    return { error: 'Erro ao enviar inscrição. Tente novamente.', values }
   }
 
   return { success: true }
