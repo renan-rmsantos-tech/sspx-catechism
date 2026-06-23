@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: Authorization
-type: Feature Implementation
-scope: Full
+status: completed
+title: Authorizer — escopo por turma (substitui RLS)
+type: backend
 complexity: high
 dependencies:
   - task_03
@@ -28,11 +27,11 @@ Implementa a camada de autorização que antes era feita por RLS no Supabase. Ce
 </requirements>
 
 ## Subtasks
-- [ ] 4.1 Definir interface `Authorizer` e implementação sobre `sqlcgen`
-- [ ] 4.2 Query `IsClassCatechist(class_id, catechist_id)` (sqlc)
-- [ ] 4.3 Helper/middleware para checar acesso à turma por path param
-- [ ] 4.4 Integrar nos pontos que hoje dependiam de RLS (preparado para tasks 06/07/11)
-- [ ] 4.5 Testes cobrindo a matriz (coordenador, admin, catequista da turma, catequista de outra)
+- [x] 4.1 Definir interface `Authorizer` e implementação sobre `sqlcgen`
+- [x] 4.2 Query `IsClassCatechist(class_id, catechist_id)` (sqlc)
+- [x] 4.3 Helper/middleware para checar acesso à turma por path param
+- [x] 4.4 Integrar nos pontos que hoje dependiam de RLS (preparado para tasks 06/07/11)
+- [x] 4.5 Testes cobrindo a matriz (coordenador, admin, catequista da turma, catequista de outra)
 
 ## Implementation Details
 Reproduz `private.is_coordinator()` e `private.is_class_catechist()`. Ver a matriz de políticas no TechSpec §Data Models. A checagem grossa usa `role` das claims; a fina consulta `class_catechists`.
@@ -55,12 +54,12 @@ Reproduz `private.is_coordinator()` e `private.is_class_catechist()`. Ver a matr
 
 ## Tests
 - Unit:
-  - [ ] coordenador/admin → acesso a qualquer turma
-  - [ ] catequista da turma → acesso permitido
-  - [ ] catequista de outra turma → negado (403)
-  - [ ] erro de lookup → 500
+  - [x] coordenador/admin → acesso a qualquer turma
+  - [x] catequista da turma → acesso permitido
+  - [x] catequista de outra turma → negado (403)
+  - [x] erro de lookup → 500
 - Integração:
-  - [ ] `CanAccessClass` consulta `class_catechists` corretamente
+  - [x] `CanAccessClass` consulta `class_catechists` corretamente
 - Test coverage target: >=80%
 - All tests must pass
 

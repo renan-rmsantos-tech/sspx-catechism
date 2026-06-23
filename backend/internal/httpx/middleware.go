@@ -60,3 +60,9 @@ func ClaimsFrom(ctx context.Context) (*auth.Claims, bool) {
 	c, ok := ctx.Value(claimsKey).(*auth.Claims)
 	return c, ok
 }
+
+// WithClaims returns a copy of ctx carrying the given claims, as RequireAuth
+// does. Exposed so downstream middleware and tests can populate the context.
+func WithClaims(ctx context.Context, c *auth.Claims) context.Context {
+	return context.WithValue(ctx, claimsKey, c)
+}

@@ -10,7 +10,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/rmtech/sspx-catechism/backend/internal/auth"
+	"github.com/rmtech/sspx-catechism/backend/internal/authz"
 	"github.com/rmtech/sspx-catechism/backend/internal/config"
+	"github.com/rmtech/sspx-catechism/backend/internal/db/sqlcgen"
 	"github.com/rmtech/sspx-catechism/backend/internal/httpx"
 	"github.com/rmtech/sspx-catechism/backend/internal/users"
 )
@@ -21,6 +23,7 @@ type Server struct {
 	pool  *pgxpool.Pool
 	jwt   *auth.Manager
 	users *users.Service
+	authz authz.Authorizer
 }
 
 func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
@@ -29,6 +32,9 @@ func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 		pool:  pool,
 		jwt:   jwt,
 		users: users.NewService(pool),
+		// Authorizer replaces RLS; consumed by class/student/attendance routes
+		// (tasks 06/07/11) via authz.RequireClassAccess.
+		authz: authz.New(sqlcgen.New(pool)),
 	}
 }
 
