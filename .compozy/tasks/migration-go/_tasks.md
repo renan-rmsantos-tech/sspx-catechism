@@ -10,7 +10,7 @@ Status: `completed` = implementado e verificado · `pending` = não iniciado.
 | [02](./task_02.md) | Fundação do backend: módulo Go, config, pgx, migrações goose + schema | Database | high | task_01 | completed |
 | [03](./task_03.md) | Autenticação: JWT em cookie httpOnly, bcrypt, middleware, bootstrap admin | Authentication | high | task_02 | completed |
 | [04](./task_04.md) | Authorizer: escopo por turma (substitui RLS) | Authorization | high | task_03 | pending |
-| [05](./task_05.md) | API de anos letivos (CRUD, class_days, janela de inscrição) | API | medium | task_03 | pending |
+| [05](./task_05.md) | API de anos letivos (CRUD, class_days, janela de inscrição) | API | medium | task_03 | completed |
 | [06](./task_06.md) | API de turmas + class_catechists (CRUD, escopo de leitura) | API | high | task_04, task_05 | pending |
 | [07](./task_07.md) | API de alunos (CRUD + busca) | API | medium | task_06 | pending |
 | [08](./task_08.md) | API de catequistas — completar (papel, ativar/desativar) | API | low | task_03 | pending |

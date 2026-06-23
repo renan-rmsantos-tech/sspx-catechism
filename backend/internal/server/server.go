@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/rmtech/sspx-catechism/backend/internal/academic"
 	"github.com/rmtech/sspx-catechism/backend/internal/auth"
 	"github.com/rmtech/sspx-catechism/backend/internal/authz"
 	"github.com/rmtech/sspx-catechism/backend/internal/config"
@@ -23,6 +24,7 @@ type Server struct {
 	pool  *pgxpool.Pool
 	jwt   *auth.Manager
 	users *users.Service
+	years *academic.Service
 	authz authz.Authorizer
 }
 
@@ -32,6 +34,7 @@ func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 		pool:  pool,
 		jwt:   jwt,
 		users: users.NewService(pool),
+		years: academic.NewService(pool),
 		// Authorizer replaces RLS; consumed by class/student/attendance routes
 		// (tasks 06/07/11) via authz.RequireClassAccess.
 		authz: authz.New(sqlcgen.New(pool)),
@@ -60,12 +63,19 @@ func (s *Server) Router() http.Handler {
 			r.Get("/auth/me", s.handleMe)
 			r.Post("/auth/change-password", s.handleChangePassword)
 
+			// Academic years: listing is open to any authenticated user.
+			r.Get("/academic-years", s.handleListAcademicYears)
+
 			// Coordinator-only
 			r.Group(func(r chi.Router) {
 				r.Use(httpx.RequireCoordinator)
 				r.Get("/catechists", s.handleListCatechists)
 				r.Post("/catechists", s.handleCreateCatechist)
 				r.Delete("/catechists/{id}", s.handleDeleteCatechist)
+
+				r.Post("/academic-years", s.handleCreateAcademicYear)
+				r.Patch("/academic-years/{id}", s.handleUpdateAcademicYear)
+				r.Delete("/academic-years/{id}", s.handleDeleteAcademicYear)
 			})
 		})
 	})

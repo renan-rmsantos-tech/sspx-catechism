@@ -24,6 +24,21 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
   locally against an ephemeral `postgres:16-alpine` + `database.Migrate(url)`.
 - After adding/editing `backend/db/queries/*.sql`, run `sqlc generate` to refresh
   `internal/db/sqlcgen` (sqlc v1.30.0; config in `backend/sqlc.yaml`).
+- Resource pattern (task_05, copy for classes/students/enrollments): thin service
+  in `internal/<domain>` (mirrors `internal/users`) with sentinel errors; handlers
+  in `internal/server/<domain>_handlers.go`; route group reuses the existing
+  `r.Use(httpx.RequireCoordinator)` nest. API contract is **camelCase JSON**
+  (Go-defined), not the old Supabase snake_case rows.
+- PG error → HTTP: `httpx.WriteDBError` already maps 23505/23503→409, no-rows→404.
+  Use a domain sentinel only when a specific message is required (e.g. translate
+  23503 in the service to "possui X vinculadas").
+- sqlc partial updates: `COALESCE(sqlc.narg('f'), f)` for "leave unchanged"; for
+  nullable columns that must also be clearable, gate with a `set_x boolean` arg +
+  `CASE WHEN set_x THEN narg::type ELSE x END`. Decode tri-state JSON
+  (absent/null/value) with `json.RawMessage` fields. `:execrows` → RowsAffected.
+- DTO validation lives in the handler (mirrors old Zod schemas); dates use
+  `^\d{4}-\d{2}-\d{2}$` + `pgconv.ParseDate`/`DateString`. Prefer PATCH for
+  partial resource edits per TechSpec API table.
 
 ## Open Risks
 - Full-stack smoke + backup/restore are unverified until task_16 (needs live VPS +

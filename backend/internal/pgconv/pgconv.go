@@ -2,8 +2,31 @@
 package pgconv
 
 import (
+	"time"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// dateLayout is the ISO date format (YYYY-MM-DD) used across the API.
+const dateLayout = "2006-01-02"
+
+// ParseDate parses a YYYY-MM-DD string into a valid pgtype.Date.
+func ParseDate(s string) (pgtype.Date, error) {
+	t, err := time.Parse(dateLayout, s)
+	if err != nil {
+		return pgtype.Date{}, err
+	}
+	return pgtype.Date{Time: t, Valid: true}, nil
+}
+
+// DateString renders a pgtype.Date as YYYY-MM-DD, or nil when the date is null.
+func DateString(d pgtype.Date) *string {
+	if !d.Valid {
+		return nil
+	}
+	s := d.Time.Format(dateLayout)
+	return &s
+}
 
 // ParseUUID parses a UUID string into pgtype.UUID. It accepts standard dashed
 // form as well as 32 hex chars without dashes, and does NOT enforce RFC-4122
