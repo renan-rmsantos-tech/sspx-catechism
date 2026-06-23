@@ -1,0 +1,25 @@
+# Caddy edge config: automatic HTTPS (Let's Encrypt), serves the SPA,
+# proxies /api/* to the Go backend. {$DOMAIN} comes from the environment.
+
+{$DOMAIN} {
+	encode gzip zstd
+
+	# API → Go backend (internal Docker network)
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	# Everything else → SPA static files with client-side routing fallback
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		# Basic hardening; HSTS is added automatically by Caddy over HTTPS
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
