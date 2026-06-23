@@ -33,10 +33,12 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      # distroless image has no shell/wget; the binary probes /api/health itself.
+      test: ["CMD", "/api", "-healthcheck"]
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 30s
     # No ports published — reached only through Caddy.
 
   caddy:
@@ -53,7 +55,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:

@@ -1,8 +1,7 @@
 ---
 status: completed
-domain: Infrastructure
-type: Configuration
-scope: Full
+title: Monorepo, Docker Compose, Caddy, CI e scripts de backup
+type: infra
 complexity: medium
 dependencies: []
 ---
@@ -58,8 +57,11 @@ Ver TechSpec §System Architecture e §Integration Points. Caddy termina TLS e s
 - Unit/validação:
   - [x] `docker compose config` válida sem erros de sintaxe
   - [ ] Smoke local: `docker compose up` levanta os 3 serviços com healthcheck verde
+        — adiado: a `Caddy.Dockerfile` builda `frontend/`, que só existe a partir da task_13;
+        verificação full-stack feita na task_16 (deploy de produção).
 - Integração:
   - [ ] Backup gera dump cifrado e `restore.sh` recupera num banco limpo
+        — adiado para a task_16: exige Postgres com dados + Storage Box reais.
 - Test coverage target: N/A (infra) — validação por smoke
 - All checks must pass
 

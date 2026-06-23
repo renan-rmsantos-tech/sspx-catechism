@@ -18,6 +18,12 @@ import (
 )
 
 func main() {
+	// Self-healthcheck mode for the Docker/compose healthcheck. The API image is
+	// distroless (no wget/curl), so the binary probes its own /api/health endpoint.
+	if len(os.Args) > 1 && os.Args[1] == "-healthcheck" {
+		os.Exit(runHealthcheck())
+	}
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
@@ -73,4 +79,24 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = httpServer.Shutdown(shutdownCtx)
+}
+
+// runHealthcheck probes the locally running API and returns a process exit code
+// (0 = healthy). Used by the container healthcheck since the distroless image
+// ships no shell or HTTP client.
+func runHealthcheck() int {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get("http://127.0.0.1:" + port + "/api/health")
+	if err != nil {
+		return 1
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 1
+	}
+	return 0
 }

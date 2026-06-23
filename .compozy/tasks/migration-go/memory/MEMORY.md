@@ -3,8 +3,13 @@
 Keep only durable, cross-task context here. Do not duplicate facts that are obvious from the repository, PRD documents, or git history.
 
 ## Current State
+- task_01 (infra foundation) complete & verified: Compose (Caddy+API+Postgres),
+  CI/deploy, backup/restore scripts, Hetzner runbook all in place.
 
 ## Shared Decisions
+- API container is `distroless/static` (no shell/wget). Container healthchecks must
+  use the Go binary itself: `/api -healthcheck` (see `backend/cmd/api/main.go`
+  `runHealthcheck`, which probes `/api/health`).
 - Authorization (replaces RLS) lives in `backend/internal/authz`. `Authorizer`
   exposes `IsCoordinator(auth.Claims) bool` and `CanAccessClass(ctx, auth.Claims,
   classID) (bool, error)`. Contract: deny → `(false,nil)`; lookup error →
@@ -21,6 +26,8 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
   `internal/db/sqlcgen` (sqlc v1.30.0; config in `backend/sqlc.yaml`).
 
 ## Open Risks
+- Full-stack smoke + backup/restore are unverified until task_16 (needs live VPS +
+  the `frontend/` SPA from task_13; `Caddy.Dockerfile`/CI build it).
 - Authorization parity vs old RLS is the highest-risk area; keep extending the
   matrix tests as class/student/attendance routes (tasks 06/07/11) consume it.
 
