@@ -8,14 +8,22 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
-set -a; source ./.env; set +a
+set -a
+# shellcheck disable=SC1091
+source ./.env
+set +a
 
 FILE="${1:?usage: restore.sh <backup-filename>}"
 TMP_DIR="$(mktemp -d)"; trap 'rm -rf "$TMP_DIR"' EXIT
+SFTP_TARGET="$STORAGEBOX_USER@$STORAGEBOX_HOST"
+SFTP_OPTS=()
+if [ -n "${STORAGEBOX_SSH_KEY:-}" ]; then
+  SFTP_OPTS=(-i "$STORAGEBOX_SSH_KEY")
+fi
 
 echo "[restore] downloading $FILE ..."
 echo "get $STORAGEBOX_REMOTE_DIR/$FILE $TMP_DIR/$FILE" \
-  | sftp -b - "$STORAGEBOX_USER@$STORAGEBOX_HOST"
+  | sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET"
 
 echo "[restore] decrypting + restoring into $POSTGRES_DB ..."
 gpg --batch --yes --decrypt --passphrase "$BACKUP_PASSPHRASE" "$TMP_DIR/$FILE" \

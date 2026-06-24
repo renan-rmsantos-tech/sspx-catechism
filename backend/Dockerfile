@@ -1,5 +1,5 @@
-# Multi-stage build → tiny static image for the Go API.
-FROM golang:1.23-alpine AS build
+# Multi-stage build -> tiny static image for the Go API.
+FROM golang:1.25-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download

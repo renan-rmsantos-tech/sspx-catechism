@@ -74,8 +74,8 @@ cat ~/.ssh/storagebox.pub | ssh -p23 SEU_USER_STORAGEBOX@SEU_HOST_STORAGEBOX ins
 # Teste:
 sftp -i ~/.ssh/storagebox SEU_USER_STORAGEBOX@SEU_HOST_STORAGEBOX
 ```
-> Garanta que `~/.ssh/config` ou o comando use a chave certa. Ajuste `scripts/backup.sh`
-> se preferir `sftp -i ~/.ssh/storagebox`.
+> Configure `STORAGEBOX_SSH_KEY=/home/deploy/.ssh/storagebox` no `.env` para forcar
+> `backup.sh` e `restore.sh` a usarem a chave dedicada.
 
 ## 6. Primeiro deploy
 ```bash
@@ -96,6 +96,9 @@ chmod +x scripts/backup.sh scripts/restore.sh
 # TESTE A RESTAURAÇÃO (critério de sucesso do PRD):
 ./scripts/restore.sh <nome-do-arquivo-gerado>
 ```
+> Os dumps sao gerados com `pg_dump --clean --if-exists`, entao a restauracao de
+> teste pode recriar os objetos do banco atual. Execute em janela controlada e valide
+> a aplicacao logo em seguida.
 
 ## 8. CI/CD (deploy automático)  **[você]**
 No GitHub do repo → Settings → Secrets and variables → Actions, crie:
@@ -106,6 +109,27 @@ No GitHub do repo → Settings → Secrets and variables → Actions, crie:
 
 A partir daí, `git push` na `main` builda + faz `docker compose up -d --build` via SSH
 (`.github/workflows/deploy.yml`).
+
+## 9. Evidencias finais de producao
+Preencha este bloco durante o deploy real. Nao marque a tarefa final como concluida
+sem estes sinais.
+
+| Item | Comando / evidencia esperada | Resultado |
+|---|---|---|
+| DNS aponta para o VPS | `dig +short catequese.SEU_DOMINIO` retorna o IP Hetzner | |
+| TLS valido | `curl -Iv https://catequese.SEU_DOMINIO` mostra certificado valido e HTTP 200/3xx | |
+| Stack verde | `docker compose ps` mostra `db`, `api` e `caddy` Up/healthy | |
+| Healthcheck API | `curl -fsS https://catequese.SEU_DOMINIO/api/health` retorna 200 | |
+| Bootstrap admin | Login com `ADMIN_EMAIL` funciona e exige troca de senha quando aplicavel | |
+| Perfil admin/coordenador | Criar ano/turma/aluno/catequista, revisar inscricao e baixar relatorio | |
+| Perfil catequista | Login, acessar turmas permitidas, registrar chamada e sincronizar fila offline | |
+| Perfil publico | Submeter inscricao publica e confirmar entrada para revisao | |
+| Backup off-site | `./scripts/backup.sh` gera `catechism-*.sql.gz.gpg` no Storage Box | |
+| Restore comprovado | `./scripts/restore.sh <arquivo>` termina sem erro e app segue funcional | |
+| Cron ativo | `crontab -l` contem o agendamento noturno e `/var/log/catechism-backup.log` registra sucesso | |
+| CI/CD ativo | Push ou `workflow_dispatch` conclui `.github/workflows/deploy.yml` e atualiza o VPS | |
+| Sem Vercel/Supabase runtime | Stack publica usa apenas Caddy/API/Postgres; Vercel/Supabase desativados | |
+| Custo <= $15/mes | Fatura/plano Hetzner: VPS + Storage Box + dominio amortizado dentro do limite | |
 
 ## Operação do dia a dia
 | Ação | Comando (no servidor, em /opt/catechism) |

@@ -20,6 +20,11 @@ set +a
 : "${POSTGRES_USER:?}" "${POSTGRES_DB:?}" "${BACKUP_PASSPHRASE:?}"
 : "${STORAGEBOX_USER:?}" "${STORAGEBOX_HOST:?}" "${STORAGEBOX_REMOTE_DIR:?}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+SFTP_TARGET="$STORAGEBOX_USER@$STORAGEBOX_HOST"
+SFTP_OPTS=()
+if [ -n "${STORAGEBOX_SSH_KEY:-}" ]; then
+  SFTP_OPTS=(-i "$STORAGEBOX_SSH_KEY")
+fi
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 TMP_DIR="$(mktemp -d)"
@@ -27,7 +32,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 DUMP_FILE="$TMP_DIR/catechism-$STAMP.sql.gz.gpg"
 
 echo "[backup] dumping database $POSTGRES_DB ..."
-docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" \
+docker compose exec -T db pg_dump --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" "$POSTGRES_DB" \
   | gzip \
   | gpg --batch --yes --symmetric --cipher-algo AES256 \
         --passphrase "$BACKUP_PASSPHRASE" -o "$DUMP_FILE"
@@ -37,7 +42,7 @@ echo "[backup] encrypted dump ready ($SIZE): $(basename "$DUMP_FILE")"
 
 echo "[backup] uploading to Storage Box ..."
 # Ensure remote dir exists, then upload (batch SFTP).
-sftp -b - "$STORAGEBOX_USER@$STORAGEBOX_HOST" <<EOF
+sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" <<EOF
 -mkdir $STORAGEBOX_REMOTE_DIR
 put $DUMP_FILE $STORAGEBOX_REMOTE_DIR/$(basename "$DUMP_FILE")
 EOF
@@ -45,13 +50,13 @@ EOF
 echo "[backup] pruning remote backups older than $RETENTION_DAYS days ..."
 # List remote files and delete ones older than retention (by embedded date in name).
 CUTOFF="$(date -d "-$RETENTION_DAYS days" +%Y%m%d)"
-REMOTE_LIST="$(echo "ls -1 $STORAGEBOX_REMOTE_DIR" | sftp -b - "$STORAGEBOX_USER@$STORAGEBOX_HOST" 2>/dev/null | grep -E 'catechism-[0-9]{8}-' || true)"
+REMOTE_LIST="$(echo "ls -1 $STORAGEBOX_REMOTE_DIR" | sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" 2>/dev/null | grep -E 'catechism-[0-9]{8}-' || true)"
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   fdate="$(echo "$f" | sed -E 's/.*catechism-([0-9]{8})-.*/\1/')"
   if [ -n "$fdate" ] && [ "$fdate" -lt "$CUTOFF" ]; then
     echo "[backup]   deleting old $f"
-    echo "rm $STORAGEBOX_REMOTE_DIR/$(basename "$f")" | sftp -b - "$STORAGEBOX_USER@$STORAGEBOX_HOST" >/dev/null 2>&1 || true
+    echo "rm $STORAGEBOX_REMOTE_DIR/$(basename "$f")" | sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" >/dev/null 2>&1 || true
   fi
 done <<< "$REMOTE_LIST"
 

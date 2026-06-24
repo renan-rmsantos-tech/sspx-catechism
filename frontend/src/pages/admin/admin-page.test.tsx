@@ -242,7 +242,7 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Perseverança' } })
     fireEvent.change(screen.getByLabelText('Ano letivo'), { target: { value: 'year-1' } })
     fireEvent.change(screen.getByLabelText('Nível'), { target: { value: 'Nível 2' } })
-    fireEvent.click(screen.getByLabelText('Catequista Um'))
+    fireEvent.click(await screen.findByLabelText('Catequista Um'))
     fireEvent.click(screen.getByRole('button', { name: 'Criar turma' }))
 
     await waitFor(() => expect(calls.some((call) => call.path === '/api/classes' && call.init?.method === 'POST')).toBe(true))
