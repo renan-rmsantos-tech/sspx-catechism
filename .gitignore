@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/
 
 # ─── dependencies ─────────────────────────────────────────────
-/node_modules/
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -32,13 +32,14 @@ next-env.d.ts
 
 # ─── build / bundlers ─────────────────────────────────────────
 /build
+dist/
 /.turbo
 .cache/
 .parcel-cache/
 .eslintcache
 
 # ─── testing & coverage ───────────────────────────────────────
-/coverage
+coverage/
 *.lcov
 
 # ─── Supabase (CLI local) ─────────────────────────────────────
@@ -51,6 +52,10 @@ supabase/.temp/
 
 # ─── TypeScript ───────────────────────────────────────────────
 *.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+vitest.config.js
+vitest.config.d.ts
 
 # ─── logs & debug ─────────────────────────────────────────────
 logs/
