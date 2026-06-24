@@ -6,9 +6,10 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - task_01 (infra foundation) complete & verified: Compose (Caddy+API+Postgres),
   CI/deploy, backup/restore scripts, Hetzner runbook all in place.
 - task_05 (academic-years API), task_06 (classes + class_catechists API),
-  task_07 (students API: search/CRUD) and task_09 (calendar/class_dates API)
-  complete & verified against ephemeral PG. `Server` now holds `users`, `years`,
-  `classes`, `students`, `calendar` services + `authz`.
+  task_07 (students API: search/CRUD), task_09 (calendar/class_dates API) and
+  task_10 (enrollments: public submit + review) complete & verified against
+  ephemeral PG. `Server` now holds `users`, `years`, `classes`, `students`,
+  `calendar`, `enrollments` services + `authz`.
 
 ## Shared Decisions
 - API container is `distroless/static` (no shell/wget). Container healthchecks must
@@ -87,3 +88,18 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - Calendar GET is query-param driven (`?academicYearId=`), not a path param, to
   mirror the old Supabase route; PUT replaces the whole year's set transactionally
   and refuses to drop a "locked" date (one with an `attendance_sessions` row).
+- Active-year-scoped flows resolve the year server-side via `GetActiveEnrollmentYear`
+  (`is_active=TRUE LIMIT 1`); no active year is a real misconfiguration → surface it
+  (enrollments maps it to 404), don't silently return empty. The public enrollment
+  submit is the ONE unauthenticated write route (mounted OUTSIDE the RequireAuth
+  group, beside login) — the old service-role path; gate it server-side (window +
+  field validation), never trust the client.
+- State-machine transitions (e.g. enrollment pending→approved/rejected) use
+  `SELECT … FOR UPDATE` inside the tx PLUS a `WHERE status='pending'` guard on the
+  UPDATE; a non-pending row → a 409 domain sentinel. When a write must overwrite
+  every column (materialize student from enrollment), write a dedicated all-columns
+  UPDATE — do NOT reuse the partial COALESCE/tri-state update (it would preserve old
+  values for fields the source left null).
+- Coverage via `-coverpkg=<svc>,<server>`: the merged profile DUPLICATES each block
+  per test binary (one with count=0), so summing halves the %. Dedup by MAX count per
+  region before computing (task_10 → 81.6%).

@@ -28,6 +28,16 @@ func DateString(d pgtype.Date) *string {
 	return &s
 }
 
+// TimestampString renders a pgtype.Timestamptz as an RFC3339 string, or nil when
+// the timestamp is null.
+func TimestampString(t pgtype.Timestamptz) *string {
+	if !t.Valid {
+		return nil
+	}
+	s := t.Time.Format(time.RFC3339)
+	return &s
+}
+
 // ParseUUID parses a UUID string into pgtype.UUID. It accepts standard dashed
 // form as well as 32 hex chars without dashes, and does NOT enforce RFC-4122
 // version bits — preserving the lenient behavior of the previous zPgUuid schema

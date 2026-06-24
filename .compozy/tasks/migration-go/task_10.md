@@ -1,13 +1,12 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de inscrições (submit público + janela, listar, aprovar, rejeitar)
+type: backend
 complexity: high
 dependencies:
-  - task_05
-  - task_06
-  - task_07
+    - task_05
+    - task_06
+    - task_07
 ---
 
 # Task 10: API de inscrições (submit público + janela, listar, aprovar, rejeitar)
@@ -24,11 +23,11 @@ Implementa o fluxo de inscrições: submissão pública (sem auth) validando a j
 </requirements>
 
 ## Subtasks
-- [ ] 10.1 Queries sqlc (insert público, list por status, get, update aprovação/rejeição)
-- [ ] 10.2 Validação da janela de inscrição (ano ativo + datas)
-- [ ] 10.3 Aprovação transacional (cria/atualiza aluno + atualiza enrollment)
-- [ ] 10.4 Rejeição com motivo e revisor
-- [ ] 10.5 Testes incl. submissão fora da janela e dupla revisão
+- [x] 10.1 Queries sqlc (insert público, list por status, get, update aprovação/rejeição)
+- [x] 10.2 Validação da janela de inscrição (ano ativo + datas)
+- [x] 10.3 Aprovação transacional (cria/atualiza aluno + atualiza enrollment)
+- [x] 10.4 Rejeição com motivo e revisor
+- [x] 10.5 Testes incl. submissão fora da janela e dupla revisão
 
 ## Implementation Details
 Ver TechSpec §API Endpoints (Inscrições) e §Data Models (campos de enrollment). O submit público é um caminho privilegiado (sem auth) — equivalente ao antigo uso do service-role client. Aprovação cria/atualiza `students` a partir dos campos da inscrição.

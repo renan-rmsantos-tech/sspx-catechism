@@ -16,6 +16,7 @@ import (
 	"github.com/rmtech/sspx-catechism/backend/internal/classes"
 	"github.com/rmtech/sspx-catechism/backend/internal/config"
 	"github.com/rmtech/sspx-catechism/backend/internal/db/sqlcgen"
+	"github.com/rmtech/sspx-catechism/backend/internal/enrollments"
 	"github.com/rmtech/sspx-catechism/backend/internal/httpx"
 	"github.com/rmtech/sspx-catechism/backend/internal/students"
 	"github.com/rmtech/sspx-catechism/backend/internal/users"
@@ -23,27 +24,29 @@ import (
 
 // Server holds shared dependencies for handlers.
 type Server struct {
-	cfg      config.Config
-	pool     *pgxpool.Pool
-	jwt      *auth.Manager
-	users    *users.Service
-	years    *academic.Service
-	classes  *classes.Service
-	students *students.Service
-	calendar *calendar.Service
-	authz    authz.Authorizer
+	cfg         config.Config
+	pool        *pgxpool.Pool
+	jwt         *auth.Manager
+	users       *users.Service
+	years       *academic.Service
+	classes     *classes.Service
+	students    *students.Service
+	calendar    *calendar.Service
+	enrollments *enrollments.Service
+	authz       authz.Authorizer
 }
 
 func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 	return &Server{
-		cfg:      cfg,
-		pool:     pool,
-		jwt:      jwt,
-		users:    users.NewService(pool),
-		years:    academic.NewService(pool),
-		classes:  classes.NewService(pool),
-		students: students.NewService(pool),
-		calendar: calendar.NewService(pool),
+		cfg:         cfg,
+		pool:        pool,
+		jwt:         jwt,
+		users:       users.NewService(pool),
+		years:       academic.NewService(pool),
+		classes:     classes.NewService(pool),
+		students:    students.NewService(pool),
+		calendar:    calendar.NewService(pool),
+		enrollments: enrollments.NewService(pool),
 		// Authorizer replaces RLS; consumed by class/student/attendance routes
 		// (tasks 06/07/11) via authz.RequireClassAccess.
 		authz: authz.New(sqlcgen.New(pool)),
@@ -65,6 +68,10 @@ func (s *Server) Router() http.Handler {
 		// Auth
 		r.Post("/auth/login", s.handleLogin)
 		r.Post("/auth/logout", s.handleLogout)
+
+		// Public enrollment submission (no auth — equivalent to the old
+		// service-role client); the active-year window is enforced server-side.
+		r.Post("/enrollments", s.handleSubmitEnrollment)
 
 		// Authenticated
 		r.Group(func(r chi.Router) {
@@ -108,6 +115,12 @@ func (s *Server) Router() http.Handler {
 				r.Post("/students", s.handleCreateStudent)
 				r.Get("/students/{id}", s.handleGetStudent)
 				r.Patch("/students/{id}", s.handleUpdateStudent)
+
+				// Enrollments review: coordinator lists by status and
+				// approves/rejects (the public submit lives outside auth above).
+				r.Get("/enrollments", s.handleListEnrollments)
+				r.Post("/enrollments/{id}/approve", s.handleApproveEnrollment)
+				r.Post("/enrollments/{id}/reject", s.handleRejectEnrollment)
 			})
 		})
 	})
