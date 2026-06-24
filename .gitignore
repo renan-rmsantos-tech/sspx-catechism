@@ -10,30 +10,35 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# ─── environment (nunca secrets; .env.example pode ser versionado) ─
+# ─── environment (nunca secrets; templates *.example podem ser versionados) ─
 .env
 .env.*
 .envrc
 !.env.example
 !.env.sample
+!.env.server.example
+.env.keys
 
-# ─── Next.js ──────────────────────────────────────────────────
-/.next/
-/out/
+# ─── Next.js (app na raiz) ────────────────────────────────────
+.next/
+out/
 next-env.d.ts
 
 # PWA — gerado em `npm run build` (@serwist/next → public/)
-/public/sw.js
-/public/sw.js.map
-/public/workbox-*.js
-/public/workbox-*.js.map
-/public/swe-worker-*.js
-/public/fallback-*.js
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/fallback-*.js
+
+# ─── Vite / frontend SPA ──────────────────────────────────────
+dist/
+dev-dist/
 
 # ─── build / bundlers ─────────────────────────────────────────
-/build
-dist/
-/.turbo
+build/
+.turbo/
 .cache/
 .parcel-cache/
 .eslintcache
@@ -42,15 +47,21 @@ dist/
 coverage/
 *.lcov
 
+# ─── Go (backend/) ───────────────────────────────────────────
+backend/api
+bin/
+*.test
+*.out
+
 # ─── Supabase (CLI local) ─────────────────────────────────────
 .branches/
 supabase/.branches/
 supabase/.temp/
 
 # ─── Vercel ───────────────────────────────────────────────────
-.vercel
+.vercel/
 
-# ─── TypeScript ───────────────────────────────────────────────
+# ─── TypeScript (emit de `tsc -b` nos configs) ────────────────
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
@@ -75,6 +86,7 @@ Desktop.ini
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+.cursor/
 *.sublime-project
 *.sublime-workspace
 *.swp

@@ -1,5 +1,7 @@
+# Artefatos locais do frontend (espelha regras da raiz do repositório).
 node_modules/
 dist/
+dev-dist/
 coverage/
 *.tsbuildinfo
 vite.config.js
