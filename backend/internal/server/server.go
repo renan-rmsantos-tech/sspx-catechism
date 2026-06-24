@@ -12,6 +12,7 @@ import (
 	"github.com/rmtech/sspx-catechism/backend/internal/academic"
 	"github.com/rmtech/sspx-catechism/backend/internal/auth"
 	"github.com/rmtech/sspx-catechism/backend/internal/authz"
+	"github.com/rmtech/sspx-catechism/backend/internal/calendar"
 	"github.com/rmtech/sspx-catechism/backend/internal/classes"
 	"github.com/rmtech/sspx-catechism/backend/internal/config"
 	"github.com/rmtech/sspx-catechism/backend/internal/db/sqlcgen"
@@ -29,6 +30,7 @@ type Server struct {
 	years    *academic.Service
 	classes  *classes.Service
 	students *students.Service
+	calendar *calendar.Service
 	authz    authz.Authorizer
 }
 
@@ -41,6 +43,7 @@ func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 		years:    academic.NewService(pool),
 		classes:  classes.NewService(pool),
 		students: students.NewService(pool),
+		calendar: calendar.NewService(pool),
 		// Authorizer replaces RLS; consumed by class/student/attendance routes
 		// (tasks 06/07/11) via authz.RequireClassAccess.
 		authz: authz.New(sqlcgen.New(pool)),
@@ -72,6 +75,10 @@ func (s *Server) Router() http.Handler {
 			// Academic years: listing is open to any authenticated user.
 			r.Get("/academic-years", s.handleListAcademicYears)
 
+			// Class-date calendar: reading is open to any authenticated user;
+			// replacing the set is coordinator-only (below).
+			r.Get("/class-dates", s.handleGetClassDates)
+
 			// Classes: listing is scoped per role by the service (coordinator
 			// sees all, catechist only their own); the student roster is gated
 			// per class by the Authorizer (replacing RLS).
@@ -90,6 +97,8 @@ func (s *Server) Router() http.Handler {
 				r.Post("/academic-years", s.handleCreateAcademicYear)
 				r.Patch("/academic-years/{id}", s.handleUpdateAcademicYear)
 				r.Delete("/academic-years/{id}", s.handleDeleteAcademicYear)
+
+				r.Put("/class-dates", s.handleUpdateClassDates)
 
 				r.Post("/classes", s.handleCreateClass)
 				r.Patch("/classes/{id}", s.handleUpdateClass)

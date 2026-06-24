@@ -5,9 +5,10 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 ## Current State
 - task_01 (infra foundation) complete & verified: Compose (Caddy+API+Postgres),
   CI/deploy, backup/restore scripts, Hetzner runbook all in place.
-- task_05 (academic-years API), task_06 (classes + class_catechists API) and
-  task_07 (students API: search/CRUD) complete & verified against ephemeral PG.
-  `Server` now holds `users`, `years`, `classes`, `students` services + `authz`.
+- task_05 (academic-years API), task_06 (classes + class_catechists API),
+  task_07 (students API: search/CRUD) and task_09 (calendar/class_dates API)
+  complete & verified against ephemeral PG. `Server` now holds `users`, `years`,
+  `classes`, `students`, `calendar` services + `authz`.
 
 ## Shared Decisions
 - API container is `distroless/static` (no shell/wget). Container healthchecks must
@@ -73,3 +74,16 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
   `claims.Role`, NOT by route middleware — the GET stays open to any auth user.
 - Aggregating a child set into a parent row: `array_agg(...) FILTER (WHERE ... IS
   NOT NULL)` over a LEFT JOIN + `GROUP BY parent.id`, cast `::uuid[]`.
+- Coverage on services whose DB methods are driven by *another* package's
+  integration tests is understated by package-level `go test -cover`. Measure the
+  real number with `-coverpkg=./internal/<svc>/` run across BOTH the svc and the
+  server packages (e.g. calendar's Get/Replace only register via server tests →
+  84.4% with coverpkg vs 39% standalone).
+- PG `EXTRACT(DOW FROM date)` (Sun=0..Sat=6) matches Go `time.Weekday()` exactly,
+  so a Go weekday check and the `validate_class_date_day` trigger agree without a
+  mapping table. Bulk insert via `unnest($2::date[])` still fires the per-row
+  trigger (defense in depth). Dedup the input slice before insert to avoid tripping
+  UNIQUE(academic_year_id,date).
+- Calendar GET is query-param driven (`?academicYearId=`), not a path param, to
+  mirror the old Supabase route; PUT replaces the whole year's set transactionally
+  and refuses to drop a "locked" date (one with an `attendance_sessions` row).

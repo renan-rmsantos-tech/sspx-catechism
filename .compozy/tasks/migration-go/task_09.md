@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de calendário/class_dates (validação de dia, datas travadas)
+type: backend
 complexity: medium
 dependencies:
   - task_05
@@ -21,11 +20,11 @@ Implementa o calendário de aulas por ano letivo: listagem das datas (com as "tr
 </requirements>
 
 ## Subtasks
-- [ ] 9.1 Queries sqlc (list class_dates, datas com presença, delete-all + bulk insert)
-- [ ] 9.2 Validação de dia da semana e cálculo de datas travadas
-- [ ] 9.3 PUT transacional (substituir conjunto do ano)
-- [ ] 9.4 Rotas com gates (GET autenticado, PUT coordenador)
-- [ ] 9.5 Testes incl. data inválida e remoção bloqueada
+- [x] 9.1 Queries sqlc (list class_dates, datas com presença, delete-all + bulk insert)
+- [x] 9.2 Validação de dia da semana e cálculo de datas travadas
+- [x] 9.3 PUT transacional (substituir conjunto do ano)
+- [x] 9.4 Rotas com gates (GET autenticado, PUT coordenador)
+- [x] 9.5 Testes incl. data inválida e remoção bloqueada
 
 ## Implementation Details
 Ver TechSpec §API Endpoints. O trigger `validate_class_date_day` reforça a validação no banco (defesa em profundidade). "Datas travadas" = as que têm `attendance_sessions`.
@@ -46,9 +45,9 @@ Ver TechSpec §API Endpoints. O trigger `validate_class_date_day` reforça a val
 
 ## Tests
 - Unit:
-  - [ ] validação de dia da semana
+  - [x] validação de dia da semana
 - Integração:
-  - [ ] PUT substitui datas; data em dia não permitido → erro; remover data com presença → bloqueado
+  - [x] PUT substitui datas; data em dia não permitido → erro; remover data com presença → bloqueado
 - Test coverage target: >=80%
 - All tests must pass
 
