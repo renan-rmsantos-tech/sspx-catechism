@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: Frontend
-type: Feature Implementation
-scope: Full
+status: completed
+title: Frontend admin — anos, turmas, alunos, catequistas, calendário, inscrições
+type: frontend
 complexity: high
 dependencies:
   - task_13
@@ -27,11 +26,11 @@ Implementa as telas da área administrativa (coordenador) consumindo a API Go: g
 </requirements>
 
 ## Subtasks
-- [ ] 14.1 Telas e formulários de anos letivos e calendário
-- [ ] 14.2 Telas de turmas (com vínculo de catequistas) e alunos (com busca)
-- [ ] 14.3 Tela de catequistas (criar, papel, ativar/desativar)
-- [ ] 14.4 Tela de revisão de inscrições (aprovar/rejeitar)
-- [ ] 14.5 Disparo/download de relatórios + testes Vitest
+- [x] 14.1 Telas e formulários de anos letivos e calendário
+- [x] 14.2 Telas de turmas (com vínculo de catequistas) e alunos (com busca)
+- [x] 14.3 Tela de catequistas (criar, papel, ativar/desativar)
+- [x] 14.4 Tela de revisão de inscrições (aprovar/rejeitar)
+- [x] 14.5 Disparo/download de relatórios + testes Vitest
 
 ## Implementation Details
 Ver TechSpec §API Endpoints. Reaproveitar formulários e componentes do app Next (`app/admin/**`, `components/admin/*`). Mutations passam a chamar a API via o cliente HTTP (task_13), não mais Server Actions.
@@ -52,10 +51,10 @@ Ver TechSpec §API Endpoints. Reaproveitar formulários e componentes do app Nex
 
 ## Tests
 - Unit (Vitest):
-  - [ ] formulários validam e submetem ao cliente de API
-  - [ ] busca de alunos; aprovar/rejeitar inscrição
+  - [x] formulários validam e submetem ao cliente de API
+  - [x] busca de alunos; aprovar/rejeitar inscrição
 - Integração:
-  - [ ] fluxos admin com fetch mockado retornam estados corretos
+  - [x] fluxos admin com fetch mockado retornam estados corretos
 - Test coverage target: >=80%
 - All tests must pass
 

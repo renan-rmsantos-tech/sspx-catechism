@@ -6,10 +6,12 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - task_01 (infra foundation) complete & verified: Compose (Caddy+API+Postgres),
   CI/deploy, backup/restore scripts, Hetzner runbook all in place.
 - task_05 (academic-years API), task_06 (classes + class_catechists API),
-  task_07 (students API: search/CRUD), task_09 (calendar/class_dates API) and
-  task_10 (enrollments: public submit + review) complete & verified against
-  ephemeral PG. `Server` now holds `users`, `years`, `classes`, `students`,
-  `calendar`, `enrollments` services + `authz`.
+  task_07 (students API: search/CRUD), task_09 (calendar/class_dates API),
+  task_10 (enrollments: public submit + review), task_11 (attendance
+  sync/list API), and task_12 (attendance reports JSON/PDF/XLSX) complete &
+  verified against ephemeral PG. `Server` now holds
+  `users`, `years`, `classes`, `students`, `calendar`, `enrollments`,
+  `attendance`, `reports` services + `authz`.
 
 ## Shared Decisions
 - API container is `distroless/static` (no shell/wget). Container healthchecks must
@@ -103,3 +105,35 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - Coverage via `-coverpkg=<svc>,<server>`: the merged profile DUPLICATES each block
   per test binary (one with count=0), so summing halves the %. Dedup by MAX count per
   region before computing (task_10 → 81.6%).
+- Attendance API contract for task_12/task_15: `POST /api/attendance` accepts
+  `{sessions:[...]}` and returns `{synced, skipped}`; `catechist_id` is always the
+  token user, unscheduled/inaccessible sessions are skipped, session idempotency is
+  `(class_id,date)`, record idempotency is `(session_id,student_id)`. `GET
+  /api/attendance?classId=&from=&to=` returns camelCase sessions with embedded
+  `records`.
+- Report API contract for task_14: `GET /api/reports/attendance?classId=&from=&to=&format=`
+  is coordinator/admin-only and supports `json`, `pdf`, `xlsx`. JSON intentionally
+  preserves the legacy report payload shape (`className`, `students[].full_name`,
+  `records[].session_id/student_id`) so the existing preview/export helpers can be
+  migrated with minimal churn.
+- Frontend task_13 established `frontend/` as an independent Vite/React package
+  built by `infra/Caddy.Dockerfile`. Auth client contract: same-origin `/api`
+  calls use `fetch` with `credentials: 'include'`; `/api/auth/me` returns
+  camelCase `AuthUser` (`fullName`, `mustChangePassword`); role homes are
+  `admin|coordinator -> /admin` and `catechist -> /dashboard`; any
+  `mustChangePassword` user is forced to `/trocar-senha`.
+- Frontend task_14 added the coordinator admin SPA under `frontend/src/pages/admin`
+  with a typed `frontend/src/lib/admin-api.ts`. Admin forms use React Hook Form +
+  Zod; nullable optional fields are transformed to `null` by the resolver, so
+  submit handlers should consume resolver output directly rather than re-parsing.
+  Report downloads intentionally use raw `fetch` because `apiFetch` parses
+  non-JSON bodies as text. Admin navigation links are absolute `/admin/...` paths.
+- Frontend task_15 added Vite PWA/offline attendance in `frontend/`: SW registered
+  from `main.tsx` via `vite-plugin-pwa` injectManifest, service worker listens for
+  `sync-attendance`, and Dexie stores `pending_sessions` plus
+  `cached_class_dates`. Attendance replay posts same-origin `/api/attendance`
+  with `credentials: 'include'`; pending sessions are deduped client-side by
+  `(classId,date)` while backend idempotency remains authoritative.
+- Frontend Vitest config is intentionally serialized (`fileParallelism:false`,
+  `maxWorkers:1`) because several existing tests use process-global `fetch`/`URL`
+  stubs; parallel files race and fail nondeterministically.

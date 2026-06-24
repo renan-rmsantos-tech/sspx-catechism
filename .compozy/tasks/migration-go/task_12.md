@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de relatórios de presença (PDF/XLSX/JSON)
+type: backend
 complexity: medium
 dependencies:
   - task_06
@@ -23,11 +22,11 @@ Implementa o endpoint de relatórios de presença para o coordenador, com saída
 </requirements>
 
 ## Subtasks
-- [ ] 12.1 Queries sqlc (turma, alunos, sessões e records por período)
-- [ ] 12.2 Agregação dos dados em estrutura de relatório
-- [ ] 12.3 Geração JSON/PDF (gofpdf ou maroto)/XLSX (excelize)
-- [ ] 12.4 Headers de content-type/disposition por formato
-- [ ] 12.5 Testes de agregação e de cada formato
+- [x] 12.1 Queries sqlc (turma, alunos, sessões e records por período)
+- [x] 12.2 Agregação dos dados em estrutura de relatório
+- [x] 12.3 Geração JSON/PDF (gofpdf ou maroto)/XLSX (excelize)
+- [x] 12.4 Headers de content-type/disposition por formato
+- [x] 12.5 Testes de agregação e de cada formato
 
 ## Implementation Details
 Ver TechSpec §API Endpoints (Relatórios) e §Key Decisions (libs Go). Validar params (datas, formato). Reusar agregação de sessões/records do domínio de presença.
@@ -49,10 +48,10 @@ Ver TechSpec §API Endpoints (Relatórios) e §Key Decisions (libs Go). Validar 
 
 ## Tests
 - Unit:
-  - [ ] agregação por aluno/período correta
-  - [ ] validação de params/format inválido → 400
+  - [x] agregação por aluno/período correta
+  - [x] validação de params/format inválido → 400
 - Integração:
-  - [ ] geração JSON/PDF/XLSX retorna content-type correto e conteúdo não-vazio
+  - [x] geração JSON/PDF/XLSX retorna content-type correto e conteúdo não-vazio
 - Test coverage target: >=80%
 - All tests must pass
 

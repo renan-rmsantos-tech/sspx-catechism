@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de presença — sync idempotente offline
+type: backend
 complexity: critical
 dependencies:
   - task_06
@@ -31,11 +30,11 @@ Implementa o endpoint mais crítico do sistema: a sincronização idempotente de
 </requirements>
 
 ## Subtasks
-- [ ] 11.1 Queries sqlc (upsert session retornando id+created, upsert records, is_scheduled, get com join)
-- [ ] 11.2 Handler POST: loop por sessão (valida data agendada → dedup → insert → records)
-- [ ] 11.3 Handler GET com filtros e join de records
-- [ ] 11.4 Validação de payload preservando UUID leniente
-- [ ] 11.5 Testes de idempotência e de borda
+- [x] 11.1 Queries sqlc (upsert session retornando id+created, upsert records, is_scheduled, get com join)
+- [x] 11.2 Handler POST: loop por sessão (valida data agendada → dedup → insert → records)
+- [x] 11.3 Handler GET com filtros e join de records
+- [x] 11.4 Validação de payload preservando UUID leniente
+- [x] 11.5 Testes de idempotência e de borda
 
 ## Implementation Details
 Ver TechSpec §Core Interfaces (AttendanceRepo) e §API Design. Acesso à turma via `Authorizer` (task_04). A idempotência depende dos índices únicos `(class_id,date)` e `(session_id,student_id)`.
@@ -58,12 +57,12 @@ Ver TechSpec §Core Interfaces (AttendanceRepo) e §API Design. Acesso à turma 
 
 ## Tests
 - Unit:
-  - [ ] payload com UUID leniente aceito; data inválida marcada skipped
+  - [x] payload com UUID leniente aceito; data inválida marcada skipped
 - Integração:
-  - [ ] reenviar o mesmo lote 2x → sem duplicação (synced então skipped)
-  - [ ] `catechist_id` persiste do token, não do cliente
-  - [ ] data não agendada → skipped
-  - [ ] records duplicados não inserem
+  - [x] reenviar o mesmo lote 2x → sem duplicação (synced então skipped)
+  - [x] `catechist_id` persiste do token, não do cliente
+  - [x] data não agendada → skipped
+  - [x] records duplicados não inserem
 - Test coverage target: >=80%
 - All tests must pass
 

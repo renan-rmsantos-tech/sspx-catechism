@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: Frontend
-type: Feature Implementation
-scope: Full
+status: completed
+title: Frontend Vite — scaffold, cliente API, auth context, guarda de rotas, login
+type: frontend
 complexity: high
 dependencies:
   - task_03
@@ -22,11 +21,11 @@ Cria a base do frontend como SPA Vite/React: estrutura do projeto, Tailwind/shad
 </requirements>
 
 ## Subtasks
-- [ ] 13.1 Scaffold Vite (estrutura `frontend/`, Tailwind v4, shadcn, aliases)
-- [ ] 13.2 Cliente de API (wrapper fetch + tratamento de erro/401)
-- [ ] 13.3 Auth context + guarda de rotas por papel
-- [ ] 13.4 Telas de login e troca de senha
-- [ ] 13.5 Testes (Vitest) do cliente/guards/telas
+- [x] 13.1 Scaffold Vite (estrutura `frontend/`, Tailwind v4, shadcn, aliases)
+- [x] 13.2 Cliente de API (wrapper fetch + tratamento de erro/401)
+- [x] 13.3 Auth context + guarda de rotas por papel
+- [x] 13.4 Telas de login e troca de senha
+- [x] 13.5 Testes (Vitest) do cliente/guards/telas
 
 ## Implementation Details
 Ver TechSpec §System Architecture e ADR-002. Reaproveitar componentes/estilos do app Next atual (`components/ui/*`, Tailwind). Roteamento por papel: `/admin/*` (coordenador/admin), `/dashboard/*` (catequista), `/` e `/login` públicos.
@@ -49,10 +48,10 @@ Ver TechSpec §System Architecture e ADR-002. Reaproveitar componentes/estilos d
 
 ## Tests
 - Unit (Vitest):
-  - [ ] cliente de API trata 401/erros
-  - [ ] guard redireciona por papel; `must_change_password` força troca
+  - [x] cliente de API trata 401/erros
+  - [x] guard redireciona por papel; `must_change_password` força troca
 - Integração:
-  - [ ] login → cookie → navegação para área correta (fetch mockado)
+  - [x] login → cookie → navegação para área correta (fetch mockado)
 - Test coverage target: >=80%
 - All tests must pass
 

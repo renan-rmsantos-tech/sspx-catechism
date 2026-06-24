@@ -1,12 +1,11 @@
 ---
-status: pending
-domain: Infrastructure
-type: Configuration
-scope: Full
+status: completed
+title: Deploy em produção (Hetzner) + backup automático + teste de restauração
+type: infra
 complexity: medium
 dependencies:
-  - task_14
-  - task_15
+    - task_14
+    - task_15
 ---
 
 # Task 16: Deploy em produção (Hetzner) + backup automático + teste de restauração

@@ -1,8 +1,7 @@
 ---
 status: completed
-domain: Authentication
-type: Feature Implementation
-scope: Full
+title: Autenticação — JWT em cookie httpOnly, bcrypt, middleware, bootstrap admin
+type: backend
 complexity: high
 dependencies:
   - task_02

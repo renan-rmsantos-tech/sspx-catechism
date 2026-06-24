@@ -1,8 +1,7 @@
 ---
 status: completed
-domain: Database
-type: Migration
-scope: Full
+title: Fundação do backend — módulo Go, config, pgx, migrações goose + schema
+type: backend
 complexity: high
 dependencies:
   - task_01

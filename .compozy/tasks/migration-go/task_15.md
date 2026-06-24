@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: Frontend
-type: Feature Implementation
-scope: Full
+status: completed
+title: Frontend dashboard + chamada offline PWA + form público de inscrição
+type: frontend
 complexity: high
 dependencies:
   - task_13
@@ -24,11 +23,11 @@ Implementa a área do catequista (dashboard) com a chamada de presença **offlin
 </requirements>
 
 ## Subtasks
-- [ ] 15.1 Configurar vite-plugin-pwa (precache, runtime, sync tag)
-- [ ] 15.2 Portar Dexie (`pending_sessions`, `cached_class_dates`) e a fila de sync
-- [ ] 15.3 Tela de chamada (online → API; offline → fila) + indicadores
-- [ ] 15.4 Formulário público de inscrição consumindo `/api/enrollments`
-- [ ] 15.5 Testes Vitest da fila/sync e do formulário
+- [x] 15.1 Configurar vite-plugin-pwa (precache, runtime, sync tag)
+- [x] 15.2 Portar Dexie (`pending_sessions`, `cached_class_dates`) e a fila de sync
+- [x] 15.3 Tela de chamada (online → API; offline → fila) + indicadores
+- [x] 15.4 Formulário público de inscrição consumindo `/api/enrollments`
+- [x] 15.5 Testes Vitest da fila/sync e do formulário
 
 ## Implementation Details
 Ver TechSpec §System Architecture (PWA) e §API Design (attendance). Reaproveitar `lib/db.ts`, `lib/attendance-sync.ts`, `lib/class-dates/cache.ts` e `components/dashboard/*` do app atual. A camada offline não dependia de Supabase — só muda o endpoint.
@@ -50,10 +49,10 @@ Ver TechSpec §System Architecture (PWA) e §API Design (attendance). Reaproveit
 
 ## Tests
 - Unit (Vitest):
-  - [ ] enfileira offline; flush em reconexão; sem duplicar ao reenviar
-  - [ ] formulário público valida e submete
+  - [x] enfileira offline; flush em reconexão; sem duplicar ao reenviar
+  - [x] formulário público valida e submete
 - Integração:
-  - [ ] ciclo offline→online sincroniza e limpa a fila (fetch mockado)
+  - [x] ciclo offline→online sincroniza e limpa a fila (fetch mockado)
 - Test coverage target: >=80%
 - All tests must pass
 
