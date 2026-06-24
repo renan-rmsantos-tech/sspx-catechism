@@ -5,9 +5,9 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 ## Current State
 - task_01 (infra foundation) complete & verified: Compose (Caddy+API+Postgres),
   CI/deploy, backup/restore scripts, Hetzner runbook all in place.
-- task_05 (academic-years API) and task_06 (classes + class_catechists API)
-  complete & verified against ephemeral PG. `Server` now holds `users`, `years`,
-  `classes` services + `authz`.
+- task_05 (academic-years API), task_06 (classes + class_catechists API) and
+  task_07 (students API: search/CRUD) complete & verified against ephemeral PG.
+  `Server` now holds `users`, `years`, `classes`, `students` services + `authz`.
 
 ## Shared Decisions
 - API container is `distroless/static` (no shell/wget). Container healthchecks must
@@ -46,6 +46,12 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
 - DTO validation lives in the handler (mirrors old Zod schemas); dates use
   `^\d{4}-\d{2}-\d{2}$` + `pgconv.ParseDate`/`DateString`. Prefer PATCH for
   partial resource edits per TechSpec API table.
+- Tri-state nullable PATCH fields (clearable): decode each as `json.RawMessage`
+  and a helper → (val, set, ok): absent→leave (set=false), null/blank→clear
+  (set=true,val=nil), value→trim+optional-regex. Maps to a `set_x boolean` + narg
+  CASE column (see students `UpdateStudent`). Non-null booleans/required strings
+  use `*T` + COALESCE instead. List/detail joins use `sqlc.embed(parent)` so the
+  row embeds the full model struct + extra cols → one shared response mapper.
 
 ## Open Risks
 - Full-stack smoke + backup/restore are unverified until task_16 (needs live VPS +

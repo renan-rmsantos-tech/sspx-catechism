@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de alunos (CRUD + busca)
+type: backend
 complexity: medium
 dependencies:
   - task_06
@@ -21,11 +20,11 @@ Implementa os endpoints de alunos: listagem com busca por nome (`ILIKE`), criaç
 </requirements>
 
 ## Subtasks
-- [ ] 7.1 Queries sqlc (search ILIKE com join classes, get, create, update)
-- [ ] 7.2 Handlers + validação/normalização de payload
-- [ ] 7.3 Mapeamento de erros (404/409)
-- [ ] 7.4 Rotas com gate de coordenador
-- [ ] 7.5 Testes de handler/integração
+- [x] 7.1 Queries sqlc (search ILIKE com join classes, get, create, update)
+- [x] 7.2 Handlers + validação/normalização de payload
+- [x] 7.3 Mapeamento de erros (404/409)
+- [x] 7.4 Rotas com gate de coordenador
+- [x] 7.5 Testes de handler/integração
 
 ## Implementation Details
 Ver TechSpec §API Endpoints. Busca por `full_name ILIKE '%q%'`. Campos de aluno conforme §Data Models (guardião, sacramentos, etc.).
@@ -46,9 +45,9 @@ Ver TechSpec §API Endpoints. Busca por `full_name ILIKE '%q%'`. Campos de aluno
 
 ## Tests
 - Unit:
-  - [ ] normalização de payload; validação
+  - [x] normalização de payload; validação
 - Integração:
-  - [ ] busca por nome retorna esperado; CRUD ponta a ponta; /:id inexistente → 404
+  - [x] busca por nome retorna esperado; CRUD ponta a ponta; /:id inexistente → 404
 - Test coverage target: >=80%
 - All tests must pass
 
