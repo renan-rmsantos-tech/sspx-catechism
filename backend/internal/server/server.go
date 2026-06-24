@@ -19,6 +19,7 @@ import (
 	"github.com/rmtech/sspx-catechism/backend/internal/db/sqlcgen"
 	"github.com/rmtech/sspx-catechism/backend/internal/enrollments"
 	"github.com/rmtech/sspx-catechism/backend/internal/httpx"
+	"github.com/rmtech/sspx-catechism/backend/internal/reports"
 	"github.com/rmtech/sspx-catechism/backend/internal/students"
 	"github.com/rmtech/sspx-catechism/backend/internal/users"
 )
@@ -35,6 +36,7 @@ type Server struct {
 	calendar    *calendar.Service
 	enrollments *enrollments.Service
 	attendance  *attendance.Service
+	reports     *reports.Service
 	authz       authz.Authorizer
 }
 
@@ -53,6 +55,7 @@ func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 		calendar:    calendar.NewService(pool),
 		enrollments: enrollments.NewService(pool),
 		attendance:  attendance.NewService(pool, authorizer),
+		reports:     reports.NewService(pool),
 		authz:       authorizer,
 	}
 }
@@ -131,6 +134,8 @@ func (s *Server) Router() http.Handler {
 				r.Get("/enrollments", s.handleListEnrollments)
 				r.Post("/enrollments/{id}/approve", s.handleApproveEnrollment)
 				r.Post("/enrollments/{id}/reject", s.handleRejectEnrollment)
+
+				r.Get("/reports/attendance", s.handleAttendanceReport)
 			})
 		})
 	})
