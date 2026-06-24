@@ -62,3 +62,13 @@
     min-width: 320px;
   }
 }
+
+@layer components {
+  .input {
+    @apply h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  textarea.input {
+    @apply h-auto py-2;
+  }
+}

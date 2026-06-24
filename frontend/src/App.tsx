@@ -3,6 +3,7 @@ import { ChangePasswordPage } from '@/components/auth/change-password-page'
 import { LoginPage } from '@/components/auth/login-page'
 import { RouteGuard } from '@/components/auth/route-guard'
 import { AuthProvider } from '@/contexts/auth-context'
+import { AdminPage } from '@/pages/admin/admin-page'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -20,7 +21,7 @@ export function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/trocar-senha" element={<ChangePasswordPage />} />
-          <Route path="/admin/*" element={<Placeholder title="Administração" />} />
+          <Route path="/admin/*" element={<AdminPage />} />
           <Route path="/dashboard/*" element={<Placeholder title="Dashboard" />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Route>
