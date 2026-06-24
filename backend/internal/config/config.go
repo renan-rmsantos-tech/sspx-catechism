@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Config holds runtime configuration loaded from environment variables.
@@ -18,6 +20,10 @@ type Config struct {
 // Load reads configuration from the environment, applying defaults and
 // validating required values.
 func Load() (Config, error) {
+	// Optional .env in the working directory (e.g. backend/.env for local dev).
+	// Existing environment variables take precedence (Docker, CI, export).
+	_ = godotenv.Load()
+
 	c := Config{
 		DatabaseURL:   os.Getenv("DATABASE_URL"),
 		JWTSecret:     os.Getenv("JWT_SECRET"),

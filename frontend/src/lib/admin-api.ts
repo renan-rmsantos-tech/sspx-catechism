@@ -103,6 +103,8 @@ export const adminApi = {
     year: number
     isActive: boolean
     classDays: number[]
+    enrollmentStartsAt?: string | null
+    enrollmentEndsAt?: string | null
   }) => apiFetch<AcademicYear>('/api/academic-years', { method: 'POST', json }),
   updateAcademicYear: (id: string, json: Partial<AcademicYear>) =>
     apiFetch<AcademicYear>(`/api/academic-years/${id}`, { method: 'PATCH', json }),

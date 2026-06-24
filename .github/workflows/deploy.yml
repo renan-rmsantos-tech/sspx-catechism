@@ -1,12 +1,12 @@
 name: Deploy
 
-# Build + deploy on push to main. Builds happen ON the VPS (no external registry)
-# to keep the pipeline simple. Requires repo secrets:
+# Build + deploy manual (auto-deploy on push disabled).
+# Builds happen ON the VPS (no external registry). Requires repo secrets:
 #   SSH_HOST, SSH_USER, SSH_KEY (private key), DEPLOY_PATH (e.g. /opt/catechism)
+#
+# Re-enable auto-deploy: add `push: branches: [main]` under `on:`.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:

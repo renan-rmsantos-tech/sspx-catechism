@@ -38,18 +38,22 @@ func (s *Service) List(ctx context.Context) ([]sqlcgen.AcademicYear, error) {
 
 // CreateInput carries the validated payload for creating an academic year.
 type CreateInput struct {
-	Year      int32
-	IsActive  bool
-	ClassDays []int32
+	Year               int32
+	IsActive           bool
+	ClassDays          []int32
+	EnrollmentStartsAt pgtype.Date
+	EnrollmentEndsAt   pgtype.Date
 }
 
 // Create inserts a new academic year. Unique-violation (23505) errors surface as
 // *pgconn.PgError for the caller to map to 409.
 func (s *Service) Create(ctx context.Context, in CreateInput) (sqlcgen.AcademicYear, error) {
 	return s.q.CreateAcademicYear(ctx, sqlcgen.CreateAcademicYearParams{
-		Year:      in.Year,
-		IsActive:  in.IsActive,
-		ClassDays: in.ClassDays,
+		Year:               in.Year,
+		IsActive:           in.IsActive,
+		ClassDays:          in.ClassDays,
+		EnrollmentStartsAt: in.EnrollmentStartsAt,
+		EnrollmentEndsAt:   in.EnrollmentEndsAt,
 	})
 }
 

@@ -113,6 +113,20 @@ func TestAcademicYearCRUD(t *testing.T) {
 		t.Fatalf("expected null enrollment window, got %+v", created)
 	}
 
+	// Create with enrollment window in one POST.
+	w = e.do(http.MethodPost, "/api/academic-years", "coordinator",
+		`{"year":2027,"isActive":false,"classDays":[0],"enrollmentStartsAt":"2026-06-22","enrollmentEndsAt":"2026-06-26"}`)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create with window: status = %d, want 201 (body=%q)", w.Code, w.Body.String())
+	}
+	withWindow := decodeYear(t, w)
+	if withWindow.EnrollmentStartsAt == nil || *withWindow.EnrollmentStartsAt != "2026-06-22" {
+		t.Fatalf("enrollmentStartsAt = %v, want 2026-06-22", withWindow.EnrollmentStartsAt)
+	}
+	if withWindow.EnrollmentEndsAt == nil || *withWindow.EnrollmentEndsAt != "2026-06-26" {
+		t.Fatalf("enrollmentEndsAt = %v, want 2026-06-26", withWindow.EnrollmentEndsAt)
+	}
+
 	// Duplicate year → 409.
 	if w := e.do(http.MethodPost, "/api/academic-years", "coordinator", `{"year":2026}`); w.Code != http.StatusConflict {
 		t.Fatalf("duplicate year: status = %d, want 409 (body=%q)", w.Code, w.Body.String())

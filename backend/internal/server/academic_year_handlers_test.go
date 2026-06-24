@@ -68,6 +68,8 @@ func TestCreateAcademicYearValidation(t *testing.T) {
 		{"non-positive year", `{"year":0,"classDays":[6]}`},
 		{"empty classDays", `{"year":2026,"classDays":[]}`},
 		{"out-of-range classDays", `{"year":2026,"classDays":[8]}`},
+		{"bad start date", `{"year":2026,"classDays":[6],"enrollmentStartsAt":"2026/01/01"}`},
+		{"end before start", `{"year":2026,"classDays":[6],"enrollmentStartsAt":"2026-03-01","enrollmentEndsAt":"2026-02-01"}`},
 		{"unknown field", `{"year":2026,"foo":1}`},
 		{"invalid json", `{`},
 	}

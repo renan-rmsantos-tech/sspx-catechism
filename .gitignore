@@ -17,20 +17,8 @@ node_modules/
 !.env.example
 !.env.sample
 !.env.server.example
+!backend/.env.example
 .env.keys
-
-# ─── Next.js (app na raiz) ────────────────────────────────────
-.next/
-out/
-next-env.d.ts
-
-# PWA — gerado em `npm run build` (@serwist/next → public/)
-public/sw.js
-public/sw.js.map
-public/workbox-*.js
-public/workbox-*.js.map
-public/swe-worker-*.js
-public/fallback-*.js
 
 # ─── Vite / frontend SPA ──────────────────────────────────────
 dist/
@@ -52,14 +40,6 @@ backend/api
 bin/
 *.test
 *.out
-
-# ─── Supabase (CLI local) ─────────────────────────────────────
-.branches/
-supabase/.branches/
-supabase/.temp/
-
-# ─── Vercel ───────────────────────────────────────────────────
-.vercel/
 
 # ─── TypeScript (emit de `tsc -b` nos configs) ────────────────
 *.tsbuildinfo

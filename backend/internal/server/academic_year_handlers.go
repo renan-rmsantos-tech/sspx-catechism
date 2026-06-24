@@ -61,9 +61,11 @@ func (s *Server) handleListAcademicYears(w http.ResponseWriter, r *http.Request)
 }
 
 type createAcademicYearRequest struct {
-	Year      int32   `json:"year"`
-	IsActive  bool    `json:"isActive"`
-	ClassDays []int32 `json:"classDays"`
+	Year               int32           `json:"year"`
+	IsActive           bool            `json:"isActive"`
+	ClassDays          []int32         `json:"classDays"`
+	EnrollmentStartsAt json.RawMessage `json:"enrollmentStartsAt"`
+	EnrollmentEndsAt   json.RawMessage `json:"enrollmentEndsAt"`
 }
 
 func (s *Server) handleCreateAcademicYear(w http.ResponseWriter, r *http.Request) {
@@ -87,10 +89,34 @@ func (s *Server) handleCreateAcademicYear(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	var start, end pgtype.Date
+	if req.EnrollmentStartsAt != nil {
+		d, ok, msg := parseDateField(req.EnrollmentStartsAt)
+		if !ok {
+			httpx.Error(w, http.StatusBadRequest, msg)
+			return
+		}
+		start = d
+	}
+	if req.EnrollmentEndsAt != nil {
+		d, ok, msg := parseDateField(req.EnrollmentEndsAt)
+		if !ok {
+			httpx.Error(w, http.StatusBadRequest, msg)
+			return
+		}
+		end = d
+	}
+	if start.Valid && end.Valid && !end.Time.After(start.Time) {
+		httpx.Error(w, http.StatusBadRequest, "a data de encerramento deve ser posterior à data de abertura")
+		return
+	}
+
 	year, err := s.years.Create(r.Context(), academic.CreateInput{
-		Year:      req.Year,
-		IsActive:  req.IsActive,
-		ClassDays: req.ClassDays,
+		Year:               req.Year,
+		IsActive:           req.IsActive,
+		ClassDays:          req.ClassDays,
+		EnrollmentStartsAt: start,
+		EnrollmentEndsAt:   end,
 	})
 	if err != nil {
 		s.writeAcademicYearError(w, err)
