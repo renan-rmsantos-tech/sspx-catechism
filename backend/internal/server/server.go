@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/rmtech/sspx-catechism/backend/internal/academic"
+	"github.com/rmtech/sspx-catechism/backend/internal/attendance"
 	"github.com/rmtech/sspx-catechism/backend/internal/auth"
 	"github.com/rmtech/sspx-catechism/backend/internal/authz"
 	"github.com/rmtech/sspx-catechism/backend/internal/calendar"
@@ -33,10 +34,14 @@ type Server struct {
 	students    *students.Service
 	calendar    *calendar.Service
 	enrollments *enrollments.Service
+	attendance  *attendance.Service
 	authz       authz.Authorizer
 }
 
 func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
+	// Authorizer replaces RLS; consumed by class/student/attendance routes
+	// (tasks 06/07/11) via authz.RequireClassAccess and the attendance service.
+	authorizer := authz.New(sqlcgen.New(pool))
 	return &Server{
 		cfg:         cfg,
 		pool:        pool,
@@ -47,9 +52,8 @@ func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 		students:    students.NewService(pool),
 		calendar:    calendar.NewService(pool),
 		enrollments: enrollments.NewService(pool),
-		// Authorizer replaces RLS; consumed by class/student/attendance routes
-		// (tasks 06/07/11) via authz.RequireClassAccess.
-		authz: authz.New(sqlcgen.New(pool)),
+		attendance:  attendance.NewService(pool, authorizer),
+		authz:       authorizer,
 	}
 }
 
@@ -92,6 +96,12 @@ func (s *Server) Router() http.Handler {
 			r.Get("/classes", s.handleListClasses)
 			r.With(authz.RequireClassAccess(s.authz, "id")).
 				Get("/classes/{id}/students", s.handleListClassStudents)
+
+			// Attendance: idempotent offline sync + scoped read. Open to any
+			// authenticated user; the per-session class write scope and the
+			// per-role read scope are enforced inside the service.
+			r.Post("/attendance", s.handleSyncAttendance)
+			r.Get("/attendance", s.handleListAttendance)
 
 			// Coordinator-only
 			r.Group(func(r chi.Router) {
