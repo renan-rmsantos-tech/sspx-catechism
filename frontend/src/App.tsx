@@ -4,14 +4,9 @@ import { LoginPage } from '@/components/auth/login-page'
 import { RouteGuard } from '@/components/auth/route-guard'
 import { AuthProvider } from '@/contexts/auth-context'
 import { AdminPage } from '@/pages/admin/admin-page'
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <main className="min-h-screen bg-background p-6">
-      <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-    </main>
-  )
-}
+import { AttendancePage } from '@/pages/dashboard/attendance-page'
+import { DashboardPage } from '@/pages/dashboard/dashboard-page'
+import { EnrollmentPage } from '@/pages/enrollment/enrollment-page'
 
 export function App() {
   return (
@@ -20,9 +15,11 @@ export function App() {
         <Route element={<RouteGuard />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/inscricao" element={<EnrollmentPage />} />
           <Route path="/trocar-senha" element={<ChangePasswordPage />} />
           <Route path="/admin/*" element={<AdminPage />} />
-          <Route path="/dashboard/*" element={<Placeholder title="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/turmas/:id/chamada" element={<AttendancePage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Route>
       </Routes>

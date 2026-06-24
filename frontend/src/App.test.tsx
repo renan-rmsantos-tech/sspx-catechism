@@ -88,6 +88,9 @@ describe('App auth flow', () => {
       .mockResolvedValueOnce(jsonResponse(catechistMustChange))
       .mockResolvedValueOnce(jsonResponse({ status: 'ok' }))
       .mockResolvedValueOnce(jsonResponse(changedUser))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([]))
     vi.stubGlobal('fetch', fetchMock)
 
     renderAt('/trocar-senha')
@@ -101,8 +104,8 @@ describe('App auth flow', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /salvar nova senha/i }))
 
-    await screen.findByRole('heading', { name: 'Dashboard' })
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
+    await screen.findByText('Nenhuma turma atribuída.')
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(6))
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       '/api/auth/change-password',
