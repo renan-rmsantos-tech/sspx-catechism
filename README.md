@@ -13,53 +13,97 @@ Documentação de produto e arquitetura (fonte da verdade para escopo e stack):
 
 ## Stack
 
-| Camada          | Tecnologia                                                                                   |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| Frontend        | [Vite](https://vitejs.dev) + React 19 + [React Router](https://reactrouter.com), TypeScript  |
-| UI              | Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), [Base UI](https://base-ui.com)             |
-| Backend / API   | **Go** — [chi](https://github.com/go-chi/chi) (router), [pgx](https://github.com/jackc/pgx) + [sqlc](https://sqlc.dev) (dados), [goose](https://github.com/pressly/goose) (migrações) |
-| Banco de dados  | **PostgreSQL 16** (auto-hospedado em container)                                              |
-| Autenticação    | JWT em cookie httpOnly + bcrypt; autorização na camada de aplicação (substitui o RLS)        |
-| Offline         | PWA ([vite-plugin-pwa](https://vite-pwa-org.netlify.app)), [Dexie](https://dexie.org) (IndexedDB) |
-| Relatórios      | Geração de PDF/XLSX no backend Go                                                             |
-| Edge / TLS      | [Caddy](https://caddyserver.com) (HTTPS automático + serve a SPA + proxy `/api`)             |
-| Empacotamento   | Docker Compose                                                                               |
-| Deploy          | VPS [Hetzner](https://www.hetzner.com/cloud) + GitHub Actions → SSH; backup no Hetzner Storage Box |
+
+| Camada         | Tecnologia                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend       | [Vite](https://vitejs.dev) + React 19 + [React Router](https://reactrouter.com), TypeScript                                                                                           |
+| UI             | Tailwind CSS, [shadcn/ui](https://ui.shadcn.com), [Base UI](https://base-ui.com)                                                                                                      |
+| Backend / API  | **Go** — [chi](https://github.com/go-chi/chi) (router), [pgx](https://github.com/jackc/pgx) + [sqlc](https://sqlc.dev) (dados), [goose](https://github.com/pressly/goose) (migrações) |
+| Banco de dados | **PostgreSQL 16** (auto-hospedado em container)                                                                                                                                       |
+| Autenticação   | JWT em cookie httpOnly + bcrypt; autorização na camada de aplicação (substitui o RLS)                                                                                                 |
+| Offline        | PWA ([vite-plugin-pwa](https://vite-pwa-org.netlify.app)), [Dexie](https://dexie.org) (IndexedDB)                                                                                     |
+| Relatórios     | Geração de PDF/XLSX no backend Go                                                                                                                                                     |
+| Edge / TLS     | [Caddy](https://caddyserver.com) (HTTPS automático + serve a SPA + proxy `/api`)                                                                                                      |
+| Empacotamento  | Docker Compose                                                                                                                                                                        |
+| Deploy         | VPS [Hetzner](https://www.hetzner.com/cloud) + GitHub Actions → SSH; backup no Hetzner Storage Box                                                                                    |
+
 
 ---
 
 ## Arquitetura
 
-Tudo roda num único VPS via Docker Compose:
+Tudo roda num único VPS via Docker Compose.
 
+### Produção (VPS)
+
+```mermaid
+flowchart TB
+    subgraph client["Cliente · browser / PWA"]
+        spa["SPA React · Vite"]
+        sw["Service Worker"]
+        idb["IndexedDB · Dexie\nfila offline"]
+        spa --- sw
+        spa --- idb
+    end
+
+    subgraph vps["VPS Hetzner · Docker Compose"]
+        caddy["Caddy :80/:443\nTLS · Let's Encrypt"]
+
+        subgraph internal["Rede interna Docker"]
+            static["dist/ · arquivos estáticos"]
+            api["Go API :8080\nchi · JWT httpOnly · authz"]
+            db[("PostgreSQL 16\nsem porta exposta")]
+        end
+
+        caddy -->|GET /| static
+        caddy -->|/api/*| api
+        api -->|pgx · sqlc · goose| db
+    end
+
+    subgraph offsite["Off-site"]
+        cron["cron · scripts/backup.sh"]
+        box[("Hetzner Storage Box\npg_dump cifrado")]
+    end
+
+    spa -->|HTTPS| caddy
+    static -.->|JS · CSS · HTML| spa
+    idb -.->|sync idempotente\nquando online| caddy
+    cron --> db
+    cron --> box
 ```
-Internet (HTTPS)
-      │
-   ┌──▼───┐  caddy: TLS automático (Let's Encrypt)
-   │ Caddy│  serve a SPA estática + proxy de /api/*
-   └──┬───┘
-  /         /api/*
-   │           │
-┌──▼────┐  ┌───▼──────┐  api: Go (chi)
-│ SPA   │  │  Go API  │  JWT httpOnly, autorização na app
-│ (Vite)│  └───┬──────┘
-└───────┘      │ pgx
-          ┌────▼─────┐  db: Postgres 16 (rede interna, sem porta exposta)
-          │ Postgres │  └─ pg_dump noturno → Hetzner Storage Box
-          └──────────┘
+
+
+
+### Desenvolvimento local
+
+```mermaid
+flowchart LR
+    dev["Vite dev :5173\nfrontend/"]
+    go["Go API :8080\nbackend/"]
+    pg[("Postgres :5432\ncontainer Docker")]
+
+    dev -->|proxy /api| go
+    go --> pg
 ```
+
+
 
 ### Layout do monorepo
 
+```mermaid
+flowchart TB
+    subgraph repo["sspx-catechism"]
+        backend["backend/\ncmd/api · internal/*\ndb/migrations · sqlc"]
+        frontend["frontend/\nsrc/ · vite.config.ts"]
+        infra["infra/\nCaddy.Dockerfile · README"]
+        scripts["scripts/\nbackup.sh · restore.sh"]
+        compose["docker-compose.yml\ncaddy + api + db"]
+        caddyfile["Caddyfile\nTLS · SPA · proxy /api"]
+        ci[".github/workflows/\ntestes · deploy manual"]
+    end
 ```
-backend/      API em Go (cmd/api, internal/*, db/migrations, db/queries, sqlc.yaml)
-frontend/     SPA Vite + React (src/, vite.config.ts)
-infra/        Caddy.Dockerfile + runbook de provisionamento (README.md)
-scripts/      backup.sh / restore.sh (pg_dump cifrado ↔ Storage Box)
-docker-compose.yml   orquestração (caddy + api + db)
-Caddyfile     config do edge (TLS + SPA + proxy)
-.github/workflows/deploy.yml   CI: testa e faz deploy via SSH
-```
+
+
 
 ---
 
@@ -110,15 +154,17 @@ npm run dev           # Vite em :5173, chamando a API em /api
 
 ## Build e testes
 
-| Onde       | Comando                       | Descrição                                  |
-| ---------- | ----------------------------- | ------------------------------------------ |
-| `backend/` | `go build ./...`              | Compila a API                              |
-| `backend/` | `go vet ./...`                | Análise estática                           |
-| `backend/` | `go test ./...`               | Testes (unitários + integração)            |
-| `frontend/`| `npm run build`               | Type-check + build de produção             |
-| `frontend/`| `npm run lint`                | Type-check (`tsc -b`)                       |
-| `frontend/`| `npm test`                    | Testes Vitest                              |
-| `frontend/`| `npm run test:coverage`       | Vitest com cobertura                       |
+
+| Onde        | Comando                 | Descrição                       |
+| ----------- | ----------------------- | ------------------------------- |
+| `backend/`  | `go build ./...`        | Compila a API                   |
+| `backend/`  | `go vet ./...`          | Análise estática                |
+| `backend/`  | `go test ./...`         | Testes (unitários + integração) |
+| `frontend/` | `npm run build`         | Type-check + build de produção  |
+| `frontend/` | `npm run lint`          | Type-check (`tsc -b`)           |
+| `frontend/` | `npm test`              | Testes Vitest                   |
+| `frontend/` | `npm run test:coverage` | Vitest com cobertura            |
+
 
 Os testes de integração do backend sobem um Postgres real (via container/`testcontainers`) — Docker precisa estar disponível.
 
@@ -126,7 +172,7 @@ Os testes de integração do backend sobem um Postgres real (via container/`test
 
 ## Variáveis de ambiente
 
-No servidor, copie [`.env.server.example`](.env.server.example) para `.env` (ao lado do `docker-compose.yml`) e preencha:
+No servidor, copie `[.env.server.example](.env.server.example)` para `.env` (ao lado do `docker-compose.yml`) e preencha:
 
 ```bash
 DOMAIN=catequese.exemplo.org            # DNS A-record apontando para o VPS
@@ -148,7 +194,7 @@ O **admin** é provisionado de forma idempotente ao iniciar a API (lendo `ADMIN_
 
 ## Deploy (Hetzner)
 
-Passo a passo completo em [`infra/README.md`](infra/README.md). Resumo:
+Passo a passo completo em `[infra/README.md](infra/README.md)`. Resumo:
 
 1. Criar VPS Hetzner (CPX22, Ubuntu), firewall liberando só 22/80/443.
 2. Apontar o **DNS** do domínio para o IP (pré-requisito do TLS).
@@ -188,14 +234,3 @@ Para **desinstalar**, mantenha o dedo no ícone → **Remover App**.
 2. **Sem rede:** se já usou a app online neste telemóvel, continue a marcar presenças; os dados ficam na fila local até haver rede.
 3. **Quando a internet voltar:** mantenha a app aberta um momento — a sincronização corre automaticamente (idempotente). No **Safari/iOS** o Background Sync pode ser limitado; abrir a app quando houver rede costuma bastar.
 
----
-
-## Contribuindo e agentes (IA)
-
-O repositório inclui orientações para desenvolvimento com assistentes — ver [`AGENTS.md`](AGENTS.md) e [`CLAUDE.md`](CLAUDE.md). O planejamento da migração (PRD, TechSpec, ADRs e tasks) está em [`.compozy/tasks/migration-go/`](.compozy/tasks/migration-go/).
-
----
-
-## Licença e privacidade
-
-Trate dados de alunos e responsáveis conforme a **LGPD** e políticas da instituição. O PRD lista riscos e mitigações; o TechSpec detalha modelo de dados, autenticação e autorização.
