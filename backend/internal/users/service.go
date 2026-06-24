@@ -18,6 +18,9 @@ var (
 	ErrInactive           = errors.New("usuário inativo")
 	ErrProtectedAdmin     = errors.New("não é possível remover um administrador")
 	ErrHasSessions        = errors.New("catequista possui chamadas registradas")
+	ErrInvalidRole        = errors.New("papel inválido")
+	ErrAdminImmutable     = errors.New("não é possível alterar o administrador")
+	ErrInvalidID          = errors.New("identificador inválido")
 )
 
 // Service provides user/auth operations over the database.
@@ -97,6 +100,38 @@ func (s *Service) CreateCatechist(ctx context.Context, email, fullName string) (
 // ListCatechists returns all catechist profiles.
 func (s *Service) ListCatechists(ctx context.Context) ([]sqlcgen.Profile, error) {
 	return s.q.ListCatechists(ctx)
+}
+
+// UpdateCatechist changes a catechist's role and/or active flag and returns the
+// updated profile. Role, when provided, must be "coordinator" or "catechist"
+// (promote/demote); promoting to "admin" is not allowed here. The protected
+// admin cannot be altered at all. Reuses the SetRole/SetActive queries.
+func (s *Service) UpdateCatechist(ctx context.Context, id string, role *string, isActive *bool) (sqlcgen.Profile, error) {
+	uid, err := pgconv.ParseUUID(id)
+	if err != nil {
+		return sqlcgen.Profile{}, ErrInvalidID
+	}
+	p, err := s.q.GetProfileByID(ctx, uid)
+	if err != nil {
+		return sqlcgen.Profile{}, err
+	}
+	if p.Role == "admin" {
+		return sqlcgen.Profile{}, ErrAdminImmutable
+	}
+	if role != nil {
+		if *role != "coordinator" && *role != "catechist" {
+			return sqlcgen.Profile{}, ErrInvalidRole
+		}
+		if err := s.q.SetRole(ctx, sqlcgen.SetRoleParams{ID: uid, Role: *role}); err != nil {
+			return sqlcgen.Profile{}, err
+		}
+	}
+	if isActive != nil {
+		if err := s.q.SetActive(ctx, sqlcgen.SetActiveParams{ID: uid, IsActive: *isActive}); err != nil {
+			return sqlcgen.Profile{}, err
+		}
+	}
+	return s.q.GetProfileByID(ctx, uid)
 }
 
 // DeleteCatechist removes a catechist, guarding admins and those with sessions.

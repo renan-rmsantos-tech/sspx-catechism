@@ -36,9 +36,13 @@ Keep only durable, cross-task context here. Do not duplicate facts that are obvi
   in `internal/server/<domain>_handlers.go`; route group reuses the existing
   `r.Use(httpx.RequireCoordinator)` nest. API contract is **camelCase JSON**
   (Go-defined), not the old Supabase snake_case rows.
-- PG error → HTTP: `httpx.WriteDBError` already maps 23505/23503→409, no-rows→404.
-  Use a domain sentinel only when a specific message is required (e.g. translate
-  23503 in the service to "possui X vinculadas").
+- PG error → HTTP: `httpx.WriteDBError` already maps 23505/23503→409, no-rows→404,
+  everything else→500. `pgconv.ParseUUID` errors are plain scan errors, so a
+  malformed path uuid hits the 500 default — return a domain sentinel (e.g.
+  `users.ErrInvalidID`) and map it to 400 in the handler if you want 400. A
+  valid-but-unknown uuid still 404s via the GetByID `pgx.ErrNoRows`.
+  Use a domain sentinel only when a specific message/status is required (e.g.
+  translate 23503 in the service to "possui X vinculadas").
 - sqlc partial updates: `COALESCE(sqlc.narg('f'), f)` for "leave unchanged"; for
   nullable columns that must also be clearable, gate with a `set_x boolean` arg +
   `CASE WHEN set_x THEN narg::type ELSE x END`. Decode tri-state JSON

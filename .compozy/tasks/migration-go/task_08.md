@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Partial
+status: completed
+title: API de catequistas — completar (papel, ativar/desativar)
+type: backend
 complexity: low
 dependencies:
   - task_03
@@ -20,10 +19,10 @@ Completa a gestão de catequistas. A fundação (task_03) já implementou listar
 </requirements>
 
 ## Subtasks
-- [ ] 8.1 Handler PATCH `/catechists/:id` (papel e/ou is_active)
-- [ ] 8.2 Guardas: bloquear alteração indevida de admin
-- [ ] 8.3 Rotas com gate de coordenador
-- [ ] 8.4 Testes de handler/integração
+- [x] 8.1 Handler PATCH `/catechists/:id` (papel e/ou is_active)
+- [x] 8.2 Guardas: bloquear alteração indevida de admin
+- [x] 8.3 Rotas com gate de coordenador
+- [x] 8.4 Testes de handler/integração
 
 ## Implementation Details
 Ver TechSpec §API Endpoints (Catequistas). Queries `SetRole`/`SetActive` já existem em `users.sql`. Já implementado: `GET /catechists`, `POST /catechists`, `DELETE /catechists/:id` em `catechist_handlers.go`.
@@ -44,9 +43,9 @@ Ver TechSpec §API Endpoints (Catequistas). Queries `SetRole`/`SetActive` já ex
 
 ## Tests
 - Unit:
-  - [ ] bloquear mudança em admin protegido
+  - [x] bloquear mudança em admin protegido (handler validation unit + admin guard via integração — guarda depende de linha no banco)
 - Integração:
-  - [ ] promover a coordenador; desativar/ativar catequista
+  - [x] promover a coordenador; desativar/ativar catequista
 - Test coverage target: >=80%
 - All tests must pass
 

@@ -84,6 +84,7 @@ func (s *Server) Router() http.Handler {
 				r.Use(httpx.RequireCoordinator)
 				r.Get("/catechists", s.handleListCatechists)
 				r.Post("/catechists", s.handleCreateCatechist)
+				r.Patch("/catechists/{id}", s.handleUpdateCatechist)
 				r.Delete("/catechists/{id}", s.handleDeleteCatechist)
 
 				r.Post("/academic-years", s.handleCreateAcademicYear)
