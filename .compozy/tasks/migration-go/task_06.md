@@ -1,8 +1,7 @@
 ---
-status: pending
-domain: API
-type: Feature Implementation
-scope: Full
+status: completed
+title: API de turmas + class_catechists (CRUD, escopo de leitura)
+type: backend
 complexity: high
 dependencies:
   - task_04
@@ -22,11 +21,11 @@ Implementa os endpoints de turmas e o vínculo com catequistas. Criação/ediç�
 </requirements>
 
 ## Subtasks
-- [ ] 6.1 Queries sqlc (list por papel, create, update, replace catechists, archive)
-- [ ] 6.2 Transação para substituir vínculos de catequistas
-- [ ] 6.3 Handlers + integração com `Authorizer` para escopo de leitura
-- [ ] 6.4 Endpoint `GET /classes/:id/students` com `CanAccessClass`
-- [ ] 6.5 Testes de handler/integração incl. escopo por catequista
+- [x] 6.1 Queries sqlc (list por papel, create, update, replace catechists, archive)
+- [x] 6.2 Transação para substituir vínculos de catequistas
+- [x] 6.3 Handlers + integração com `Authorizer` para escopo de leitura
+- [x] 6.4 Endpoint `GET /classes/:id/students` com `CanAccessClass`
+- [x] 6.5 Testes de handler/integração incl. escopo por catequista
 
 ## Implementation Details
 Ver TechSpec §API Endpoints. Substituição de catequistas = delete-all + insert numa transação pgx. Leitura por catequista filtra via `class_catechists`.
@@ -47,10 +46,10 @@ Ver TechSpec §API Endpoints. Substituição de catequistas = delete-all + inser
 
 ## Tests
 - Unit:
-  - [ ] validação de payload de turma
+  - [x] validação de payload de turma
 - Integração:
-  - [ ] coordenador cria/edita e substitui catequistas (transação)
-  - [ ] catequista lê só suas turmas; acesso a turma alheia → 403
+  - [x] coordenador cria/edita e substitui catequistas (transação)
+  - [x] catequista lê só suas turmas; acesso a turma alheia → 403
 - Test coverage target: >=80%
 - All tests must pass
 

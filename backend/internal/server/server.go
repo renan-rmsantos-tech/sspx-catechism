@@ -12,6 +12,7 @@ import (
 	"github.com/rmtech/sspx-catechism/backend/internal/academic"
 	"github.com/rmtech/sspx-catechism/backend/internal/auth"
 	"github.com/rmtech/sspx-catechism/backend/internal/authz"
+	"github.com/rmtech/sspx-catechism/backend/internal/classes"
 	"github.com/rmtech/sspx-catechism/backend/internal/config"
 	"github.com/rmtech/sspx-catechism/backend/internal/db/sqlcgen"
 	"github.com/rmtech/sspx-catechism/backend/internal/httpx"
@@ -20,21 +21,23 @@ import (
 
 // Server holds shared dependencies for handlers.
 type Server struct {
-	cfg   config.Config
-	pool  *pgxpool.Pool
-	jwt   *auth.Manager
-	users *users.Service
-	years *academic.Service
-	authz authz.Authorizer
+	cfg     config.Config
+	pool    *pgxpool.Pool
+	jwt     *auth.Manager
+	users   *users.Service
+	years   *academic.Service
+	classes *classes.Service
+	authz   authz.Authorizer
 }
 
 func New(cfg config.Config, pool *pgxpool.Pool, jwt *auth.Manager) *Server {
 	return &Server{
-		cfg:   cfg,
-		pool:  pool,
-		jwt:   jwt,
-		users: users.NewService(pool),
-		years: academic.NewService(pool),
+		cfg:     cfg,
+		pool:    pool,
+		jwt:     jwt,
+		users:   users.NewService(pool),
+		years:   academic.NewService(pool),
+		classes: classes.NewService(pool),
 		// Authorizer replaces RLS; consumed by class/student/attendance routes
 		// (tasks 06/07/11) via authz.RequireClassAccess.
 		authz: authz.New(sqlcgen.New(pool)),
@@ -66,6 +69,13 @@ func (s *Server) Router() http.Handler {
 			// Academic years: listing is open to any authenticated user.
 			r.Get("/academic-years", s.handleListAcademicYears)
 
+			// Classes: listing is scoped per role by the service (coordinator
+			// sees all, catechist only their own); the student roster is gated
+			// per class by the Authorizer (replacing RLS).
+			r.Get("/classes", s.handleListClasses)
+			r.With(authz.RequireClassAccess(s.authz, "id")).
+				Get("/classes/{id}/students", s.handleListClassStudents)
+
 			// Coordinator-only
 			r.Group(func(r chi.Router) {
 				r.Use(httpx.RequireCoordinator)
@@ -76,6 +86,9 @@ func (s *Server) Router() http.Handler {
 				r.Post("/academic-years", s.handleCreateAcademicYear)
 				r.Patch("/academic-years/{id}", s.handleUpdateAcademicYear)
 				r.Delete("/academic-years/{id}", s.handleDeleteAcademicYear)
+
+				r.Post("/classes", s.handleCreateClass)
+				r.Patch("/classes/{id}", s.handleUpdateClass)
 			})
 		})
 	})
