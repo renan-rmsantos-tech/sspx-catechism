@@ -1,0 +1,76 @@
+name: sspx-catechism
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      PORT: "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "/api", "-healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/Caddy.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile.traefik:/etc/caddy/Caddyfile:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.catechism.rule=Host(`catequese.apps.rmsantos.tech`)
+      - traefik.http.routers.catechism.entrypoints=websecure
+      - traefik.http.routers.catechism.tls=true
+      - traefik.http.routers.catechism.tls.certresolver=letsencrypt
+      - traefik.http.services.catechism.loadbalancer.server.port=80
+
+volumes:
+  pgdata:
+    name: catechism_pgdata
+
+networks:
+  internal:
+    name: catechism_internal
+  proxy:
+    external: true
