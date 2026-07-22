@@ -19,11 +19,19 @@ afterEach(async () => {
   await Promise.all([db.pending_sessions.clear(), db.cached_class_dates.clear()])
 })
 
-// jsdom does not implement the object-URL statics; the blob-download flow
-// (admin reports) calls them. Define no-op stubs so downloads don't throw.
-if (typeof URL.createObjectURL !== 'function') {
-  URL.createObjectURL = () => 'blob:mock'
-}
-if (typeof URL.revokeObjectURL !== 'function') {
-  URL.revokeObjectURL = () => {}
-}
+// The blob-download flow (admin reports) calls URL.createObjectURL/
+// revokeObjectURL. Stub them UNCONDITIONALLY: depending on the Node version,
+// the global may be missing (jsdom) OR a real implementation that rejects a
+// jsdom Blob and throws — which silently breaks the download and only shows up
+// on CI (Node 22) while passing locally (newer Node). A fixed stub is
+// environment-independent. defineProperty handles a non-writable existing one.
+Object.defineProperty(URL, 'createObjectURL', {
+  value: () => 'blob:mock',
+  writable: true,
+  configurable: true,
+})
+Object.defineProperty(URL, 'revokeObjectURL', {
+  value: () => {},
+  writable: true,
+  configurable: true,
+})
