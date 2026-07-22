@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/rmtech/sspx-catechism/backend/internal/academic"
@@ -22,6 +23,14 @@ import (
 	"github.com/rmtech/sspx-catechism/backend/internal/reports"
 	"github.com/rmtech/sspx-catechism/backend/internal/students"
 	"github.com/rmtech/sspx-catechism/backend/internal/users"
+)
+
+// Login brute-force throttle: at most loginRateLimit attempts per IP within
+// loginRateWindow. Generous enough for a human mistyping a password, punishing
+// for an automated attacker.
+const (
+	loginRateLimit  = 10
+	loginRateWindow = time.Minute
 )
 
 // Server holds shared dependencies for handlers.
@@ -72,8 +81,12 @@ func (s *Server) Router() http.Handler {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/health", s.handleHealth)
 
-		// Auth
-		r.Post("/auth/login", s.handleLogin)
+		// Auth. The login endpoint is rate-limited per client IP to blunt
+		// online brute-force / credential-stuffing; middleware.RealIP above
+		// makes RemoteAddr the true client IP. A 429 with Retry-After is
+		// returned once the window is exceeded.
+		r.With(httprate.LimitByIP(loginRateLimit, loginRateWindow)).
+			Post("/auth/login", s.handleLogin)
 		r.Post("/auth/logout", s.handleLogout)
 
 		// Public enrollment submission (no auth — equivalent to the old

@@ -157,19 +157,28 @@ func (s *Service) DeleteCatechist(ctx context.Context, id string) error {
 	return s.q.DeleteProfile(ctx, uid)
 }
 
-// BootstrapAdmin idempotently ensures an admin account exists with the given
-// credentials. Runs on startup, replacing the old instrumentation.ts seeding.
-func (s *Service) BootstrapAdmin(ctx context.Context, email, password string) error {
+// BootstrapAdmin ensures an admin account exists with the given credentials.
+// Runs on startup, replacing the old instrumentation.ts seeding.
+//
+// It is create-only by design: if the admin already exists it is left
+// untouched, so a password changed in the app is never reverted on the next
+// deploy and a deliberately deactivated admin stays deactivated. Pass force
+// (ADMIN_FORCE_RESET=true) to explicitly reset an existing admin's
+// password/role/active state from the environment — an escape hatch for
+// recovering a locked-out account.
+func (s *Service) BootstrapAdmin(ctx context.Context, email, password string, force bool) error {
 	if email == "" || password == "" {
 		return nil // nothing to seed
 	}
-	hash, err := auth.HashPassword(password)
-	if err != nil {
-		return err
-	}
-	_, err = s.q.GetProfileByEmail(ctx, email)
+	_, err := s.q.GetProfileByEmail(ctx, email)
 	if err == nil {
-		// Exists → ensure admin role + refresh password.
+		if !force {
+			return nil // already exists → do not overwrite
+		}
+		hash, hashErr := auth.HashPassword(password)
+		if hashErr != nil {
+			return hashErr
+		}
 		_, err = s.q.UpdateAdminCredentials(ctx, sqlcgen.UpdateAdminCredentialsParams{
 			Email:        email,
 			PasswordHash: hash,
@@ -178,6 +187,10 @@ func (s *Service) BootstrapAdmin(ctx context.Context, email, password string) er
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return fmt.Errorf("lookup admin: %w", err)
+	}
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		return err
 	}
 	_, err = s.q.CreateProfile(ctx, sqlcgen.CreateProfileParams{
 		Email:              email,
