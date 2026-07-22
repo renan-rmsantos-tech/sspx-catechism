@@ -90,7 +90,10 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 function fileResponse() {
-  return new Response(new Blob(['file']), {
+  // Use a plain string body (not new Blob(...)): a jsdom Blob wrapped in the
+  // undici Response can make response.blob() hang on Node 22 (CI), so the
+  // download's link.click() is never reached. A string body is portable.
+  return new Response('file', {
     status: 200,
     headers: { 'content-disposition': 'attachment; filename="relatorio.pdf"' },
   })
