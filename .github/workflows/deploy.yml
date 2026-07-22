@@ -1,11 +1,13 @@
 name: Deploy
 
-# Auto-deploy on push to main (+ manual trigger). Builds happen ON the
-# DigitalOcean droplet (no external registry). Requires repo secrets:
-#   SSH_HOST, SSH_USER, SSH_KEY (private key), DEPLOY_PATH (e.g. /opt/catechism)
+# Runs tests on every PR; deploys only on push to main (+ manual trigger).
+# Builds happen ON the DigitalOcean droplet (no external registry). Requires
+# repo secrets: SSH_HOST, SSH_USER, SSH_KEY (private key), DEPLOY_PATH.
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -38,6 +40,8 @@ jobs:
 
   deploy:
     needs: test
+    # Never deploy from a pull request — only push to main / manual dispatch.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
