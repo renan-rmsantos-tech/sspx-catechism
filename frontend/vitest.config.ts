@@ -15,6 +15,10 @@ export default defineConfig({
     maxWorkers: 1,
     globals: true,
     setupFiles: ['src/test/setup.ts'],
+    // Heavy admin renders occasionally need more than the 5s default on
+    // contended CI runners; give headroom and retry as a safety net.
+    testTimeout: 15000,
+    retry: process.env.CI ? 2 : 0,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],

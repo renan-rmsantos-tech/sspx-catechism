@@ -152,11 +152,9 @@ function setupFetch() {
     return jsonResponse({ status: 'ok' })
   })
   vi.stubGlobal('fetch', fetchMock)
-  vi.stubGlobal('URL', {
-    ...URL,
-    createObjectURL: vi.fn(() => 'blob:report'),
-    revokeObjectURL: vi.fn(),
-  })
+  // URL.createObjectURL / revokeObjectURL are stubbed globally in test/setup.ts
+  // (jsdom does not implement them). We intentionally keep the real URL
+  // constructor here so new URL(...) used by the router keeps working.
   return { fetchMock, calls }
 }
 
@@ -342,6 +340,8 @@ describe('AdminPage', () => {
     await waitFor(() =>
       expect(calls.some((call) => call.path.includes('format=xlsx'))).toBe(true),
     )
-    expect(clickSpy).toHaveBeenCalled()
+    // The anchor click happens a few microtasks after the fetch (blob() must
+    // resolve first), so wait for it instead of asserting synchronously.
+    await waitFor(() => expect(clickSpy).toHaveBeenCalled())
   })
 })
