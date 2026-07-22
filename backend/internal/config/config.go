@@ -13,8 +13,13 @@ type Config struct {
 	JWTSecret     string
 	AdminEmail    string
 	AdminPassword string
-	Port          string
-	Env           string
+	// AdminForceReset, when true, makes the startup bootstrap overwrite an
+	// existing admin's password/role/active state from ADMIN_PASSWORD. Default
+	// false: the admin is only ever created if missing, so a password changed
+	// in the app is never silently reverted on the next deploy.
+	AdminForceReset bool
+	Port            string
+	Env             string
 }
 
 // Load reads configuration from the environment, applying defaults and
@@ -25,12 +30,13 @@ func Load() (Config, error) {
 	_ = godotenv.Load()
 
 	c := Config{
-		DatabaseURL:   os.Getenv("DATABASE_URL"),
-		JWTSecret:     os.Getenv("JWT_SECRET"),
-		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
-		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
-		Port:          getenv("PORT", "8080"),
-		Env:           getenv("APP_ENV", "development"),
+		DatabaseURL:     os.Getenv("DATABASE_URL"),
+		JWTSecret:       os.Getenv("JWT_SECRET"),
+		AdminEmail:      os.Getenv("ADMIN_EMAIL"),
+		AdminPassword:   os.Getenv("ADMIN_PASSWORD"),
+		AdminForceReset: os.Getenv("ADMIN_FORCE_RESET") == "true",
+		Port:            getenv("PORT", "8080"),
+		Env:             getenv("APP_ENV", "development"),
 	}
 	if c.DatabaseURL == "" {
 		return c, fmt.Errorf("DATABASE_URL is required")

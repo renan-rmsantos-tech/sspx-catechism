@@ -48,8 +48,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	// Idempotent admin bootstrap.
-	if err := users.NewService(pool).BootstrapAdmin(ctx, cfg.AdminEmail, cfg.AdminPassword); err != nil {
+	// Create-only admin bootstrap (set ADMIN_FORCE_RESET=true to force a reset).
+	if err := users.NewService(pool).BootstrapAdmin(ctx, cfg.AdminEmail, cfg.AdminPassword, cfg.AdminForceReset); err != nil {
 		logger.Error("bootstrap admin", "err", err)
 		os.Exit(1)
 	}
