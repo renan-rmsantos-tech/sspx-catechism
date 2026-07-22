@@ -207,7 +207,7 @@ Passo a passo completo em [`infra/README.md`](infra/README.md). Resumo:
 2. Apontar o **DNS** do domínio para o IP do droplet (pré-requisito do TLS emitido pelo Traefik).
 3. Clonar o repo em `/opt/apps/projects/sspx-catechism`, preencher `.env`.
 4. `docker compose -f compose.traefik.yaml up -d --build` → Caddy sobe atrás do Traefik, goose migra, admin é semeado (se ausente).
-5. Agendar o backup noturno para o DO Spaces (`scripts/backup.sh` via cron) e **testar a restauração** (`scripts/restore.sh`).
+5. *(Opcional — backup desativado por ora)* Agendar o backup noturno para o DO Spaces (`scripts/backup.sh` via cron) e **testar a restauração** (`scripts/restore.sh`).
 6. CI: cadastrar os secrets SSH no GitHub → `git push` na `main` faz deploy automático (`.github/workflows/deploy.yml`).
 
 ---

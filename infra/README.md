@@ -94,7 +94,11 @@ cp .env.server.example .env
 nano .env
 ```
 
-## 5. DigitalOcean Spaces para backup  **[você + droplet]**
+## 5. DigitalOcean Spaces para backup  **[você + droplet]**  *(opcional)*
+
+> **Backup está desativado neste projeto por ora.** Os scripts e as seções 5 e 7
+> ficam prontos para ativar quando/se necessário — pule-as se não for usar backup.
+
 ```bash
 # [você] No painel DO: Create → Spaces Object Storage. Anote o nome (bucket) e a região
 # (ex.: nyc3). Em API → Spaces Keys, gere um par Access Key / Secret Key.
@@ -115,7 +119,7 @@ docker compose -f compose.traefik.yaml logs -f api   # veja migrações goose e 
   automaticamente (DNS apontado + entrypoint `websecure`).
 - Acesse `https://catequese.SEU_DOMINIO` e faça login com `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
 
-## 7. Backup automático (DO Spaces)
+## 7. Backup automático (DO Spaces)  *(opcional — desativado por ora)*
 ```bash
 chmod +x scripts/backup.sh scripts/restore.sh
 # Teste manual (gera o dump cifrado e envia ao Spaces):
@@ -157,9 +161,9 @@ sem estes sinais.
 | Perfil admin/coordenador | Criar ano/turma/aluno/catequista, revisar inscrição e baixar relatório | |
 | Perfil catequista | Login, acessar turmas permitidas, registrar chamada e sincronizar fila offline | |
 | Perfil público | Submeter inscrição pública e confirmar entrada para revisão | |
-| Backup off-site | `./scripts/backup.sh` envia `catechism-*.sql.gz.gpg` ao DO Spaces | |
-| Restore comprovado | `./scripts/restore.sh <arquivo>` termina sem erro e app segue funcional | |
-| Cron ativo | `crontab -l` contém o agendamento noturno e `/var/log/catechism-backup.log` registra sucesso | |
+| Backup off-site *(opcional)* | `./scripts/backup.sh` envia `catechism-*.sql.gz.gpg` ao DO Spaces | |
+| Restore comprovado *(opcional)* | `./scripts/restore.sh <arquivo>` termina sem erro e app segue funcional | |
+| Cron ativo *(opcional)* | `crontab -l` contém o agendamento noturno e `/var/log/catechism-backup.log` registra sucesso | |
 | CI/CD ativo | Push na `main` (ou `workflow_dispatch`) conclui `deploy.yml` e atualiza o droplet | |
 
 ## Operação do dia a dia

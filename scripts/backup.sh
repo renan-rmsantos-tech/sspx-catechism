@@ -3,6 +3,10 @@
 # Run on the droplet via cron. Reads config from the .env next to
 # compose.traefik.yaml.
 #
+# NOTE: backup is currently DISABLED for this project (no cron scheduled, no
+# Spaces configured). This script is kept ready — see infra/README.md §5/§7 to
+# enable it.
+#
 # Requires: docker, gpg, and the AWS CLI v2 (`aws`) — DO Spaces speaks S3.
 # Cron example (daily 03:17):
 #   17 3 * * * cd /opt/apps/projects/sspx-catechism && ./scripts/backup.sh >> /var/log/catechism-backup.log 2>&1
