@@ -1,62 +1,61 @@
 #!/usr/bin/env bash
-# Nightly encrypted Postgres backup → Hetzner Storage Box (SFTP/SSH).
-# Run on the VPS via cron. Reads config from the .env next to docker-compose.yml.
+# Nightly encrypted Postgres backup → DigitalOcean Spaces (S3-compatible).
+# Run on the droplet via cron. Reads config from the .env next to
+# compose.traefik.yaml.
 #
-# Requires: docker, gpg, ssh/sftp, an SSH key authorized on the Storage Box.
+# Requires: docker, gpg, and the AWS CLI v2 (`aws`) — DO Spaces speaks S3.
 # Cron example (daily 03:17):
-#   17 3 * * * cd /opt/catechism && ./scripts/backup.sh >> /var/log/catechism-backup.log 2>&1
+#   17 3 * * * cd /opt/apps/projects/sspx-catechism && ./scripts/backup.sh >> /var/log/catechism-backup.log 2>&1
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-# Load env (POSTGRES_*, STORAGEBOX_*, BACKUP_*)
+# Load env (POSTGRES_*, SPACES_*, AWS_*, BACKUP_*)
 set -a
 # shellcheck disable=SC1091
 source ./.env
 set +a
 
 : "${POSTGRES_USER:?}" "${POSTGRES_DB:?}" "${BACKUP_PASSPHRASE:?}"
-: "${STORAGEBOX_USER:?}" "${STORAGEBOX_HOST:?}" "${STORAGEBOX_REMOTE_DIR:?}"
+: "${SPACES_BUCKET:?}" "${SPACES_REGION:?}"
+: "${AWS_ACCESS_KEY_ID:?}" "${AWS_SECRET_ACCESS_KEY:?}"
+SPACES_PREFIX="${SPACES_PREFIX:-catechism-backups}"
+SPACES_ENDPOINT="${SPACES_ENDPOINT:-https://${SPACES_REGION}.digitaloceanspaces.com}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
-SFTP_TARGET="$STORAGEBOX_USER@$STORAGEBOX_HOST"
-SFTP_OPTS=()
-if [ -n "${STORAGEBOX_SSH_KEY:-}" ]; then
-  SFTP_OPTS=(-i "$STORAGEBOX_SSH_KEY")
-fi
+COMPOSE_FILE="${COMPOSE_FILE:-compose.traefik.yaml}"
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
-DUMP_FILE="$TMP_DIR/catechism-$STAMP.sql.gz.gpg"
+DUMP_NAME="catechism-$STAMP.sql.gz.gpg"
+DUMP_FILE="$TMP_DIR/$DUMP_NAME"
 
 echo "[backup] dumping database $POSTGRES_DB ..."
-docker compose exec -T db pg_dump --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" "$POSTGRES_DB" \
+docker compose -f "$COMPOSE_FILE" exec -T db \
+  pg_dump --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" "$POSTGRES_DB" \
   | gzip \
   | gpg --batch --yes --symmetric --cipher-algo AES256 \
         --passphrase "$BACKUP_PASSPHRASE" -o "$DUMP_FILE"
 
 SIZE="$(du -h "$DUMP_FILE" | cut -f1)"
-echo "[backup] encrypted dump ready ($SIZE): $(basename "$DUMP_FILE")"
+echo "[backup] encrypted dump ready ($SIZE): $DUMP_NAME"
 
-echo "[backup] uploading to Storage Box ..."
-# Ensure remote dir exists, then upload (batch SFTP).
-sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" <<EOF
--mkdir $STORAGEBOX_REMOTE_DIR
-put $DUMP_FILE $STORAGEBOX_REMOTE_DIR/$(basename "$DUMP_FILE")
-EOF
+echo "[backup] uploading to s3://$SPACES_BUCKET/$SPACES_PREFIX/ ..."
+aws s3 cp "$DUMP_FILE" "s3://$SPACES_BUCKET/$SPACES_PREFIX/$DUMP_NAME" \
+  --endpoint-url "$SPACES_ENDPOINT"
 
-echo "[backup] pruning remote backups older than $RETENTION_DAYS days ..."
-# List remote files and delete ones older than retention (by embedded date in name).
+echo "[backup] pruning backups older than $RETENTION_DAYS days ..."
 CUTOFF="$(date -d "-$RETENTION_DAYS days" +%Y%m%d)"
-REMOTE_LIST="$(echo "ls -1 $STORAGEBOX_REMOTE_DIR" | sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" 2>/dev/null | grep -E 'catechism-[0-9]{8}-' || true)"
+REMOTE_LIST="$(aws s3 ls "s3://$SPACES_BUCKET/$SPACES_PREFIX/" --endpoint-url "$SPACES_ENDPOINT" 2>/dev/null \
+  | awk '{print $4}' | grep -E '^catechism-[0-9]{8}-' || true)"
 while IFS= read -r f; do
   [ -z "$f" ] && continue
-  fdate="$(echo "$f" | sed -E 's/.*catechism-([0-9]{8})-.*/\1/')"
+  fdate="$(echo "$f" | sed -E 's/^catechism-([0-9]{8})-.*/\1/')"
   if [ -n "$fdate" ] && [ "$fdate" -lt "$CUTOFF" ]; then
     echo "[backup]   deleting old $f"
-    echo "rm $STORAGEBOX_REMOTE_DIR/$(basename "$f")" | sftp "${SFTP_OPTS[@]}" -b - "$SFTP_TARGET" >/dev/null 2>&1 || true
+    aws s3 rm "s3://$SPACES_BUCKET/$SPACES_PREFIX/$f" --endpoint-url "$SPACES_ENDPOINT" >/dev/null || true
   fi
 done <<< "$REMOTE_LIST"
 
