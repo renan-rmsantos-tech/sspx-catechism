@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from '@/App'
 
@@ -322,27 +323,34 @@ describe('AdminPage', () => {
   it('previews attendance reports and triggers PDF downloads', async () => {
     const { calls } = setupFetch()
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const user = userEvent.setup()
     renderAdmin('/admin/relatorios')
 
     await screen.findByRole('heading', { name: 'Relatórios de presença' })
-    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
+    // userEvent awaits each interaction so react-hook-form commits every field
+    // before submit reads them. Plain fireEvent races the RHF state update and
+    // fails intermittently on slower CI runners (validation sees stale values).
+    await user.selectOptions(screen.getByLabelText('Turma'), 'class-1')
     fireEvent.change(screen.getByLabelText('De'), { target: { value: '2026-01-01' } })
     fireEvent.change(screen.getByLabelText('Até'), { target: { value: '2026-01-31' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Pré-visualizar' }))
+    // Confirm RHF holds the values before submitting.
+    await waitFor(() => {
+      expect((screen.getByLabelText('Turma') as HTMLSelectElement).value).toBe('class-1')
+      expect((screen.getByLabelText('De') as HTMLInputElement).value).toBe('2026-01-01')
+      expect((screen.getByLabelText('Até') as HTMLInputElement).value).toBe('2026-01-31')
+    })
+    await user.click(screen.getByRole('button', { name: 'Pré-visualizar' }))
 
     await screen.findByText('Ana Clara')
-    fireEvent.click(screen.getByRole('button', { name: 'PDF' }))
+    await user.click(screen.getByRole('button', { name: 'PDF' }))
 
     await waitFor(() =>
       expect(calls.some((call) => call.path.includes('format=pdf'))).toBe(true),
     )
-    fireEvent.click(screen.getByRole('button', { name: 'XLSX' }))
+    await user.click(screen.getByRole('button', { name: 'XLSX' }))
     await waitFor(() =>
       expect(calls.some((call) => call.path.includes('format=xlsx'))).toBe(true),
     )
-    // TEMP DIAGNOSTIC: surface the report banner so CI reveals any swallowed
-    // download error (component sets a message on both success and failure).
-    await screen.findByText(/Relatório .* gerado\.|erro/i)
     // The anchor click happens a few microtasks after the fetch (blob() must
     // resolve first), so wait for it instead of asserting synchronously.
     await waitFor(() => expect(clickSpy).toHaveBeenCalled())
