@@ -340,6 +340,9 @@ describe('AdminPage', () => {
     await waitFor(() =>
       expect(calls.some((call) => call.path.includes('format=xlsx'))).toBe(true),
     )
+    // TEMP DIAGNOSTIC: surface the report banner so CI reveals any swallowed
+    // download error (component sets a message on both success and failure).
+    await screen.findByText(/Relatório .* gerado\.|erro/i)
     // The anchor click happens a few microtasks after the fetch (blob() must
     // resolve first), so wait for it instead of asserting synchronously.
     await waitFor(() => expect(clickSpy).toHaveBeenCalled())
