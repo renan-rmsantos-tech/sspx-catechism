@@ -3,6 +3,7 @@ import { LogIn } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { Button } from '@/components/ui/button'
+import { Field, Input } from '@/components/ui/field'
 import { useAuth } from '@/contexts/auth-context'
 import { ApiError } from '@/lib/api'
 import { CHANGE_PASSWORD_PATH } from '@/lib/auth-routing'
@@ -39,45 +40,39 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Entrar">
+    <AuthShell title="Entrar" description="Use o e-mail cadastrado pela coordenação da paróquia.">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-sm font-medium text-foreground">
-            E-mail
-          </label>
-          <input
+        <Field id="email" label="E-mail">
+          <Input
             id="email"
             type="email"
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-10 rounded-lg border border-input bg-white px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            placeholder="seu@email.com"
+            aria-invalid={error && !email.trim() ? 'true' : undefined}
+            placeholder="catequista@paroquia.org"
           />
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-sm font-medium text-foreground">
-            Senha
-          </label>
-          <input
+        <Field id="password" label="Senha" hint="No primeiro acesso você será levado à troca de senha.">
+          <Input
             id="password"
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="h-10 rounded-lg border border-input bg-white px-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            placeholder="Mínimo 6 caracteres"
+            aria-invalid={error && !password ? 'true' : undefined}
+            placeholder="Mínimo de 6 caracteres"
           />
-        </div>
+        </Field>
 
         {error ? (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-destructive">
+          <p role="alert" className="rounded-[var(--r-sm)] bg-danger-soft px-3 py-2 text-sm text-danger-ink">
             {error}
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" disabled={isSubmitting} className="mt-1 w-full">
+        <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} disabledReason="Entrando..." className="mt-1 w-full">
           <LogIn aria-hidden="true" />
           {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>

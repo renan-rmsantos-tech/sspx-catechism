@@ -87,7 +87,7 @@ export const catechistSchema = z.object({
 })
 
 export const rejectEnrollmentSchema = z.object({
-  rejectionReason: optionalText,
+  rejectionReason: z.string().trim().min(1, 'Informe o motivo da rejeição'),
 })
 
 export const approveEnrollmentSchema = z.object({

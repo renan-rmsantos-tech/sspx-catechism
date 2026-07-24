@@ -1,216 +1,323 @@
-import { CalendarCheck, LogOut, RefreshCw, UserRound } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '@/contexts/auth-context'
-import { cacheClassDates } from '@/lib/class-dates-cache'
-import { loadDashboardData, type DashboardData } from '@/lib/dashboard-api'
+import { CalendarCheck, LogOut, RefreshCw, UserRound } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Brand } from "@/components/ui/brand";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Chip, NetworkChip } from "@/components/ui/chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Meter } from "@/components/ui/metrics";
+import { useAuth } from "@/contexts/auth-context";
+import { cacheClassDates } from "@/lib/class-dates-cache";
+import { loadDashboardData, type DashboardData } from "@/lib/dashboard-api";
 import {
   getPendingSessionCount,
   registerAttendanceSyncHandlers,
   syncPendingSessions,
-} from '@/lib/attendance-sync'
+} from "@/lib/attendance-sync";
 
-const today = () => new Date().toISOString().slice(0, 10)
+const today = () => new Date().toISOString().slice(0, 10);
 
 function formatGreetingDate(date: Date): string {
-  return date.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
+  return date.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 }
 
 export function DashboardPage() {
-  const { user, logout } = useAuth()
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [pendingCount, setPendingCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [syncing, setSyncing] = useState(false)
+  const { user, logout } = useAuth();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   async function refreshPendingCount() {
-    setPendingCount(await getPendingSessionCount())
+    setPendingCount(await getPendingSessionCount());
   }
-
   async function refreshData() {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
     try {
-      const next = await loadDashboardData()
-      setData(next)
-      if (next.activeYear) {
-        await cacheClassDates(next.activeYear.id, next.classDates)
-      }
-      await refreshPendingCount()
+      const next = await loadDashboardData();
+      setData(next);
+      if (next.activeYear)
+        await cacheClassDates(next.activeYear.id, next.classDates);
+      await refreshPendingCount();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar dashboard')
+      setError(
+        err instanceof Error ? err.message : "Erro ao carregar dashboard",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
+    }
+  }
+  async function syncNow() {
+    setSyncing(true);
+    try {
+      await syncPendingSessions();
+      await refreshPendingCount();
+    } catch {
+      await refreshPendingCount();
+    } finally {
+      setSyncing(false);
     }
   }
 
   useEffect(() => {
-    registerAttendanceSyncHandlers()
-    void refreshData()
-  }, [])
-
+    registerAttendanceSyncHandlers();
+    void refreshData();
+  }, []);
   useEffect(() => {
-    const onOnline = async () => {
-      setSyncing(true)
-      try {
-        await syncPendingSessions()
-        await refreshData()
-      } catch {
-        await refreshPendingCount()
-      } finally {
-        setSyncing(false)
-      }
-    }
-    window.addEventListener('online', onOnline)
-    return () => window.removeEventListener('online', onOnline)
-  }, [])
+    const onOnline = () => void syncNow();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, []);
 
   const view = useMemo(() => {
-    if (!data) return null
-    const currentDate = today()
-    const isScheduledDay = data.classDates.includes(currentDate)
+    if (!data) return null;
+    const currentDate = today();
+    const isScheduledDay = data.classDates.includes(currentDate);
     const todayClassIds = new Set(
       data.attendance
         .filter((session) => session.date === currentDate)
         .map((session) => session.classId),
-    )
-
+    );
     const statsByClass = Object.fromEntries(
       data.classes.map((item) => {
-        const sessions = data.attendance.filter((session) => session.classId === item.id)
-        const records = sessions.flatMap((session) => session.records)
-        const present = records.filter((record) => record.present).length
-        const percent = records.length ? Math.round((present / records.length) * 100) : 0
-        return [item.id, { percent, doneToday: todayClassIds.has(item.id) }]
+        const records = data.attendance
+          .filter((session) => session.classId === item.id)
+          .flatMap((session) => session.records);
+        return [
+          item.id,
+          {
+            percent: records.length
+              ? Math.round(
+                  (records.filter((record) => record.present).length /
+                    records.length) *
+                    100,
+                )
+              : 0,
+            doneToday: todayClassIds.has(item.id),
+          },
+        ];
       }),
-    )
+    );
+    return {
+      isScheduledDay,
+      statsByClass,
+      pendingClass:
+        data.classes.find((item) => !todayClassIds.has(item.id)) ?? null,
+    };
+  }, [data]);
 
-    const pendingClass = data.classes.find((item) => !todayClassIds.has(item.id)) ?? null
-    return { currentDate, isScheduledDay, statsByClass, pendingClass }
-  }, [data])
-
+  const firstName = user?.fullName.split(" ")[0] ?? "Catequista";
   return (
     <main className="min-h-screen bg-background pb-28">
-      <header className="sticky top-0 z-10 border-b bg-card px-5 py-4">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-primary">Catequese</h1>
-            <p className="text-sm text-muted-foreground">{user?.fullName ?? 'Catequista'}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
-              <UserRound aria-hidden="true" size={18} />
-            </div>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-              aria-label="Sair"
-              title="Sair"
-            >
-              <LogOut aria-hidden="true" size={18} />
-            </button>
-          </div>
+      <header
+        className="sticky top-0 z-10 border-b border-border bg-surface/90 px-4 py-3 backdrop-blur"
+        data-od-id="appbar"
+      >
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
+          <Brand compact className="shrink-0" />
+          <span className="hidden text-sm font-semibold text-fg sm:block">
+            Minhas turmas
+          </span>
+          <span className="flex-1" />
+          <NetworkChip />
+          <span className="hidden text-right leading-tight sm:block">
+            <span className="block text-sm font-semibold">
+              {user?.fullName ?? "Catequista"}
+            </span>
+            <span className="eyebrow block text-[10px]">Catequista</span>
+          </span>
+          <span
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-3 text-muted"
+            aria-hidden="true"
+          >
+            <UserRound size={18} />
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => void logout()}
+            aria-label="Sair"
+            title="Sair"
+          >
+            <LogOut aria-hidden="true" size={18} />
+          </Button>
         </div>
       </header>
 
-      <section className="mx-auto max-w-3xl px-5 py-5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {formatGreetingDate(new Date())}
-        </p>
-        <h2 className="mt-1 text-2xl font-semibold text-foreground">
-          Olá, {user?.fullName.split(' ')[0] ?? 'Catequista'}
-        </h2>
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+        <section className="space-y-2" data-od-id="greeting">
+          <p className="eyebrow">{formatGreetingDate(new Date())}</p>
+          <h1>Bom dia, {firstName}</h1>
+          <p className="max-w-2xl text-sm text-muted">
+            {data
+              ? `${data.classes.length} turma${data.classes.length === 1 ? "" : "s"} atribuída${data.classes.length === 1 ? "" : "s"} a você neste ano letivo.`
+              : "Aqui você encontra suas turmas e as chamadas de hoje."}
+          </p>
+        </section>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-sm">
-          <span className="rounded-md border bg-card px-3 py-2 text-muted-foreground">
-            {navigator.onLine ? 'Online' : 'Offline'}
-          </span>
-          <span className="rounded-md border bg-card px-3 py-2 text-muted-foreground">
-            {pendingCount} chamada{pendingCount === 1 ? '' : 's'} pendente
-          </span>
-          {syncing && (
-            <span className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-muted-foreground">
-              <RefreshCw aria-hidden="true" size={14} className="animate-spin" />
-              Sincronizando
-            </span>
-          )}
-        </div>
-      </section>
+        {pendingCount > 0 && (
+          <section
+            role="status"
+            className="flex flex-wrap items-center gap-3 rounded-[var(--r)] border border-warn bg-warn-soft p-4 text-sm text-warn-ink"
+            data-od-id="sync-state"
+          >
+            <RefreshCw
+              aria-hidden="true"
+              size={18}
+              className={syncing ? "animate-spin" : ""}
+            />
+            <p className="min-w-48 flex-1">
+              <strong className="num">{pendingCount}</strong> chamada
+              {pendingCount === 1 ? "" : "s"} aguardando envio. Foi registrada
+              sem conexão e será sincronizada automaticamente.
+            </p>
+            <Button
+              variant="secondary"
+              disabled={syncing}
+              disabledReason="Enviando…"
+              onClick={() => void syncNow()}
+            >
+              {syncing ? "Enviando…" : "Sincronizar agora"}
+            </Button>
+          </section>
+        )}
 
-      <section className="mx-auto max-w-3xl px-5">
-        {isLoading && <p className="py-8 text-sm text-muted-foreground">Carregando turmas...</p>}
+        {isLoading && (
+          <p className="py-8 text-sm text-muted">Carregando turmas...</p>
+        )}
         {error && (
-          <div role="alert" className="rounded-lg border border-destructive/30 bg-card p-4 text-sm text-destructive">
+          <div
+            role="alert"
+            className="rounded-[var(--r)] border border-danger bg-danger-soft p-4 text-sm text-danger-ink"
+          >
             {error}
           </div>
         )}
         {data && view && (
-          <div className="space-y-3" data-testid="class-list">
-            {data.classes.length === 0 && (
-              <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma turma atribuída.</p>
-            )}
-            {data.classes.map((item) => {
-              const students = data.studentsByClass[item.id] ?? []
-              const stat = view.statsByClass[item.id]
-              return (
-                <article key={item.id} className="rounded-lg border bg-card p-4" data-testid="class-card">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-card-foreground">{item.name}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {item.schedule ? `${item.schedule} · ` : ''}
-                        {students.length} aluno{students.length === 1 ? '' : 's'}
+          <>
+            {data.classes.length === 0 ? (
+              <EmptyState
+                title="Nenhuma turma atribuída."
+                description="Fale com a coordenação para receber uma turma antes de registrar a chamada."
+              />
+            ) : (
+              <>
+                {view.isScheduledDay && view.pendingClass && (
+                  <Card
+                    variant="accent"
+                    className="grid gap-5 shadow-2 md:grid-cols-[1fr_auto] md:items-center"
+                    data-od-id="today-card"
+                  >
+                    <div className="min-w-0">
+                      <p className="eyebrow text-accent-ink">Próxima chamada</p>
+                      <h2 className="mt-1 overflow-wrap-anywhere">
+                        {view.pendingClass.name}
+                      </h2>
+                      <p className="mt-1 text-sm text-muted">
+                        {view.pendingClass.schedule ?? "Horário a confirmar"} ·{" "}
+                        <span className="num">
+                          {data.studentsByClass[view.pendingClass.id]?.length ??
+                            0}
+                        </span>{" "}
+                        alunos
                       </p>
                     </div>
-                    {view.isScheduledDay && (
-                      <span className="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-                        {stat.doneToday ? 'Feita' : 'Pendente'}
-                      </span>
-                    )}
+                    <Link
+                      to={`/dashboard/turmas/${view.pendingClass.id}/chamada`}
+                      className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[var(--r)] bg-accent px-5 text-base font-semibold text-primary-foreground shadow-2"
+                      data-testid="btn-iniciar-chamada"
+                      data-od-id="start-attendance"
+                    >
+                      <CalendarCheck aria-hidden="true" size={20} />
+                      Iniciar chamada
+                    </Link>
+                  </Card>
+                )}
+                <section className="space-y-4" data-od-id="classes">
+                  <div className="flex flex-wrap items-end justify-between gap-2">
+                    <h2>Minhas turmas</h2>
+                    <span className="eyebrow">
+                      Ano letivo {data.activeYear?.year ?? "—"}
+                    </span>
                   </div>
-                  <div className="mt-4 h-2 overflow-hidden rounded-sm bg-muted" aria-label={`${stat.percent}% de presença`}>
-                    <div className="h-full bg-primary" style={{ width: `${stat.percent}%` }} />
+                  <div
+                    className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+                    data-testid="class-list"
+                  >
+                    {data.classes.map((item) => {
+                      const stat = view.statsByClass[item.id];
+                      const students = data.studentsByClass[item.id] ?? [];
+                      return (
+                        <Card
+                          key={item.id}
+                          className="space-y-4"
+                          data-testid="class-card"
+                          data-od-id={`class-card-${item.id}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="overflow-wrap-anywhere">
+                                {item.name}
+                              </h3>
+                              <p className="mt-1 text-sm text-muted">
+                                {item.schedule ? `${item.schedule} · ` : ""}
+                                <span className="num">
+                                  {students.length}
+                                </span>{" "}
+                                aluno{students.length === 1 ? "" : "s"}
+                              </p>
+                            </div>
+                            {view.isScheduledDay ? (
+                              <Chip tone={stat.doneToday ? "ok" : "warn"}>
+                                {stat.doneToday ? "Feita hoje" : "Pendente"}
+                              </Chip>
+                            ) : (
+                              <Chip dot={false}>Sem aula hoje</Chip>
+                            )}
+                          </div>
+                          <Meter
+                            percent={stat.percent}
+                            label="Presença acumulada"
+                          />
+                        </Card>
+                      );
+                    })}
                   </div>
-                  <p className="mt-1 text-right text-sm text-muted-foreground">{stat.percent}% presença</p>
-                </article>
-              )
-            })}
-          </div>
-        )}
-      </section>
-
-      {data && view && (
-        <div className="fixed inset-x-0 bottom-0 border-t bg-background px-5 py-4">
-          <div className="mx-auto max-w-3xl">
-            {!view.isScheduledDay && (
-              <div className="flex min-h-14 items-center justify-center rounded-lg border bg-card text-sm text-muted-foreground">
-                Não há aula programada para hoje
-              </div>
+                </section>
+              </>
             )}
-            {view.isScheduledDay && view.pendingClass && (
+          </>
+        )}
+      </div>
+      {data && view && (
+        <div className="fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur md:hidden">
+          <div className="mx-auto max-w-6xl">
+            {!view.isScheduledDay ? (
+              <p className="text-center text-sm text-muted">
+                Não há aula programada para hoje
+              </p>
+            ) : view.pendingClass ? (
               <Link
                 to={`/dashboard/turmas/${view.pendingClass.id}/chamada`}
-                className="flex min-h-14 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-base font-semibold text-primary-foreground"
-                data-testid="btn-iniciar-chamada"
+                className="flex min-h-[52px] items-center justify-center gap-2 rounded-[var(--r)] bg-accent px-4 font-semibold text-primary-foreground shadow-2"
               >
-                <CalendarCheck aria-hidden="true" size={20} />
-                Iniciar chamada - {view.pendingClass.name}
+                Iniciar chamada · {view.pendingClass.name}
               </Link>
-            )}
-            {view.isScheduledDay && !view.pendingClass && (
-              <div className="flex min-h-14 items-center justify-center rounded-lg border bg-card text-sm text-muted-foreground">
+            ) : (
+              <p className="text-center text-sm text-muted">
                 Todas as chamadas de hoje foram registradas
-              </div>
+              </p>
             )}
           </div>
         </div>
       )}
     </main>
-  )
+  );
 }

@@ -15,8 +15,12 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Drawer } from '@/components/ui/drawer'
+import { BarChart, Meter, StatCard } from '@/components/ui/metrics'
+import { Sidebar } from '@/components/ui/sidebar'
+import { Table, TableWrap } from '@/components/ui/table'
 import {
   adminApi,
   type AcademicYear,
@@ -72,19 +76,22 @@ function useAdminData() {
   const [catechists, setCatechists] = useState<Catechist[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pendingEnrollments, setPendingEnrollments] = useState(0)
 
   const reload = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const [nextYears, nextClasses, nextCatechists] = await Promise.all([
+      const [nextYears, nextClasses, nextCatechists, pending] = await Promise.all([
         adminApi.listAcademicYears(),
         adminApi.listClasses(),
         adminApi.listCatechists(),
+        adminApi.listEnrollments('pending', ''),
       ])
       setYears(nextYears)
       setClasses(nextClasses)
       setCatechists(nextCatechists)
+      setPendingEnrollments(pending.length)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -96,7 +103,7 @@ function useAdminData() {
     void reload()
   }, [reload])
 
-  return { years, classes, catechists, isLoading, error, reload, setYears, setClasses, setCatechists }
+  return { years, classes, catechists, pendingEnrollments, isLoading, error, reload, setYears, setClasses, setCatechists }
 }
 
 export function AdminPage() {
@@ -104,9 +111,19 @@ export function AdminPage() {
   const data = useAdminData()
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-h-screen bg-background lg:flex">
+      <Sidebar
+        brand={<><p className="eyebrow">Coordenação</p><p className="text-xl font-semibold">Administração</p></>}
+        groups={[
+          { label: 'Planejamento', items: [{ label: 'Anos', to: '/admin/anos', icon: <GraduationCap /> }, { label: 'Calendário', to: '/admin/calendario', icon: <CalendarDays /> }] },
+          { label: 'Pessoas', items: [{ label: 'Turmas', to: '/admin/turmas', icon: <Layers /> }, { label: 'Alunos', to: '/admin/alunos', icon: <Users /> }, { label: 'Catequistas', to: '/admin/catequistas', icon: <UserCheck /> }] },
+          { label: 'Acompanhamento', items: [{ label: 'Inscrições', to: '/admin/inscricoes', icon: <Check />, badge: data.pendingEnrollments }, { label: 'Relatórios', to: '/admin/relatorios', icon: <FileSpreadsheet /> }] },
+        ]}
+        footer={<Button variant="outline" className="w-full" onClick={() => void logout()}>Sair</Button>}
+      />
+      <div className="min-w-0 flex-1">
+      <header className="border-b border-border bg-surface">
+        <div className="flex items-center justify-between px-4 py-4 lg:px-8">
           <div>
             <p className="text-sm text-muted-foreground">Coordenação</p>
             <h1 className="text-2xl font-semibold text-foreground">Administração</h1>
@@ -120,32 +137,7 @@ export function AdminPage() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[220px_1fr]">
-        <nav className="flex gap-2 overflow-auto lg:flex-col">
-          <AdminLink to="anos" icon={<GraduationCap />}>
-            Anos
-          </AdminLink>
-          <AdminLink to="calendario" icon={<CalendarDays />}>
-            Calendário
-          </AdminLink>
-          <AdminLink to="turmas" icon={<Layers />}>
-            Turmas
-          </AdminLink>
-          <AdminLink to="alunos" icon={<Users />}>
-            Alunos
-          </AdminLink>
-          <AdminLink to="catequistas" icon={<UserCheck />}>
-            Catequistas
-          </AdminLink>
-          <AdminLink to="inscricoes" icon={<Check />}>
-            Inscrições
-          </AdminLink>
-          <AdminLink to="relatorios" icon={<FileSpreadsheet />}>
-            Relatórios
-          </AdminLink>
-        </nav>
-
-        <main>
+      <main className="mx-auto max-w-[var(--container)] px-4 py-6 lg:px-8">
           {data.error ? <Banner tone="error">{data.error}</Banner> : null}
           {data.isLoading ? <Banner>Carregando dados administrativos...</Banner> : null}
           <Routes>
@@ -158,32 +150,13 @@ export function AdminPage() {
             <Route path="inscricoes" element={<EnrollmentsView data={data} />} />
             <Route path="relatorios" element={<ReportsView data={data} />} />
           </Routes>
-        </main>
+      </main>
       </div>
     </div>
   )
 }
 
-function AdminLink({ to, icon, children }: { to: string; icon: ReactNode; children: string }) {
-  return (
-    <NavLink
-      to={`/admin/${to}`}
-      className={({ isActive }) =>
-        [
-          'flex h-10 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors',
-          isActive
-            ? 'bg-primary text-primary-foreground'
-            : 'border border-border bg-card text-foreground hover:bg-muted',
-        ].join(' ')
-      }
-    >
-      <span className="[&_svg]:size-4">{icon}</span>
-      {children}
-    </NavLink>
-  )
-}
-
-function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [editing, setEditing] = useState<AcademicYear | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const form = useForm<AcademicYearFormValues>({
@@ -298,7 +271,7 @@ function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminData> }) 
   )
 }
 
-function CalendarView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function CalendarView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [lockedDates, setLockedDates] = useState<string[]>([])
   const [message, setMessage] = useState<string | null>(null)
   const form = useForm<CalendarFormValues>({
@@ -353,11 +326,30 @@ function CalendarView({ data }: { data: ReturnType<typeof useAdminData> }) {
       <p className="mt-4 text-sm text-muted-foreground">
         Datas travadas por chamada: {lockedDates.length ? lockedDates.join(', ') : 'nenhuma'}
       </p>
+      <CalendarGrid dates={splitDates(form.watch('datesText'))} />
     </Section>
   )
 }
 
-function ClassesView({ data }: { data: ReturnType<typeof useAdminData> }) {
+function CalendarGrid({ dates, highlights = {} }: { dates: string[]; highlights?: Record<string, string> }) {
+  const year = Number(dates[0]?.slice(0, 4) ?? new Date().getFullYear())
+  const today = new Date().toISOString().slice(0, 10)
+  return <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label={`Calendário de ${year}`}>
+    {Array.from({ length: 12 }, (_, month) => {
+      const first = new Date(year, month, 1)
+      const days = new Date(year, month + 1, 0).getDate()
+      return <section key={month} className="rounded-[var(--r)] border border-border p-3">
+        <h3 className="mb-2 text-sm font-semibold capitalize">{first.toLocaleDateString('pt-BR', { month: 'long' })}</h3>
+        <div className="grid grid-cols-7 gap-1 text-center text-xs">{Array.from({ length: first.getDay() }, (_, i) => <span key={`blank-${i}`} />)}{Array.from({ length: days }, (_, i) => {
+          const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`
+          return <span key={date} data-class-day={dates.includes(date) || undefined} data-highlight={highlights[date] || undefined} className={`num grid size-7 place-items-center rounded-full ${dates.includes(date) ? 'bg-accent-soft text-accent-ink' : ''} ${date === today ? 'ring-2 ring-accent' : ''} ${highlights[date] === 'gold' ? 'bg-gold-soft text-gold-ink' : ''}`}>{i + 1}</span>
+        })}</div>
+      </section>
+    })}
+  </div>
+}
+
+export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [editing, setEditing] = useState<ClassItem | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const form = useForm<ClassFormValues>({
@@ -462,7 +454,7 @@ function ClassesView({ data }: { data: ReturnType<typeof useAdminData> }) {
   )
 }
 
-function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [students, setStudents] = useState<Student[]>([])
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Student | null>(null)
@@ -609,7 +601,7 @@ function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   )
 }
 
-function CatechistsView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [message, setMessage] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedCatechist | null>(null)
   const form = useForm<CatechistFormValues>({
@@ -700,7 +692,7 @@ function CatechistsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   )
 }
 
-function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [status, setStatus] = useState<EnrollmentStatus>('pending')
   const [query, setQuery] = useState('')
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
@@ -715,7 +707,7 @@ function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
     try {
       const next = await adminApi.listEnrollments(status, query)
       setEnrollments(next)
-      setSelected((current) => next.find((item) => item.id === current?.id) ?? next[0] ?? null)
+      setSelected((current) => next.find((item) => item.id === current?.id) ?? null)
     } catch (err) {
       setMessage(errorMessage(err))
     }
@@ -771,7 +763,7 @@ function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
           Buscar
         </Button>
       </div>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div>
         <DataTable
           headers={['Nome', 'Status', 'Renovação', 'Contato']}
           rows={enrollments.map((enrollment) => [
@@ -788,7 +780,7 @@ function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
             [enrollment.guardianPhone, enrollment.guardianEmail].filter(Boolean).join(' / ') || '-',
           ])}
         />
-        <aside className="rounded-lg border border-border bg-card p-4">
+        <Drawer open={selected !== null} onOpenChange={(open) => !open && setSelected(null)} title={selected?.fullName ?? 'Revisão da inscrição'} description="Confira os dados e decida a partir desta fila." footer={null}>
           {selected ? (
             <>
               <h3 className="text-lg font-semibold">{selected.fullName}</h3>
@@ -831,7 +823,7 @@ function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData> }) {
           ) : (
             <p className="text-sm text-muted-foreground">Selecione uma inscrição.</p>
           )}
-        </aside>
+        </Drawer>
       </div>
     </Section>
   )
@@ -850,7 +842,7 @@ function RejectBox({ onReject }: { onReject: (reason: string) => Promise<void> }
         value={reason}
         onChange={(event) => setReason(event.target.value)}
       />
-      <Button type="button" variant="destructive" onClick={() => void onReject(reason)}>
+      <Button type="button" variant="destructive" disabled={!reason.trim()} disabledReason="Informe o motivo" onClick={() => void onReject(reason)}>
         <X />
         Rejeitar
       </Button>
@@ -858,7 +850,7 @@ function RejectBox({ onReject }: { onReject: (reason: string) => Promise<void> }
   )
 }
 
-function ReportsView({ data }: { data: ReturnType<typeof useAdminData> }) {
+export function ReportsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [report, setReport] = useState<AttendanceReport | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const form = useForm<ReportFormValues>({
@@ -932,8 +924,15 @@ function ReportsView({ data }: { data: ReturnType<typeof useAdminData> }) {
         </Button>
       </div>
       {report ? (
-        <div className="mt-6 overflow-auto">
+        <div className="mt-6 grid gap-6">
           <h3 className="mb-2 font-semibold">{report.className}</h3>
+          {(() => {
+            const total = report.students.reduce((sum, student) => sum + student.records.length, 0)
+            const present = report.students.reduce((sum, student) => sum + student.records.filter((record) => record.present).length, 0)
+            const percentage = total ? Math.round((present / total) * 100) : 0
+            const bars = report.students.map((student) => ({ label: student.full_name.split(' ')[0], value: student.records.filter((record) => record.present).length }))
+            return <><div className="grid gap-3 sm:grid-cols-3"><StatCard value={report.students.length} label="Catequizandos" /><StatCard value={present} label="Presenças" /><StatCard value={percentage} unit="%" label="Frequência" /></div><Meter percent={percentage} label="Frequência da turma" /><BarChart data={bars} label={`Presenças por catequizando: ${bars.map((bar) => `${bar.label} ${bar.value}`).join(', ')}`} /></>
+          })()}
           <DataTable
             headers={['Aluno', 'Registros']}
             rows={report.students.map((student) => [
@@ -992,9 +991,9 @@ function Banner({ children, tone = 'info' }: { children: ReactNode; tone?: 'info
 
 function DataTable({ headers, rows }: { headers: string[]; rows: ReactNode[][] }) {
   return (
-    <div className="mt-6 overflow-auto rounded-md border border-border">
-      <table className="min-w-full border-collapse text-sm">
-        <thead className="bg-muted text-left">
+    <TableWrap className="mt-6">
+      <Table>
+        <thead>
           <tr>
             {headers.map((header) => (
               <th key={header} className="px-3 py-2 font-semibold">
@@ -1022,8 +1021,8 @@ function DataTable({ headers, rows }: { headers: string[]; rows: ReactNode[][] }
             </tr>
           )}
         </tbody>
-      </table>
-    </div>
+      </Table>
+    </TableWrap>
   )
 }
 

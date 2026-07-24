@@ -97,10 +97,10 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', { name: 'Trocar senha' })
     fireEvent.change(screen.getByLabelText('Nova senha'), {
-      target: { value: 'novasenha' },
+      target: { value: 'nova123' },
     })
-    fireEvent.change(screen.getByLabelText('Confirmar senha'), {
-      target: { value: 'novasenha' },
+    fireEvent.change(screen.getByLabelText('Repetir a nova senha'), {
+      target: { value: 'nova123' },
     })
     fireEvent.click(screen.getByRole('button', { name: /salvar nova senha/i }))
 
@@ -131,7 +131,7 @@ describe('App auth flow', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it('shows password confirmation errors without submitting', async () => {
+  it('shows password rules live and only enables submission once every rule is met', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(catechistMustChange))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -139,14 +139,52 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', { name: 'Trocar senha' })
     fireEvent.change(screen.getByLabelText('Nova senha'), {
-      target: { value: 'novasenha' },
+      target: { value: 'nova123' },
     })
-    fireEvent.change(screen.getByLabelText('Confirmar senha'), {
-      target: { value: 'outra' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: /salvar nova senha/i }))
+    expect(screen.getByText('Pelo menos 6 caracteres').closest('li')).toHaveClass('text-accent-ink')
+    expect(screen.getByText('Uma letra e um número').closest('li')).toHaveClass('text-accent-ink')
+    expect(screen.getByText('As duas senhas coincidem').closest('li')).toHaveClass('text-muted-foreground')
+    expect(screen.getByRole('button', { name: 'Faltam 1' })).toBeDisabled()
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('As senhas não conferem.')
+    fireEvent.change(screen.getByLabelText('Repetir a nova senha'), {
+      target: { value: 'nova123' },
+    })
+    expect(screen.getByText('As duas senhas coincidem').closest('li')).toHaveClass('text-accent-ink')
+    expect(screen.getByRole('button', { name: /salvar nova senha/i })).toBeEnabled()
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows API errors in the auth error treatment', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ error: 'sessão expirada' }, 401))
+      .mockResolvedValueOnce(jsonResponse({ error: 'E-mail ou senha incorretos.' }, 401))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderAt('/login')
+
+    await screen.findByRole('heading', { name: 'Entrar' })
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'admin@example.com' } })
+    fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'incorreta' } })
+    fireEvent.click(screen.getByRole('button', { name: /entrar/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha incorretos.')
+  })
+
+  it('renders the institutional brand and only one primary action on each auth screen', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ error: 'sessão expirada' }, 401))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { unmount } = renderAt('/login')
+    await screen.findByRole('heading', { name: 'Entrar' })
+    expect(screen.getByLabelText('Catequese SSPX')).toBeInTheDocument()
+    expect(document.querySelectorAll('button.bg-accent')).toHaveLength(1)
+    unmount()
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(catechistMustChange)))
+    renderAt('/trocar-senha')
+    await screen.findByRole('heading', { name: 'Trocar senha' })
+    expect(screen.getByLabelText('Catequese SSPX')).toBeInTheDocument()
+    expect(document.querySelectorAll('button.bg-accent')).toHaveLength(1)
   })
 })

@@ -1,12 +1,61 @@
-import { CheckCircle2 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { CheckCircle2, Send } from 'lucide-react'
+import { useState } from 'react'
+import { useForm, type FieldPath } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Brand } from '@/components/ui/brand'
+import { Button } from '@/components/ui/button'
+import { Choice } from '@/components/ui/choice'
+import { Field, Input, Textarea } from '@/components/ui/field'
+import { NetworkChip } from '@/components/ui/chip'
+import { Stepper } from '@/components/ui/stepper'
 import {
   publicEnrollmentSchema,
   submitPublicEnrollment,
   type PublicEnrollmentPayload,
 } from '@/lib/enrollment-api'
 
-const emptyValues: Record<keyof PublicEnrollmentPayload, string | boolean> = {
+const steps = [
+  { label: 'Catequizando' },
+  { label: 'Vida pastoral' },
+  { label: 'Responsável' },
+  { label: 'Revisão' },
+]
+
+const stepSchemas = [
+  publicEnrollmentSchema.pick({ fullName: true, birthDate: true, city: true }),
+  publicEnrollmentSchema.pick({
+    firstCommunion: true,
+    confirmation: true,
+    previousCatechism: true,
+    religiousBooks: true,
+  }),
+  publicEnrollmentSchema.pick({
+    guardianFatherName: true,
+    guardianMotherName: true,
+    guardianPhone: true,
+    guardianEmail: true,
+    isRenewal: true,
+    previousName: true,
+  }),
+]
+
+type EnrollmentValues = {
+  fullName: string
+  birthDate: string
+  city: string
+  firstCommunion: boolean
+  confirmation: boolean
+  previousCatechism: string
+  religiousBooks: string
+  guardianFatherName: string
+  guardianMotherName: string
+  guardianPhone: string
+  guardianEmail: string
+  isRenewal: boolean
+  previousName: string
+}
+
+const emptyValues: EnrollmentValues = {
   fullName: '',
   birthDate: '',
   city: '',
@@ -22,205 +71,148 @@ const emptyValues: Record<keyof PublicEnrollmentPayload, string | boolean> = {
   previousName: '',
 }
 
-function textValue(form: FormData, key: string) {
-  return String(form.get(key) ?? '')
-}
-
-function payloadFromForm(form: FormData) {
-  return {
-    fullName: textValue(form, 'fullName'),
-    birthDate: textValue(form, 'birthDate'),
-    city: textValue(form, 'city'),
-    firstCommunion: form.get('firstCommunion') === 'true',
-    confirmation: form.get('confirmation') === 'true',
-    previousCatechism: textValue(form, 'previousCatechism'),
-    religiousBooks: textValue(form, 'religiousBooks'),
-    guardianFatherName: textValue(form, 'guardianFatherName'),
-    guardianMotherName: textValue(form, 'guardianMotherName'),
-    guardianPhone: textValue(form, 'guardianPhone'),
-    guardianEmail: textValue(form, 'guardianEmail'),
-    isRenewal: form.get('isRenewal') === 'true',
-    previousName: textValue(form, 'previousName'),
-  }
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-  required,
-}: {
-  label: string
-  name: keyof PublicEnrollmentPayload
-  type?: string
-  required?: boolean
-}) {
+function ErrorBanner({ children }: { children: string }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium text-foreground">
-      {label}
-      <input className="input" name={name} type={type} required={required} />
-    </label>
-  )
-}
-
-function Textarea({ label, name }: { label: string; name: keyof PublicEnrollmentPayload }) {
-  return (
-    <label className="grid gap-1.5 text-sm font-medium text-foreground">
-      {label}
-      <textarea className="input min-h-24" name={name} />
-    </label>
-  )
-}
-
-function BooleanField({ label, name }: { label: string; name: keyof PublicEnrollmentPayload }) {
-  return (
-    <fieldset className="grid gap-2">
-      <legend className="text-sm font-medium text-foreground">{label}</legend>
-      <div className="grid grid-cols-2 gap-2">
-        <label className="flex min-h-10 items-center justify-center rounded-md border bg-card text-sm">
-          <input className="mr-2" type="radio" name={name} value="true" />
-          Sim
-        </label>
-        <label className="flex min-h-10 items-center justify-center rounded-md border bg-card text-sm">
-          <input className="mr-2" type="radio" name={name} value="false" defaultChecked />
-          Não
-        </label>
-      </div>
-    </fieldset>
+    <div role="alert" className="rounded-[var(--r)] border border-danger bg-danger-soft p-4 text-sm text-danger-ink">
+      {children}
+    </div>
   )
 }
 
 export function EnrollmentPage() {
-  const [error, setError] = useState<string | null>(null)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const [isPending, setIsPending] = useState(false)
-  const [isRenewal, setIsRenewal] = useState(false)
+  const form = useForm<EnrollmentValues, unknown, PublicEnrollmentPayload>({
+    defaultValues: emptyValues,
+    resolver: zodResolver(publicEnrollmentSchema),
+  })
+  const { formState: { errors, isSubmitting }, getValues, handleSubmit, register, setError, setValue, watch } = form
+  const isRenewal = watch('isRenewal')
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setIsPending(true)
-    const form = new FormData(event.currentTarget)
-    const result = publicEnrollmentSchema.safeParse(payloadFromForm(form))
-    if (!result.success) {
-      setError(result.error.issues[0]?.message ?? 'Dados inválidos')
-      setIsPending(false)
+  function advance() {
+    const result = stepSchemas[currentStep]?.safeParse(getValues())
+    if (!result?.success) {
+      for (const issue of result.error.issues) {
+        const name = issue.path[0] as FieldPath<EnrollmentValues>
+        if (name) setError(name, { message: issue.message })
+      }
       return
     }
+    setCurrentStep((step) => Math.min(step + 1, steps.length - 1))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
+  async function submit(values: PublicEnrollmentPayload) {
+    setSubmissionError(null)
     try {
-      await submitPublicEnrollment(result.data)
+      await submitPublicEnrollment(values)
       setSaved(true)
-      event.currentTarget.reset()
-      setIsRenewal(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao enviar inscrição')
-    } finally {
-      setIsPending(false)
+    } catch (error) {
+      setSubmissionError(error instanceof Error ? error.message : 'Não foi possível enviar a inscrição. Tente de novo.')
     }
   }
 
   if (saved) {
     return (
-      <main className="min-h-screen bg-background px-5 py-10">
-        <section className="mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
-          <CheckCircle2 className="text-primary" size={48} aria-hidden="true" />
-          <h1 className="text-2xl font-semibold text-foreground">Inscrição enviada com sucesso</h1>
-          <p className="text-sm text-muted-foreground">
-            A coordenação receberá sua inscrição e entrará em contato pelo telefone ou email informado.
-          </p>
+      <main className="min-h-screen bg-background px-4 py-10">
+        <section className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-[var(--r-lg)] border border-accent-line bg-accent-soft p-6 text-center" data-od-id="enrollment-success">
+          <CheckCircle2 className="text-accent" size={48} aria-hidden="true" />
+          <div className="space-y-2">
+            <p className="eyebrow text-accent-ink">Inscrição recebida</p>
+            <h1>Inscrição enviada com sucesso</h1>
+            <p className="text-sm text-muted-foreground">A coordenação vai analisar os dados e entrará em contato pelo telefone ou e-mail informado.</p>
+          </div>
         </section>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-background px-5 py-8">
-      <form onSubmit={onSubmit} className="mx-auto grid max-w-3xl gap-6" noValidate>
-        <header>
-          <h1 className="text-2xl font-semibold text-foreground">Inscrição para catequese</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Preencha os dados do catequizando e do responsável.</p>
+    <main className="min-h-screen bg-background pb-10">
+      <header className="sticky top-0 z-10 border-b border-border bg-surface/90 px-4 py-3 backdrop-blur" data-od-id="appbar">
+        <div className="mx-auto flex max-w-3xl items-center gap-3">
+          <Brand />
+          <span className="flex-1" />
+          <NetworkChip />
+        </div>
+      </header>
+
+      <form onSubmit={handleSubmit(submit)} className="mx-auto grid max-w-3xl gap-6 px-4 py-8" noValidate>
+        <header className="space-y-2" data-od-id="enrollment-heading">
+          <p className="eyebrow">Inscrição pública</p>
+          <h1>Inscrição para catequese</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">Você preenche em quatro passos curtos. Os dados ficam guardados enquanto avança ou volta.</p>
         </header>
 
-        {error && (
-          <div role="alert" className="rounded-lg border border-destructive/30 bg-card p-4 text-sm text-destructive">
-            {error}
-          </div>
+        <Stepper steps={steps} current={currentStep} data-od-id="enrollment-stepper" />
+        {submissionError && <ErrorBanner>{submissionError}</ErrorBanner>}
+
+        {currentStep === 0 && (
+          <section className="grid gap-4 rounded-[var(--r-lg)] border border-border bg-surface p-5" data-od-id="enrollment-student-step">
+            <div><p className="eyebrow">Passo 1 de 4</p><h2>Dados do catequizando</h2></div>
+            <Field id="fullName" label="Nome completo — como consta na certidão de batismo" error={errors.fullName?.message}>
+              <Input id="fullName" placeholder="Como consta na certidão de batismo" aria-invalid={Boolean(errors.fullName)} {...register('fullName')} />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="birthDate" label="Data de nascimento" error={errors.birthDate?.message}>
+                <Input id="birthDate" type="date" aria-invalid={Boolean(errors.birthDate)} {...register('birthDate')} />
+              </Field>
+              <Field id="city" label="Cidade" error={errors.city?.message}>
+                <Input id="city" placeholder="Cidade onde mora" aria-invalid={Boolean(errors.city)} {...register('city')} />
+              </Field>
+            </div>
+          </section>
         )}
 
-        <section className="grid gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Dados do catequizando</h2>
-          <Field label="Nome completo" name="fullName" required />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Data de nascimento" name="birthDate" type="date" />
-            <Field label="Cidade" name="city" />
-          </div>
-        </section>
-
-        <section className="grid gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Dados pastorais</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <BooleanField label="Já fez a Primeira Comunhão?" name="firstCommunion" />
-            <BooleanField label="Já recebeu o Crisma?" name="confirmation" />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Textarea label="Já fez catequese anteriormente? Qual?" name="previousCatechism" />
-            <Textarea label="Já leu algum livro de religião? Qual?" name="religiousBooks" />
-          </div>
-        </section>
-
-        <section className="grid gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Dados do responsável</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome do pai" name="guardianFatherName" />
-            <Field label="Nome da mãe / responsável" name="guardianMotherName" />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Telefone de contato" name="guardianPhone" required />
-            <Field label="Email de contato" name="guardianEmail" type="email" required />
-          </div>
-        </section>
-
-        <section className="grid gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Renovação</h2>
-          <fieldset className="grid gap-2">
-            <legend className="text-sm font-medium text-foreground">Já frequentou a catequese aqui?</legend>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex min-h-10 items-center justify-center rounded-md border bg-card text-sm">
-                <input
-                  className="mr-2"
-                  type="radio"
-                  name="isRenewal"
-                  value="true"
-                  onChange={() => setIsRenewal(true)}
-                />
-                Sim
-              </label>
-              <label className="flex min-h-10 items-center justify-center rounded-md border bg-card text-sm">
-                <input
-                  className="mr-2"
-                  type="radio"
-                  name="isRenewal"
-                  value="false"
-                  defaultChecked
-                  onChange={() => setIsRenewal(false)}
-                />
-                Não
-              </label>
+        {currentStep === 1 && (
+          <section className="grid gap-5 rounded-[var(--r-lg)] border border-border bg-surface p-5" data-od-id="enrollment-history-step">
+            <div><p className="eyebrow">Passo 2 de 4</p><h2>Histórico religioso</h2></div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Choice name="firstCommunion" legend="Já fez a Primeira Comunhão?" value={String(watch('firstCommunion'))} onChange={(value) => setValue('firstCommunion', value === 'true', { shouldValidate: true })} options={[{ value: 'true', label: 'Sim, já fez' }, { value: 'false', label: 'Ainda não' }]} />
+              <Choice name="confirmation" legend="Já recebeu o Crisma?" value={String(watch('confirmation'))} onChange={(value) => setValue('confirmation', value === 'true', { shouldValidate: true })} options={[{ value: 'true', label: 'Sim, já recebeu' }, { value: 'false', label: 'Ainda não' }]} />
             </div>
-          </fieldset>
-          {isRenewal && <Field label="Nome como estava cadastrado anteriormente" name="previousName" />}
-        </section>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="previousCatechism" label="Já fez catequese anteriormente?" error={errors.previousCatechism?.message}>
+                <Textarea id="previousCatechism" placeholder="Paróquia, capela ou colégio — e por quanto tempo" aria-invalid={Boolean(errors.previousCatechism)} {...register('previousCatechism')} />
+              </Field>
+              <Field id="religiousBooks" label="Já leu algum livro de religião?" error={errors.religiousBooks?.message}>
+                <Textarea id="religiousBooks" placeholder="Conte quais livros ajudaram na caminhada de fé" aria-invalid={Boolean(errors.religiousBooks)} {...register('religiousBooks')} />
+              </Field>
+            </div>
+          </section>
+        )}
 
-        <div className="pb-6">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="min-h-11 w-full rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-50 sm:w-auto"
-          >
-            {isPending ? 'Enviando...' : 'Enviar inscrição'}
-          </button>
-        </div>
+        {currentStep === 2 && (
+          <section className="grid gap-5 rounded-[var(--r-lg)] border border-border bg-surface p-5" data-od-id="enrollment-guardians-step">
+            <div><p className="eyebrow">Passo 3 de 4</p><h2>Dados dos responsáveis</h2></div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="guardianFatherName" label="Nome do pai" error={errors.guardianFatherName?.message}><Input id="guardianFatherName" placeholder="Nome completo, se informado" aria-invalid={Boolean(errors.guardianFatherName)} {...register('guardianFatherName')} /></Field>
+              <Field id="guardianMotherName" label="Nome da mãe ou responsável" error={errors.guardianMotherName?.message}><Input id="guardianMotherName" placeholder="Nome completo" aria-invalid={Boolean(errors.guardianMotherName)} {...register('guardianMotherName')} /></Field>
+              <Field id="guardianPhone" label="Telefone de contato" error={errors.guardianPhone?.message}><Input id="guardianPhone" type="tel" placeholder="(11) 99999-9999" aria-invalid={Boolean(errors.guardianPhone)} {...register('guardianPhone')} /></Field>
+              <Field id="guardianEmail" label="E-mail de contato" error={errors.guardianEmail?.message}><Input id="guardianEmail" type="email" placeholder="familia@exemplo.com" aria-invalid={Boolean(errors.guardianEmail)} {...register('guardianEmail')} /></Field>
+            </div>
+            <Choice name="isRenewal" legend="Já frequentou a catequese aqui?" value={String(isRenewal)} onChange={(value) => setValue('isRenewal', value === 'true', { shouldValidate: true })} options={[{ value: 'true', label: 'Sim, é renovação' }, { value: 'false', label: 'Não, é a primeira vez' }]} />
+            {isRenewal && <Field id="previousName" label="Nome como estava cadastrado anteriormente" error={errors.previousName?.message}><Input id="previousName" placeholder="Nome usado na inscrição anterior" aria-invalid={Boolean(errors.previousName)} {...register('previousName')} /></Field>}
+          </section>
+        )}
+
+        {currentStep === 3 && (
+          <section className="grid gap-5 rounded-[var(--r-lg)] border border-border bg-surface p-5" data-od-id="enrollment-review-step">
+            <div><p className="eyebrow">Passo 4 de 4</p><h2>Revise antes de enviar</h2><p className="mt-1 text-sm text-muted-foreground">Confira os dados. Você pode voltar para corrigir qualquer informação.</p></div>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div><dt className="text-muted">Catequizando</dt><dd className="font-semibold text-fg">{watch('fullName')}</dd></div>
+              <div><dt className="text-muted">Nascimento</dt><dd className="font-semibold text-fg">{watch('birthDate') || 'Não informado'}</dd></div>
+              <div><dt className="text-muted">Telefone</dt><dd className="font-semibold text-fg">{watch('guardianPhone')}</dd></div>
+              <div><dt className="text-muted">E-mail</dt><dd className="font-semibold text-fg">{watch('guardianEmail')}</dd></div>
+            </dl>
+          </section>
+        )}
+
+        <footer className="flex flex-wrap gap-3" data-od-id="enrollment-actions">
+          {currentStep > 0 && <Button type="button" variant="secondary" onClick={() => setCurrentStep((step) => step - 1)}>Voltar</Button>}
+          {currentStep < steps.length - 1 ? <Button type="button" onClick={advance}>Continuar</Button> : <Button type="submit" disabled={isSubmitting} disabledReason="Enviando…"><Send aria-hidden="true" size={18} />{isSubmitting ? 'Enviando…' : 'Enviar inscrição'}</Button>}
+        </footer>
       </form>
     </main>
   )

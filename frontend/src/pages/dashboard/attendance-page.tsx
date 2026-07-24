@@ -1,25 +1,34 @@
-import { ArrowLeft, Check, LogOut, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '@/contexts/auth-context'
-import type { PendingSession } from '@/lib/attendance-types'
-import { submitAttendanceSession } from '@/lib/attendance-sync'
-import { isDateScheduledOffline } from '@/lib/class-dates-cache'
-import { loadAttendanceSheetData, type DashboardStudent } from '@/lib/dashboard-api'
+import { ArrowLeft, LogOut, Search, WifiOff } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { AttendanceRow, tallyMarks } from "@/components/ui/attendance-row";
+import { Button } from "@/components/ui/button";
+import { NetworkChip } from "@/components/ui/chip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ProgressRail } from "@/components/ui/metrics";
+import { useAuth } from "@/contexts/auth-context";
+import type { PendingSession } from "@/lib/attendance-types";
+import {
+  submitAttendanceSession,
+  getPendingSessionCount,
+  syncPendingSessions,
+} from "@/lib/attendance-sync";
+import { isDateScheduledOffline } from "@/lib/class-dates-cache";
+import {
+  loadAttendanceSheetData,
+  type DashboardStudent,
+} from "@/lib/dashboard-api";
 
-type Mark = boolean | null
-
-const today = () => new Date().toISOString().slice(0, 10)
-
+type Mark = boolean | null;
+const today = () => new Date().toISOString().slice(0, 10);
 function formatDisplayDate(value: string) {
-  const [year, month, day] = value.split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 }
-
 function makeSession(
   classId: string,
   catechistId: string,
@@ -36,202 +45,321 @@ function makeSession(
       present: marks[student.id] === true,
     })),
     createdAt: Date.now(),
-  }
+  };
 }
 
 export function AttendancePage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const [className, setClassName] = useState('')
-  const [students, setStudents] = useState<DashboardStudent[]>([])
-  const [isScheduled, setIsScheduled] = useState(true)
-  const [marks, setMarks] = useState<Record<string, Mark>>({})
-  const [error, setError] = useState<string | null>(null)
-  const [offlineSaved, setOfflineSaved] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [className, setClassName] = useState("");
+  const [students, setStudents] = useState<DashboardStudent[]>([]);
+  const [isScheduled, setIsScheduled] = useState(true);
+  const [marks, setMarks] = useState<Record<string, Mark>>({});
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [offlineSaved, setOfflineSaved] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const refreshPendingCount = async () =>
+    setPendingCount(await getPendingSessionCount());
   useEffect(() => {
-    if (!id) return
-    const classId = id
-    let cancelled = false
+    if (!id) return;
+    const classId = id;
+    let cancelled = false;
     async function load() {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const data = await loadAttendanceSheetData(classId)
-        if (!data.classItem) throw new Error('Turma não encontrada')
-        let scheduled = data.classDates.includes(today())
-        if (!scheduled && data.activeYear) {
-          scheduled = await isDateScheduledOffline(data.activeYear.id, today())
-        }
-        if (cancelled) return
-        setClassName(data.classItem.name)
-        setStudents(data.students)
-        setIsScheduled(scheduled)
-        setMarks(Object.fromEntries(data.students.map((student) => [student.id, null])))
+        const data = await loadAttendanceSheetData(classId);
+        if (!data.classItem) throw new Error("Turma não encontrada");
+        let scheduled = data.classDates.includes(today());
+        if (!scheduled && data.activeYear)
+          scheduled = await isDateScheduledOffline(data.activeYear.id, today());
+        if (cancelled) return;
+        setClassName(data.classItem.name);
+        setStudents(data.students);
+        setIsScheduled(scheduled);
+        setMarks(
+          Object.fromEntries(
+            data.students.map((student) => [student.id, null]),
+          ),
+        );
+        await refreshPendingCount();
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Erro ao carregar chamada')
+        if (!cancelled)
+          setError(
+            err instanceof Error ? err.message : "Erro ao carregar chamada",
+          );
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
-    void load()
+    void load();
     return () => {
-      cancelled = true
-    }
-  }, [id])
-
-  const counts = useMemo(() => {
-    const values = students.map((student) => marks[student.id])
-    return {
-      present: values.filter((value) => value === true).length,
-      absent: values.filter((value) => value === false).length,
-      pending: values.filter((value) => value === null).length,
-    }
-  }, [marks, students])
-  const allMarked = students.length > 0 && counts.pending === 0
-
-  function toggle(studentId: string, value: boolean) {
+      cancelled = true;
+    };
+  }, [id]);
+  const counts = useMemo(
+    () =>
+      tallyMarks(
+        students.map((student) => marks[student.id]),
+        students.length,
+      ),
+    [marks, students],
+  );
+  const allMarked = students.length > 0 && counts.pending === 0;
+  const visibleStudents = useMemo(
+    () =>
+      students.filter((student) =>
+        student.fullName
+          .toLocaleLowerCase("pt-BR")
+          .includes(query.trim().toLocaleLowerCase("pt-BR")),
+      ),
+    [students, query],
+  );
+  function mark(studentId: string, value: boolean | null) {
+    setMarks((current) => ({ ...current, [studentId]: value }));
+  }
+  function markVisiblePresent() {
     setMarks((current) => ({
       ...current,
-      [studentId]: current[studentId] === value ? null : value,
-    }))
+      ...Object.fromEntries(
+        visibleStudents.map((student) => [student.id, true]),
+      ),
+    }));
   }
-
   async function confirmAttendance() {
-    if (!id || !user || !allMarked || submitting) return
-    setSubmitting(true)
-    setError(null)
+    if (!id || !user || !allMarked || submitting) return;
+    setSubmitting(true);
+    setError(null);
     try {
-      const result = await submitAttendanceSession(makeSession(id, user.id, students, marks))
-      if (result === 'queued') {
-        setOfflineSaved(true)
-        return
+      const result = await submitAttendanceSession(
+        makeSession(id, user.id, students, marks),
+      );
+      if (result === "queued") {
+        setOfflineSaved(true);
+        await refreshPendingCount();
+        return;
       }
-      navigate('/dashboard')
+      navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar chamada')
+      setError(err instanceof Error ? err.message : "Erro ao salvar chamada");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
-
+  async function syncNow() {
+    setSyncing(true);
+    try {
+      await syncPendingSessions();
+      await refreshPendingCount();
+    } catch {
+      await refreshPendingCount();
+    } finally {
+      setSyncing(false);
+    }
+  }
   return (
-    <main className="min-h-screen bg-background pb-28">
-      <header className="border-b bg-primary px-5 py-5 text-primary-foreground">
-        <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <Link
-              to="/dashboard"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-white/10"
-              aria-label="Voltar para o dashboard"
-            >
-              <ArrowLeft aria-hidden="true" size={20} />
-            </Link>
-            <div className="min-w-0">
-              <p className="truncate text-sm opacity-80">{className || 'Turma'}</p>
-              <h1 className="text-xl font-semibold">Chamada de hoje</h1>
-              <p className="mt-1 text-sm opacity-80">
-                {formatDisplayDate(today())} · {counts.present + counts.absent} de {students.length} marcados
-              </p>
-            </div>
+    <main className="min-h-screen bg-background pb-44">
+      <header
+        className="sticky top-0 z-20 border-b border-border bg-surface"
+        data-od-id="sheet-header"
+      >
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
+          <Link
+            to="/dashboard"
+            className="flex size-touch shrink-0 items-center justify-center rounded-[var(--r)] text-muted hover:bg-surface-2 hover:text-fg"
+            aria-label="Voltar para minhas turmas"
+          >
+            <ArrowLeft aria-hidden="true" size={20} />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow truncate">{formatDisplayDate(today())}</p>
+            <h1 className="mt-0.5 truncate text-[19px]">
+              {className || "Turma"}
+            </h1>
           </div>
-          <button
-            type="button"
+          <NetworkChip />
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => void logout()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-white/10"
             aria-label="Sair"
             title="Sair"
           >
-            <LogOut aria-hidden="true" size={19} />
-          </button>
+            <LogOut aria-hidden="true" size={18} />
+          </Button>
         </div>
+        <ProgressRail
+          done={counts.present + counts.absent}
+          total={students.length}
+        />
       </header>
-
-      <section className="mx-auto max-w-3xl px-5 py-4">
-        {loading && <p className="py-8 text-sm text-muted-foreground">Carregando alunos...</p>}
+      <div className="mx-auto max-w-4xl space-y-4 px-4 py-6">
+        <section
+          className="flex gap-3 rounded-[var(--r)] border border-info bg-info-soft p-4 text-sm text-info-ink"
+          data-od-id="offline-note"
+        >
+          <WifiOff aria-hidden="true" size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Pode marcar sem conexão. A chamada fica salva no aparelho e sobe
+            sozinha quando o sinal voltar.
+          </p>
+        </section>
+        {pendingCount > 0 && (
+          <section
+            className="flex flex-wrap items-center gap-3 rounded-[var(--r)] border border-warn bg-warn-soft p-4 text-sm text-warn-ink"
+            data-od-id="sync-state"
+          >
+            <p className="flex-1">
+              <strong className="num">{pendingCount}</strong> chamada
+              {pendingCount === 1 ? "" : "s"} aguardando envio.
+            </p>
+            <Button
+              variant="secondary"
+              disabled={syncing}
+              disabledReason="Enviando…"
+              onClick={() => void syncNow()}
+            >
+              {syncing ? "Enviando…" : "Sincronizar agora"}
+            </Button>
+          </section>
+        )}
+        {loading && (
+          <p className="py-8 text-sm text-muted">Carregando alunos...</p>
+        )}
         {error && (
-          <div role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-card p-4 text-sm text-destructive">
+          <div
+            role="alert"
+            className="rounded-[var(--r)] border border-danger bg-danger-soft p-4 text-sm text-danger-ink"
+          >
             {error}
           </div>
         )}
         {!loading && !isScheduled && (
-          <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-            Hoje não está cadastrado como dia de aula para o ano ativo.
-          </div>
+          <EmptyState
+            title="Hoje não há aula programada"
+            description="Confira com a coordenação a próxima data de chamada desta turma."
+          />
         )}
         {!loading && isScheduled && (
-          <div className="divide-y rounded-lg border bg-card" data-testid="student-list">
-            {students.length === 0 && (
-              <p className="p-6 text-center text-sm text-muted-foreground">Nenhum aluno encontrado nesta turma.</p>
-            )}
-            {students.map((student) => {
-              const mark = marks[student.id]
-              return (
-                <div key={student.id} className="flex items-center gap-3 p-4" data-testid="student-row">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary font-semibold text-secondary-foreground">
-                    {student.fullName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="min-w-0 flex-1 text-sm font-medium text-card-foreground">{student.fullName}</span>
-                  <button
-                    type="button"
-                    onClick={() => toggle(student.id, true)}
-                    className="flex h-11 w-11 items-center justify-center rounded-md border"
-                    style={{
-                      backgroundColor: mark === true ? '#dcfce7' : 'transparent',
-                      borderColor: mark === true ? '#16a34a' : undefined,
-                      color: mark === true ? '#15803d' : undefined,
-                    }}
-                    aria-label={`Marcar ${student.fullName} como presente`}
-                  >
-                    <Check aria-hidden="true" size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggle(student.id, false)}
-                    className="flex h-11 w-11 items-center justify-center rounded-md border"
-                    style={{
-                      backgroundColor: mark === false ? '#fee2e2' : 'transparent',
-                      borderColor: mark === false ? '#dc2626' : undefined,
-                      color: mark === false ? '#b91c1c' : undefined,
-                    }}
-                    aria-label={`Marcar ${student.fullName} como ausente`}
-                  >
-                    <X aria-hidden="true" size={20} />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+          <>
+            <section
+              className="flex flex-wrap gap-3"
+              data-od-id="sheet-toolbar"
+            >
+              <label className="relative min-w-52 flex-1">
+                <Search
+                  aria-hidden="true"
+                  size={17}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className="min-h-touch w-full rounded-[var(--r)] border border-border bg-surface py-2 pr-3 pl-10 text-sm outline-none focus:border-accent"
+                  placeholder="Buscar aluno"
+                  aria-label="Buscar aluno na lista"
+                />
+              </label>
+              <Button
+                variant="secondary"
+                onClick={markVisiblePresent}
+                disabled={visibleStudents.length === 0}
+                disabledReason="Sem alunos"
+              >
+                Marcar todos presentes
+              </Button>
+              {query && (
+                <Button variant="ghost" onClick={() => setQuery("")}>
+                  Limpar
+                </Button>
+              )}
+            </section>
+            <section
+              className="overflow-hidden rounded-[var(--r-lg)] border border-border bg-surface"
+              data-testid="student-list"
+              data-od-id="student-list"
+            >
+              {students.length === 0 ? (
+                <EmptyState
+                  title="Nenhum aluno nesta turma"
+                  description="Peça à coordenação para vincular os catequizandos antes de fazer a chamada."
+                />
+              ) : visibleStudents.length === 0 ? (
+                <EmptyState
+                  title="Nenhum aluno com esse nome"
+                  description="Limpe a busca ou tente outro nome da turma."
+                  action={
+                    <Button variant="secondary" onClick={() => setQuery("")}>
+                      Limpar a busca
+                    </Button>
+                  }
+                />
+              ) : (
+                visibleStudents.map((student) => (
+                  <AttendanceRow
+                    key={student.id}
+                    student={{ id: student.id, name: student.fullName }}
+                    mark={marks[student.id]}
+                    onMark={(value) => mark(student.id, value)}
+                    data-testid="student-row"
+                  />
+                ))
+              )}
+            </section>
+          </>
         )}
-      </section>
-
+      </div>
       {isScheduled && (
-        <div className="fixed inset-x-0 bottom-0 border-t bg-card px-5 py-4">
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-3 flex justify-between text-sm text-muted-foreground">
-              <span>{counts.pending} pendente{counts.pending === 1 ? '' : 's'}</span>
-              <span>{counts.present} presente{counts.present === 1 ? '' : 's'} · {counts.absent} ausente{counts.absent === 1 ? '' : 's'}</span>
+        <div
+          className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur"
+          data-od-id="confirm-bar"
+        >
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4">
+            <div className="flex gap-5 text-sm">
+              <span>
+                <strong className="num text-accent-ink">
+                  {counts.present}
+                </strong>
+                <span className="ml-1 text-muted">presentes</span>
+              </span>
+              <span>
+                <strong className="num text-danger-ink">{counts.absent}</strong>
+                <span className="ml-1 text-muted">ausentes</span>
+              </span>
+              <span>
+                <strong className="num">{counts.pending}</strong>
+                <span className="ml-1 text-muted">sem marcar</span>
+              </span>
             </div>
-            {offlineSaved && (
-              <p className="mb-2 text-center text-sm text-primary" data-testid="offline-saved-message">
-                Chamada salva. Será sincronizada quando a conexão retornar.
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => void confirmAttendance()}
+            <Button
+              size="lg"
               disabled={!allMarked || submitting}
-              className="min-h-14 w-full rounded-lg bg-primary px-4 text-base font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              disabledReason={
+                submitting ? "Salvando…" : `Faltam ${counts.pending}`
+              }
+              onClick={() => void confirmAttendance()}
               data-testid="btn-confirm"
             >
-              {submitting ? 'Salvando...' : 'Confirmar chamada'}
-            </button>
+              Confirmar chamada
+            </Button>
+            {offlineSaved && (
+              <p
+                className="w-full text-sm text-accent-ink"
+                data-testid="offline-saved-message"
+              >
+                Chamada salva no aparelho. Será enviada quando a conexão
+                retornar.
+              </p>
+            )}
           </div>
         </div>
       )}
     </main>
-  )
+  );
 }

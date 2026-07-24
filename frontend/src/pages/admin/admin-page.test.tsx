@@ -221,6 +221,7 @@ describe('AdminPage', () => {
     renderAdmin('/admin/calendario')
 
     await screen.findByRole('heading', { name: 'Calendário de aulas' })
+    await screen.findByRole('option', { name: '2026' })
     fireEvent.change(screen.getByLabelText('Ano letivo'), { target: { value: 'year-1' } })
     await screen.findByDisplayValue('2026-03-07')
     fireEvent.change(screen.getByLabelText('Datas (uma por linha)'), {
@@ -241,6 +242,7 @@ describe('AdminPage', () => {
     renderAdmin('/admin/turmas')
 
     await screen.findByRole('heading', { name: 'Turmas' })
+    await screen.findByRole('option', { name: '2026' })
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Perseverança' } })
     fireEvent.change(screen.getByLabelText('Ano letivo'), { target: { value: 'year-1' } })
     fireEvent.change(screen.getByLabelText('Nível'), { target: { value: 'Nível 2' } })
@@ -262,6 +264,7 @@ describe('AdminPage', () => {
     renderAdmin('/admin/alunos')
 
     await screen.findByRole('heading', { name: 'Alunos' })
+    await screen.findByRole('option', { name: 'Primeira Comunhão' })
     fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
     fireEvent.change(screen.getByLabelText('Nome completo'), { target: { value: 'Lucas Silva' } })
     fireEvent.change(screen.getByLabelText('Telefone'), { target: { value: '(11) 99999-0000' } })
@@ -323,6 +326,40 @@ describe('AdminPage', () => {
     expect(JSON.parse(String(reject?.init?.body))).toEqual({ rejectionReason: 'Documentos pendentes' })
   })
 
+  it('shows grouped navigation, the pending badge, and keeps rejection disabled without a reason', async () => {
+    setupFetch()
+    renderAdmin('/admin/inscricoes')
+
+    await screen.findByText('Planejamento')
+    expect(await screen.findByText('Acompanhamento')).toBeInTheDocument()
+    expect(await screen.findByText('1')).toBeInTheDocument()
+    await screen.findByRole('button', { name: 'Pedro Santos' })
+    fireEvent.click(screen.getByRole('button', { name: 'Pedro Santos' }))
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Informe o motivo' })).toBeDisabled()
+  })
+
+  it('renders calendar class-day markers and report metrics', async () => {
+    setupFetch()
+    const { unmount } = renderAdmin('/admin/calendario')
+    await screen.findByRole('heading', { name: 'Calendário de aulas' })
+    await screen.findByRole('option', { name: '2026' })
+    fireEvent.change(screen.getByLabelText('Ano letivo'), { target: { value: 'year-1' } })
+    expect(await screen.findByLabelText('Calendário de 2026')).toBeInTheDocument()
+    await waitFor(() => expect(document.querySelector('[data-class-day="true"]')).toBeTruthy())
+    unmount()
+
+    renderAdmin('/admin/relatorios')
+    await screen.findByRole('heading', { name: 'Relatórios de presença' })
+    await screen.findByRole('option', { name: 'Primeira Comunhão' })
+    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
+    fireEvent.change(screen.getByLabelText('De'), { target: { value: '2026-01-01' } })
+    fireEvent.change(screen.getByLabelText('Até'), { target: { value: '2026-01-31' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Pré-visualizar' }))
+    expect(await screen.findByText('Frequência da turma')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Presenças por catequizando/ })).toBeInTheDocument()
+  })
+
   it('previews attendance reports and triggers PDF downloads', async () => {
     const { calls } = setupFetch()
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
@@ -330,6 +367,7 @@ describe('AdminPage', () => {
     renderAdmin('/admin/relatorios')
 
     await screen.findByRole('heading', { name: 'Relatórios de presença' })
+    await screen.findByRole('option', { name: 'Primeira Comunhão' })
     // userEvent awaits each interaction so react-hook-form commits every field
     // before submit reads them. Plain fireEvent races the RHF state update and
     // fails intermittently on slower CI runners (validation sees stale values).

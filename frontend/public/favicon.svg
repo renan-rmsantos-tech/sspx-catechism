@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Catequese — favicon (16–32 px).
+  Forma reduzida por regra: sem filete dourado (vira sujeira na borda a este tamanho)
+  e cruz de braços retos, 38% mais grossa que a do brasão, para não fechar.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 51" role="img" aria-label="Catequese">
+  <path fill="oklch(40% 0.09 170)"
+        d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" />
+  <path fill="oklch(100% 0 0)"
+        d="M16.4 9 H23.6 V17 H31.6 V24.2 H23.6 V41 H16.4 V24.2 H8.4 V17 H16.4 Z" />
+</svg>

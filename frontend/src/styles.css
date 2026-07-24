@@ -2,73 +2,88 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
+:root {
+  --bg: oklch(98% 0.004 240);
+  --surface: oklch(100% 0 0);
+  --fg: oklch(20% 0.02 240);
+  --muted: oklch(50% 0.018 240);
+  --border: oklch(90% 0.006 240);
+  --accent: oklch(56% 0.12 170);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --accent-line: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  --accent-ink: oklch(40% 0.09 170);
+  --accent-press: color-mix(in srgb, var(--accent) 86%, black);
+  --surface-2: oklch(97% 0.005 240);
+  --surface-3: oklch(95% 0.006 240);
+  --fg-soft: color-mix(in srgb, var(--fg) 5%, transparent);
+  --fg-line: color-mix(in srgb, var(--fg) 12%, transparent);
+  --gold: oklch(82% 0.135 95);
+  --gold-soft: color-mix(in srgb, var(--gold) 26%, var(--surface));
+  --gold-ink: oklch(48% 0.085 95);
+  --warn: oklch(69% 0.16 48);
+  --warn-soft: color-mix(in srgb, var(--warn) 18%, var(--surface));
+  --warn-ink: oklch(45% 0.14 45);
+  --danger: oklch(55% 0.19 25);
+  --danger-soft: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  --danger-ink: oklch(45% 0.17 25);
+  --info: oklch(58% 0.10 250);
+  --info-soft: color-mix(in srgb, var(--info) 12%, var(--surface));
+  --info-ink: oklch(42% 0.10 250);
+  --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  --font-logo: 'Iowan Old Style', Charter, 'Hoefler Text', 'Palatino Linotype', Georgia, serif;
+  --fs-display: clamp(30px, 4.2vw, 44px);
+  --fs-h1: clamp(24px, 3vw, 30px);
+  --fs-h2: 20px; --fs-h3: 16px; --fs-body: 15px; --fs-sm: 13.5px; --fs-meta: 12px;
+  --r-sm: 8px; --r: 12px; --r-lg: 16px; --r-xl: 22px; --r-full: 999px;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --shadow-1: 0 1px 2px color-mix(in srgb, var(--fg) 7%, transparent);
+  --shadow-2: 0 2px 4px color-mix(in srgb, var(--fg) 6%, transparent), 0 8px 20px -6px color-mix(in srgb, var(--fg) 12%, transparent);
+  --shadow-3: 0 12px 40px -8px color-mix(in srgb, var(--fg) 22%, transparent);
+  --nav-w: 244px; --container: 1200px; --container-read: 760px; --touch: 44px;
+  --dur-fast: 140ms; --dur: 160ms; --dur-slow: 220ms; --ease: ease; --ease-enter: cubic-bezier(.2, .7, .3, 1);
+  /* shadcn compatibility aliases; new UI uses the DS tokens above. */
+  --background: var(--bg); --foreground: var(--fg); --card: var(--surface); --card-foreground: var(--fg);
+  --primary: var(--accent); --primary-foreground: var(--surface); --secondary: var(--surface-2); --secondary-foreground: var(--fg);
+  --muted-foreground: var(--muted); --accent-foreground: var(--accent-ink); --destructive: var(--danger);
+  --input: var(--border); --ring: var(--accent); --radius: var(--r);
 }
 
-:root {
-  --background: #fffdf7;
-  --foreground: #1c1208;
-  --card: #ffffff;
-  --card-foreground: #1c1208;
-  --primary: #b45309;
-  --primary-foreground: #ffffff;
-  --secondary: #fef3c7;
-  --secondary-foreground: #78350f;
-  --muted: #f5e6c0;
-  --muted-foreground: #78716c;
-  --accent: #b45309;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --border: #f5e6c0;
-  --input: #f5e6c0;
-  --ring: #b45309;
-  --radius: 0.625rem;
+@theme inline {
+  --color-background: var(--background); --color-foreground: var(--foreground); --color-card: var(--card); --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary); --color-primary-foreground: var(--primary-foreground); --color-secondary: var(--secondary); --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--surface-2); --color-muted-foreground: var(--muted); --color-accent: var(--accent); --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border); --color-input: var(--input); --color-ring: var(--ring); --color-destructive: var(--destructive);
+  --color-surface: var(--surface); --color-surface-2: var(--surface-2); --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg); --color-fg-soft: var(--fg-soft); --color-accent-soft: var(--accent-soft); --color-accent-line: var(--accent-line); --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn); --color-warn-soft: var(--warn-soft); --color-warn-ink: var(--warn-ink); --color-danger-soft: var(--danger-soft); --color-danger-ink: var(--danger-ink);
+  --color-info: var(--info); --color-info-soft: var(--info-soft); --color-info-ink: var(--info-ink); --color-gold: var(--gold); --color-gold-soft: var(--gold-soft); --color-gold-ink: var(--gold-ink);
+  --font-sans: var(--font-body); --font-display: var(--font-display); --font-mono: var(--font-mono); --font-logo: var(--font-logo);
+  --radius-sm: var(--r-sm); --radius-md: var(--r); --radius-lg: var(--r-lg); --radius-xl: var(--r-xl);
+  --shadow-1: var(--shadow-1); --shadow-2: var(--shadow-2); --shadow-3: var(--shadow-3); --spacing-touch: var(--touch);
+}
+
+@supports not (color: oklch(50% 0 0)) {
+  :root { --bg: #f6f9fb; --surface: #ffffff; --fg: #202a31; --muted: #6e7b84; --border: #e1e6e9; --accent: #16877a; --accent-ink: #17685f; --gold: #e1ad39; --gold-ink: #85601d; --warn: #d45d25; --warn-ink: #8d421e; --danger: #c52f42; --danger-ink: #8e2433; --info: #527b9e; --info-ink: #385d7d; }
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  html {
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    margin: 0;
-    min-width: 320px;
-  }
+  * { @apply border-border; }
+  html { font-family: var(--font-body); }
+  body { @apply bg-background text-foreground; margin: 0; min-width: 320px; font-size: var(--fs-body); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-family: var(--font-display); text-wrap: balance; }
+  h1 { font-size: var(--fs-h1); font-weight: 640; letter-spacing: -.022em; line-height: 1.15; }
+  h2 { font-size: var(--fs-h2); font-weight: 620; letter-spacing: -.016em; line-height: 1.25; }
+  h3 { font-size: var(--fs-h3); font-weight: 600; letter-spacing: -.01em; line-height: 1.35; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
 }
 
-@layer components {
-  .input {
-    @apply h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
-  }
+.display { font-family: var(--font-display); font-size: var(--fs-display); font-weight: 660; letter-spacing: -.03em; line-height: 1.06; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.wordmark { font-family: var(--font-logo); font-variant-caps: all-small-caps; letter-spacing: .17em; }
+/* `muted` is a surface token in shadcn utilities; text keeps the DS ink token. */
+.text-muted { color: var(--muted); }
 
-  textarea.input {
-    @apply h-auto py-2;
-  }
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
