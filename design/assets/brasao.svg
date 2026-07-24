@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Catequese — brasão, versão para fundo claro.
+
+  As cores estão em oklch literal porque um SVG carregado como asset externo
+  não enxerga as custom properties do documento. Elas espelham exatamente:
+    campo  = --accent-ink   oklch(40% 0.09 170)
+    cruz   = --surface      oklch(100% 0 0)
+    filete = --gold         oklch(82% 0.135 95)
+  Se algum desses tokens mudar em catequese-ds.css, este arquivo tem de acompanhar.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 51" role="img" aria-label="Brasão da Catequese">
+  <path fill="oklch(40% 0.09 170)"
+        d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" />
+  <path fill="oklch(100% 0 0)"
+        d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" />
+  <path fill="none" stroke="oklch(82% 0.135 95)" stroke-width="1.2"
+        d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" />
+</svg>

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Superfícies aplicadas — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../tokens.css" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  /* Etiqueta de rota no cabeçalho de cada quadro. */
+  .route {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em;
+    color: var(--accent-ink); background: var(--accent-soft);
+    padding: 2px 7px; border-radius: 5px; width: fit-content; overflow-wrap: anywhere;
+  }
+
+  /* Faixa de "o que observar" abaixo de cada quadro — dirige o olhar
+     do revisor para a regra que aquela tela carrega. */
+  .watch { display: flex; gap: 9px; align-items: flex-start; }
+  .watch b {
+    flex: 0 0 auto; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--surface-3); color: var(--muted);
+    padding: 3px 7px; border-radius: 5px; margin-top: 1px;
+  }
+
+  /* O quadro da chamada é o mais alto: é a tela que precisa de rolagem
+     interna para o revisor sentir a densidade real da lista. */
+  .pv-frame-core iframe { height: 700px; }
+
+  /* Aviso de contexto para quem revisa dentro de um iframe aninhado. */
+  .nested-note {
+    display: flex; gap: 9px; align-items: flex-start;
+    padding: 11px var(--sp-4); border-radius: var(--r);
+    background: var(--info-soft); color: var(--info-ink);
+    border: 1px solid color-mix(in srgb, var(--info) 22%, var(--surface));
+    font-size: var(--fs-sm);
+  }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Superfícies aplicadas</h1>
+    <p class="pv-note">
+      As telas de origem preservadas, <strong>rodando de verdade</strong> dentro de cada quadro — não capturas de tela.
+      São ao mesmo tempo a evidência de onde este sistema veio e os melhores exemplos de como aplicá-lo.
+      Interaja dentro dos quadros; abra em tela cheia pelo link de cada um.
+    </p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1120px;">
+  <div class="stack-lg">
+
+    <!-- núcleo do produto -->
+    <section class="pv-section" data-od-id="core-product">
+      <div class="row-between">
+        <h2>O núcleo do produto</h2>
+        <span class="chip chip-plain">comece por aqui</span>
+      </div>
+      <p class="pv-note">A chamada é a interação central: é para ela que o sistema inteiro foi desenhado, e é onde as regras de toque, de estado e do rótulo honesto aparecem todas de uma vez.</p>
+
+      <div class="nested-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17" style="flex: 0 0 17px; margin-top: 1px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8v.01"/></svg>
+        <span>Cada quadro carrega o arquivo real e é rolável por dentro. Se algum aparecer em branco, o arquivo de origem não está no lugar esperado — é a verificação de integridade do pacote.</span>
+      </div>
+
+      <div class="pv-frame pv-frame-core" data-od-id="frame-chamada">
+        <div class="pv-frame-bar">
+          <div class="stack-sm" style="min-width: 0;">
+            <h3>Chamada</h3>
+            <span class="route">/dashboard/turmas/:id/chamada · chamada.html</span>
+          </div>
+          <a class="btn btn-sm btn-secondary" href="../chamada.html" target="_blank" rel="noopener">Abrir em tela cheia</a>
+        </div>
+        <iframe src="../chamada.html" title="Tela de chamada, preservada da fonte" loading="lazy"></iframe>
+        <div class="pv-frame-foot">
+          <div class="watch">
+            <b>observe</b>
+            <p class="pv-note">Marque alguns alunos: a barra de progresso enche, os contadores atualizam e o botão conta <strong>“Faltam N”</strong> até liberar. Nenhum padrão neutro escondido — quem não foi marcado continua branco e continua contando.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pv-frame pv-frame-tall" data-od-id="frame-dashboard">
+        <div class="pv-frame-bar">
+          <div class="stack-sm" style="min-width: 0;">
+            <h3>Minhas turmas</h3>
+            <span class="route">/dashboard · dashboard-catequista.html</span>
+          </div>
+          <a class="btn btn-sm btn-secondary" href="../dashboard-catequista.html" target="_blank" rel="noopener">Abrir em tela cheia</a>
+        </div>
+        <iframe src="../dashboard-catequista.html" title="Painel do catequista, preservado da fonte" loading="lazy"></iframe>
+        <div class="pv-frame-foot">
+          <div class="watch">
+            <b>observe</b>
+            <p class="pv-note">O chip de rede lê <code class="pv-code">navigator.onLine</code> de verdade. O banner de fila carrega a própria ação de sincronizar — clique nele. O cartão da próxima chamada é o único <code class="pv-code">--r-xl</code> da tela.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- coordenação -->
+    <section class="pv-section" data-od-id="coordination">
+      <h2>Coordenação</h2>
+      <div class="pv-frame pv-frame-tall" data-od-id="frame-admin">
+        <div class="pv-frame-bar">
+          <div class="stack-sm" style="min-width: 0;">
+            <h3>Console de coordenação</h3>
+            <span class="route">/admin/* · 7 módulos · admin.html</span>
+          </div>
+          <a class="btn btn-sm btn-secondary" href="../admin.html" target="_blank" rel="noopener">Abrir em tela cheia</a>
+        </div>
+        <iframe src="../admin.html" title="Console de coordenação, preservado da fonte" loading="lazy"></iframe>
+        <div class="pv-frame-foot">
+          <div class="watch">
+            <b>observe</b>
+            <p class="pv-note">Navegue entre os sete módulos pela lateral; clique em <strong>Analisar</strong> numa inscrição para abrir o drawer — repare que a lista continua visível atrás dele. Calendário e relatórios mostram o dourado em função e as barras preenchidas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- entrada -->
+    <section class="pv-section" data-od-id="entry">
+      <h2>Entrada e inscrição</h2>
+      <div class="grid-2" style="align-items: start;">
+
+        <div class="pv-frame" data-od-id="frame-login">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Entrar</h3><span class="meta">login.html</span></div>
+            <a class="btn btn-sm btn-ghost" href="../login.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../login.html" title="Tela de login, preservada da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">O shell <code class="pv-code">.auth</code>: tinta cheia à esquerda, cartão de 392px à direita.</p></div>
+        </div>
+
+        <div class="pv-frame" data-od-id="frame-senha">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Primeiro acesso</h3><span class="meta">trocar-senha.html</span></div>
+            <a class="btn btn-sm btn-ghost" href="../trocar-senha.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../trocar-senha.html" title="Tela de troca de senha, preservada da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">Validação aditiva: cada regra vira visto conforme é satisfeita.</p></div>
+        </div>
+
+        <div class="pv-frame" data-od-id="frame-inscricao">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Inscrição pública</h3><span class="meta">inscricao.html</span></div>
+            <a class="btn btn-sm btn-ghost" href="../inscricao.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../inscricao.html" title="Formulário de inscrição, preservado da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">Treze campos em quatro etapas, com revisão e protocolo no fim.</p></div>
+        </div>
+
+        <div class="pv-frame" data-od-id="frame-index">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Visão geral da proposta</h3><span class="meta">index.html</span></div>
+            <a class="btn btn-sm btn-ghost" href="../index.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../index.html" title="Visão geral da proposta, preservada da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">Índice das telas e a tabela de antes/depois que motivou o sistema.</p></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- documentação de origem -->
+    <section class="pv-section" data-od-id="source-docs">
+      <div class="row-between"><h2>Documentação de origem</h2><span class="meta">Preservada, não substituída</span></div>
+      <p class="pv-note">A fonte documentou a si mesma. Estes dois arquivos são a evidência primária de direção e de marca — <code class="pv-code">DESIGN.md</code> os extrai, mas não os substitui.</p>
+      <div class="grid-2" style="align-items: start;">
+
+        <div class="pv-frame" data-od-id="frame-ds">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Design system da fonte</h3><span class="meta">design-system.html · 21KB</span></div>
+            <a class="btn btn-sm btn-ghost" href="../design-system.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../design-system.html" title="Documentação de design system da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">Onde a direção “Human / approachable” foi nomeada, com as regras que o sistema não abre mão.</p></div>
+        </div>
+
+        <div class="pv-frame" data-od-id="frame-logo">
+          <div class="pv-frame-bar">
+            <div class="stack-sm" style="min-width: 0;"><h3>Manual da marca</h3><span class="meta">logo.html · 36KB</span></div>
+            <a class="btn btn-sm btn-ghost" href="../logo.html" target="_blank" rel="noopener">Abrir</a>
+          </div>
+          <iframe src="../logo.html" title="Manual da marca da fonte" loading="lazy"></iframe>
+          <div class="pv-frame-foot"><p class="pv-note">Três direções de marca com geometria, testes de redução e veredito. Também <a href="../logo-v1-moderno.html" target="_blank" rel="noopener" style="color: var(--accent-ink); text-decoration: underline;">a rodada anterior</a>, guardada pela justificativa que registra.</p></div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card card-accent" data-od-id="next">
+      <div class="row-between">
+        <div class="stack-sm" style="min-width: 0;">
+          <h2>Para construir telas novas</h2>
+          <p class="small" style="max-width: 56ch;">O kit aplicado reorganiza estas mesmas superfícies em peças reutilizáveis, com um inventário e um arquivo por shell.</p>
+        </div>
+        <a class="btn btn-primary" href="../ui_kits/app/index.html">Abrir o kit aplicado</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

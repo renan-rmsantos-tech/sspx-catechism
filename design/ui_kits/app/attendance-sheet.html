@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chamada · 2º ano — Kit Catequese</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<!-- Tokens first, then the full component sheet. colors_and_type.css and
+     tokens.css are the portable foundations; catequese-ds.css carries the
+     same :root plus every component rule. -->
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="../../assets/catequese-ds.css" />
+<style>
+  /* Cabeçalho de folha: opaco, não translúcido — a barra de progresso
+     precisa de fundo sólido para o preenchimento não vazar visualmente. */
+  .sheet-head { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+  .progress-track { height: 4px; background: var(--surface-3); }
+  .progress-fill { height: 100%; background: var(--accent); transition: width .2s ease; }
+  .counts { display: flex; gap: var(--sp-5); }
+  .counts b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 620; letter-spacing: -0.02em; }
+  .counts .c-yes b { color: var(--accent-ink); }
+  .counts .c-no b  { color: var(--danger-ink); }
+  .counts span { display: block; font-size: 11.5px; color: var(--muted); }
+  @media (max-width: 720px) { .counts { gap: var(--sp-4); } .hide-sm { display: none; } }
+</style>
+</head>
+<body>
+
+<header class="sheet-head" data-od-id="sheet-header">
+  <div class="container" style="padding-block: 12px; max-width: 860px;">
+    <div class="row-between" style="flex-wrap: nowrap; gap: var(--sp-3);">
+      <div class="row" style="flex-wrap: nowrap; min-width: 0; gap: var(--sp-3);">
+        <a class="btn btn-ghost btn-icon" href="shell-catechist.html" aria-label="Voltar para minhas turmas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="19" height="19" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </a>
+        <div style="min-width: 0;">
+          <p class="meta">Sábado, 25 de julho · 10h30</p>
+          <h1 style="font-size: 19px; overflow-wrap: anywhere;">2º ano · Primeira Comunhão</h1>
+        </div>
+      </div>
+      <span class="chip chip-ok hide-sm" id="netChip" data-od-id="network-chip">Online</span>
+    </div>
+  </div>
+  <div class="progress-track" role="progressbar" aria-label="Alunos marcados" aria-valuemin="0" aria-valuemax="22" aria-valuenow="0" id="progressBar">
+    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+  </div>
+</header>
+
+<main class="container" style="padding-block: var(--sp-5) var(--sp-6); max-width: 860px;">
+  <div class="stack">
+
+    <div class="banner banner-info" data-od-id="offline-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 19v.01"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M2 8.5a15 15 0 0 1 20 0"/></svg>
+      <span>Pode marcar sem conexão. A chamada fica salva no aparelho e sobe sozinha quando o sinal voltar.</span>
+    </div>
+
+    <div class="row-between" data-od-id="sheet-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input class="input input-search" id="search" type="search" placeholder="Buscar aluno" aria-label="Buscar aluno na lista" />
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-sm btn-secondary" id="allPresent" type="button">Marcar todos presentes</button>
+        <button class="btn btn-sm btn-ghost" id="clearAll" type="button">Limpar</button>
+      </div>
+    </div>
+
+    <section class="card card-flush" data-od-id="student-list">
+      <div class="list" id="list"></div>
+      <div class="empty" id="emptyState" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <p class="small">Nenhum aluno com esse nome nesta turma.</p>
+        <button class="btn btn-sm btn-secondary" type="button" id="clearSearch">Limpar a busca</button>
+      </div>
+    </section>
+
+    <p class="meta" style="text-align: center;">Kit de interface · dados de demonstração</p>
+
+  </div>
+</main>
+
+<div class="actionbar" data-od-id="confirm-bar">
+  <div class="container" style="max-width: 860px;">
+    <div class="stack-sm">
+      <div class="banner banner-ok" id="savedNote" hidden style="margin: 0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+        <span>Chamada salva no aparelho. Será enviada quando a conexão voltar.</span>
+      </div>
+      <div class="row-between" style="flex-wrap: nowrap; gap: var(--sp-3);">
+        <div class="counts">
+          <div class="c-yes"><b id="cYes">0</b><span>presentes</span></div>
+          <div class="c-no"><b id="cNo">0</b><span>ausentes</span></div>
+          <div class="hide-sm"><b id="cPend">22</b><span>sem marcar</span></div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="confirm" disabled data-od-id="confirm-attendance">Faltam 22</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ────────────────────────────────────────────────────────────
+     A superfície central do produto. Três regras do sistema vivem
+     inteiras aqui, e nenhuma delas é cosmética:
+
+     1. Não existe padrão neutro escondido. Quem não foi marcado
+        continua branco E continua contando — é o que permite ao
+        botão dar um número em que se pode confiar.
+     2. O botão desabilitado diz o que falta ("Faltam 4"), nunca
+        um "Confirmar" cinza sem explicação.
+     3. Offline é característica, não falha: o estado de rede fica
+        visível e o salvamento local é dito em palavras.
+     ──────────────────────────────────────────────────────────── */
+
+  const STUDENTS = [
+    'Ana Clara Bittencourt','Antônio Vilela Prado','Beatriz Nogueira Alves','Bernardo Sá Teixeira',
+    'Cecília Moraes Rangel','Clara Fontenele Lima','Davi Aguiar Mendonça','Elisa Barroso Nunes',
+    'Francisco Vasques Rocha','Gabriel Otávio Cardim','Helena Trindade Pires','Inácio Bueno Salgado',
+    'Joana Rezende Amorim','José Miguel Peixoto','Laura Cavalcanti Reis','Lucas Aragão Bastos',
+    'Maria Eduarda Falcão','Miguel Antunes Serra','Rafaela Coelho Vieira','Teresa Lobo Carvalho',
+    'Tomás Guimarães Leal','Valentina Ottoni Maia'
+  ];
+
+  const marks = new Map();
+  const list = document.getElementById('list');
+  const emptyState = document.getElementById('emptyState');
+  const search = document.getElementById('search');
+
+  const iconYes = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+  const iconNo  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    const rows = STUDENTS
+      .map((name, i) => ({ name, i }))
+      .filter((s) => !q || s.name.toLowerCase().includes(q));
+
+    list.innerHTML = rows.map(({ name, i }) => {
+      const m = marks.get(i);
+      const state = m === true ? 'is-yes' : m === false ? 'is-no' : '';
+      return `<div class="list-row ${state}" data-od-id="student-row-${i}">
+        <span class="avatar" aria-hidden="true">${name.charAt(0)}</span>
+        <span class="row-title" style="flex: 1 1 auto; min-width: 0;">${name}</span>
+        <span class="seg">
+          <button class="seg-btn seg-yes" type="button" data-i="${i}" data-v="1" aria-pressed="${m === true}" aria-label="Marcar ${name} como presente">${iconYes}</button>
+          <button class="seg-btn seg-no" type="button" data-i="${i}" data-v="0" aria-pressed="${m === false}" aria-label="Marcar ${name} como ausente">${iconNo}</button>
+        </span>
+      </div>`;
+    }).join('');
+
+    emptyState.hidden = rows.length > 0;
+    paintTotals();
+  }
+
+  function paintTotals() {
+    let yes = 0, no = 0;
+    marks.forEach((v) => { if (v === true) yes++; else if (v === false) no++; });
+    const pend = STUDENTS.length - yes - no;
+
+    document.getElementById('cYes').textContent = yes;
+    document.getElementById('cNo').textContent = no;
+    document.getElementById('cPend').textContent = pend;
+
+    const done = yes + no;
+    document.getElementById('progressFill').style.width = Math.round((done / STUDENTS.length) * 100) + '%';
+    document.getElementById('progressBar').setAttribute('aria-valuenow', String(done));
+
+    /* Regra 2: o rótulo carrega o motivo do bloqueio. */
+    const confirm = document.getElementById('confirm');
+    confirm.disabled = pend !== 0;
+    confirm.textContent = pend === 0 ? 'Confirmar chamada' : `Faltam ${pend}`;
+  }
+
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    const i = Number(btn.dataset.i);
+    const v = btn.dataset.v === '1';
+    /* Clicar de novo no mesmo lado desmarca — voltando ao estado
+       "sem marcar", que é um estado real e contável. */
+    marks.set(i, marks.get(i) === v ? null : v);
+    render();
+  });
+
+  search.addEventListener('input', render);
+  document.getElementById('clearSearch').addEventListener('click', () => { search.value = ''; search.focus(); render(); });
+
+  document.getElementById('allPresent').addEventListener('click', () => {
+    STUDENTS.forEach((_, i) => marks.set(i, true));
+    render();
+  });
+  document.getElementById('clearAll').addEventListener('click', () => {
+    marks.clear();
+    render();
+  });
+
+  document.getElementById('confirm').addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    b.textContent = 'Salvando…';
+    setTimeout(() => {
+      if (navigator.onLine) {
+        window.location.href = 'shell-catechist.html';
+      } else {
+        /* Regra 3: offline não é erro — é dito, em palavras, e a
+           chamada fica salva. */
+        document.getElementById('savedNote').hidden = false;
+        b.textContent = 'Chamada salva';
+      }
+    }, 600);
+  });
+
+  const netChip = document.getElementById('netChip');
+  function paintNet() {
+    const on = navigator.onLine;
+    netChip.textContent = on ? 'Online' : 'Offline';
+    netChip.className = 'chip hide-sm ' + (on ? 'chip-ok' : 'chip-warn');
+  }
+  window.addEventListener('online', paintNet);
+  window.addEventListener('offline', paintNet);
+  paintNet();
+
+  render();
+</script>
+
+</body>
+</html>

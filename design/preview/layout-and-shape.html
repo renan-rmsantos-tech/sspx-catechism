@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Forma, elevação e layout — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .rbox { height: 78px; background: var(--accent-soft); border: 1px solid var(--accent-line); display: grid; place-items: center; }
+  .rbox span { font-family: var(--font-mono); font-size: 11px; color: var(--accent-ink); }
+  .shbox { height: 78px; background: var(--surface); border-radius: var(--r); display: grid; place-items: center; }
+  .shbox span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  /* Miniaturas de shell — diagrama, não protótipo. */
+  .mini { height: 158px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--surface-2); display: flex; }
+  .mini .ink { background: var(--accent-ink); }
+  .mini .bar { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .mini .side { background: var(--surface); border-right: 1px solid var(--border); }
+  .mini .blk { background: var(--fg-line); border-radius: 3px; }
+  .mini .acc { background: var(--accent); border-radius: 3px; }
+  .mini .card-s { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; }
+  .bp { display: flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-sm); padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .bp:last-child { border-bottom: 0; }
+  .bp b { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-ink); flex: 0 0 82px; }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Forma, elevação e layout</h1>
+    <p class="pv-note">A escada de raios, o que a sombra significa, os três shells do produto e onde cada quebra acontece.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="radius">
+      <div class="row-between"><h2>Raio · cresce com o tamanho da coisa</h2><span class="meta">8 · 12 · 16 · 22 · pílula</span></div>
+      <p class="pv-note">Uma regra só: o raio acompanha a escala do elemento. Controle pequeno 8, controle padrão 12, cartão 16, e 22 reservado para <strong>o único cartão de destaque de uma tela</strong> — no produto, o cartão da próxima chamada.</p>
+      <div class="grid-auto">
+        <div class="pv-swatch"><span class="rbox" style="border-radius: var(--r-sm);"><span>--r-sm</span></span><span class="body"><b>8px</b><span class="use">Botão pequeno, item de navegação, chip de calendário</span></span></div>
+        <div class="pv-swatch"><span class="rbox" style="border-radius: var(--r);"><span>--r</span></span><span class="body"><b>12px</b><span class="use">Botão, campo, banner, avatar</span></span></div>
+        <div class="pv-swatch"><span class="rbox" style="border-radius: var(--r-lg);"><span>--r-lg</span></span><span class="body"><b>16px</b><span class="use">Cartão, painel, botão grande</span></span></div>
+        <div class="pv-swatch"><span class="rbox" style="border-radius: var(--r-xl);"><span>--r-xl</span></span><span class="body"><b>22px</b><span class="use">Um cartão de destaque por tela</span></span></div>
+        <div class="pv-swatch"><span class="rbox" style="border-radius: var(--r-full);"><span>--r-full</span></span><span class="body"><b>Pílula</b><span class="use">Chip, medidor, trilho de etapa</span></span></div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="elevation">
+      <div class="row-between"><h2>Elevação · sombra quer dizer “isto se move”</h2><span class="meta">Painel parado usa borda</span></div>
+      <p class="pv-note">
+        Sombra não é enfeite: <strong>ela só aparece no que é clicável ou flutuante.</strong> Um painel que apenas
+        existe na página usa <code class="pv-code">--border</code> e nada mais.
+      </p>
+      <div class="grid-4">
+        <div class="pv-swatch"><span class="shbox" style="border: 1px solid var(--border);"><span>--border</span></span><span class="body"><b>Sem sombra</b><span class="use">Painel em repouso, cartão de conteúdo</span></span></div>
+        <div class="pv-swatch"><span class="shbox" style="box-shadow: var(--shadow-1);"><span>--shadow-1</span></span><span class="body"><b>Nível 1</b><span class="use">Botão secundário em repouso</span></span></div>
+        <div class="pv-swatch"><span class="shbox" style="box-shadow: var(--shadow-2);"><span>--shadow-2</span></span><span class="body"><b>Nível 2</b><span class="use">Botão primário, cartão em hover</span></span></div>
+        <div class="pv-swatch"><span class="shbox" style="box-shadow: var(--shadow-3);"><span>--shadow-3</span></span><span class="body"><b>Nível 3</b><span class="use">Só o drawer</span></span></div>
+      </div>
+      <div class="card">
+        <div class="stack-sm">
+          <span class="eyebrow">Hover eleva, não recolore</span>
+          <p class="pv-note">Passe o mouse: o cartão ganha sombra, borda em <code class="pv-code">--accent-line</code> e sobe 2px. A cor de fundo não muda.</p>
+          <div class="grid-3" style="margin-top: var(--sp-2);">
+            <a class="card card-tight card-link stack-sm" href="#" onclick="return false;"><h3>Passe o mouse</h3><p class="small muted">translateY(-2px) · 180ms</p></a>
+            <a class="card card-tight card-link stack-sm" href="#" onclick="return false;"><h3>Ou neste</h3><p class="small muted">--shadow-2 · --accent-line</p></a>
+            <a class="card card-tight card-link stack-sm" href="#" onclick="return false;"><h3>Ou neste</h3><p class="small muted">Só sombra, borda e posição</p></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="shells">
+      <div class="row-between"><h2>Os três shells</h2><span class="meta">Escolher o certo é metade do trabalho</span></div>
+      <p class="pv-note">O produto tem exatamente três esqueletos de página. Os diagramas abaixo são esquemáticos; as telas reais estão em <a href="applied-surfaces.html" style="color: var(--accent-ink); text-decoration: underline;">superfícies aplicadas</a>.</p>
+      <div class="grid-3" style="align-items: start;">
+
+        <div class="card card-tight stack-sm">
+          <div class="mini" aria-hidden="true">
+            <div class="ink" style="flex: 1.05; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div class="blk" style="width: 15px; height: 19px; background: color-mix(in srgb, var(--surface) 45%, transparent);"></div>
+              <div style="display: grid; gap: 4px;">
+                <div class="blk" style="height: 6px; width: 82%; background: color-mix(in srgb, var(--surface) 72%, transparent);"></div>
+                <div class="blk" style="height: 6px; width: 54%; background: color-mix(in srgb, var(--surface) 40%, transparent);"></div>
+              </div>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 12px;">
+              <div class="blk" style="height: 5px; width: 42%;"></div>
+              <div class="card-s" style="height: 17px;"></div>
+              <div class="card-s" style="height: 17px;"></div>
+              <div class="acc" style="height: 17px;"></div>
+            </div>
+          </div>
+          <h3><code class="pv-code">.auth</code></h3>
+          <p class="pv-note">Split 1,05fr ‖ 1fr. Aside em tinta cheia com marca, promessa em <code>.display</code> e o motivo de pontos. Cartão de 392px à direita. Uma coluna em 860px.</p>
+          <span class="meta">login · trocar-senha</span>
+        </div>
+
+        <div class="card card-tight stack-sm">
+          <div class="mini" style="flex-direction: column;" aria-hidden="true">
+            <div class="bar" style="height: 22px; display: flex; align-items: center; gap: 5px; padding: 0 8px;">
+              <div class="blk" style="width: 9px; height: 11px;"></div>
+              <div class="blk" style="width: 34px; height: 5px;"></div>
+              <div style="flex: 1;"></div>
+              <div class="acc" style="width: 22px; height: 8px; border-radius: 999px;"></div>
+              <div class="blk" style="width: 11px; height: 11px; border-radius: 3px;"></div>
+            </div>
+            <div style="flex: 1; padding: 9px; display: grid; gap: 5px; align-content: start;">
+              <div class="blk" style="height: 9px; width: 45%; border-radius: 3px; background: color-mix(in srgb, var(--warn) 32%, transparent);"></div>
+              <div class="card-s" style="height: 30px; border-color: var(--accent-line); border-radius: 7px;"></div>
+              <div style="display: flex; gap: 5px;"><div class="card-s" style="flex: 1; height: 40px;"></div><div class="card-s" style="flex: 1; height: 40px;"></div><div class="card-s" style="flex: 1; height: 40px;"></div></div>
+            </div>
+          </div>
+          <h3><code class="pv-code">.appbar</code> + <code class="pv-code">.container</code></h3>
+          <p class="pv-note">Cabeçalho fixo translúcido, 62px: marca → navegação → <strong>chip de rede</strong> → usuário. Em 720px a navegação some e a ação primária desce para a <code>.actionbar</code>.</p>
+          <span class="meta">dashboard · inscrição · visão geral</span>
+        </div>
+
+        <div class="card card-tight stack-sm">
+          <div class="mini" aria-hidden="true">
+            <div class="side" style="flex: 0 0 44px; padding: 7px 5px; display: grid; gap: 4px; align-content: start;">
+              <div class="blk" style="height: 10px; border-radius: 3px;"></div>
+              <div class="acc" style="height: 8px;"></div>
+              <div class="blk" style="height: 8px;"></div>
+              <div class="blk" style="height: 8px;"></div>
+              <div class="blk" style="height: 8px;"></div>
+            </div>
+            <div style="flex: 1; padding: 9px; display: grid; gap: 5px; align-content: start;">
+              <div style="display: flex; gap: 4px;">
+                <div class="card-s" style="flex: 1; height: 22px;"></div><div class="card-s" style="flex: 1; height: 22px;"></div>
+                <div class="card-s" style="flex: 1; height: 22px;"></div><div class="card-s" style="flex: 1; height: 22px;"></div>
+              </div>
+              <div class="card-s" style="height: 74px; padding: 6px; display: grid; gap: 4px; align-content: start;">
+                <div class="blk" style="height: 5px; background: var(--surface-3);"></div>
+                <div class="blk" style="height: 4px;"></div><div class="blk" style="height: 4px;"></div>
+                <div class="blk" style="height: 4px; width: 40%; background: var(--gold);"></div>
+              </div>
+            </div>
+          </div>
+          <h3><code class="pv-code">.shell</code></h3>
+          <p class="pv-note">Sidebar fixa de 244px com grupos rotulados em mono. Contador de pendências em dourado. Em 1024px vira uma faixa rolável no topo — <strong>nunca um hambúrguer</strong>.</p>
+          <span class="meta">coordenação · 7 módulos</span>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="breakpoints">
+      <div class="row-between"><h2>Quebras</h2><span class="meta">Redesenha, não comprime</span></div>
+      <div class="card">
+        <div class="bp"><b>1200px</b><span>Largura máxima do container. Leitura e formulários param em 760px.</span></div>
+        <div class="bp"><b>1024px</b><span><code class="pv-code">.grid-4</code> vira 2 colunas · a sidebar do admin vira faixa horizontal rolável, rótulos de grupo escondidos.</span></div>
+        <div class="bp"><b>860px</b><span>O split de autenticação vira uma coluna; o rodapé do aside sai em vez de ser espremido.</span></div>
+        <div class="bp"><b>720px</b><span>Todas as grades viram uma coluna · <code class="pv-code">.kv</code> empilha · navegação do appbar some · legendas do stepper somem, trilhos ficam.</span></div>
+        <div class="bp"><b>reduced</b><span><code class="pv-code">prefers-reduced-motion</code> zera todas as durações para 0,001ms.</span></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Referência de componentes — Kit Catequese</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<!-- Tokens first, then the full component sheet. colors_and_type.css and
+     tokens.css are the portable foundations; catequese-ds.css carries the
+     same :root plus every component rule. -->
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="../../assets/catequese-ds.css" />
+<style>
+  /* Duas colunas: o componente vivo à esquerda, a marcação à direita. */
+  .ref { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: stretch; }
+  .ref > .live { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-3); justify-content: center; min-width: 0; }
+  .ref > .code {
+    padding: var(--sp-4) var(--sp-5); background: var(--surface-2);
+    border-left: 1px solid var(--border); min-width: 0; overflow-x: auto;
+  }
+  .ref > .code pre {
+    margin: 0; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.65;
+    color: var(--muted); white-space: pre; tab-size: 2;
+  }
+  .ref > .code .t { color: var(--accent-ink); }
+  @media (max-width: 860px) {
+    .ref { grid-template-columns: 1fr; }
+    .ref > .code { border-left: 0; border-top: 1px solid var(--border); }
+  }
+  .toc { position: sticky; top: 78px; align-self: start; }
+  .toc a { display: block; padding: 6px 10px; border-radius: var(--r-sm); font-size: var(--fs-sm); color: var(--muted); }
+  .toc a:hover { background: var(--fg-soft); color: var(--fg); }
+  .layout { display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: var(--sp-6); align-items: start; }
+  @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } .toc { position: static; } }
+</style>
+</head>
+<body>
+
+<header class="appbar" data-od-id="appbar">
+  <div class="container appbar-inner">
+    <a class="brand" href="index.html">
+      <svg class="mark" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+      <span class="wordmark">Catequese
+        <span class="wordmark-sub">Componentes</span>
+      </span>
+    </a>
+    <span class="spacer"></span>
+    <a class="btn btn-sm btn-secondary" href="index.html">Voltar ao kit</a>
+  </div>
+</header>
+
+<main class="container" style="padding-block: var(--sp-6) var(--sp-8);">
+  <div class="stack-lg">
+
+    <section class="stack" data-od-id="intro">
+      <p class="eyebrow eyebrow-accent">Referência · componente e marcação lado a lado</p>
+      <h1 style="font-size: clamp(26px, 4vw, 34px);">Copie da direita, confira na esquerda.</h1>
+      <p class="lead">
+        Cada bloco mostra o componente funcionando e a marcação mínima que o produz. Nenhuma classe daqui precisa de
+        CSS adicional — tudo já vive em <span class="num">assets/catequese-ds.css</span>.
+      </p>
+    </section>
+
+    <div class="layout">
+
+      <nav class="toc nav-group" aria-label="Índice de componentes">
+        <p class="nav-label">Componentes</p>
+        <a href="#botoes">Botões</a>
+        <a href="#chips">Chips</a>
+        <a href="#campos">Campos</a>
+        <a href="#escolha">Escolha</a>
+        <a href="#presenca">Presença</a>
+        <a href="#lista">Lista</a>
+        <a href="#tabela">Tabela</a>
+        <a href="#metricas">Métricas</a>
+        <a href="#banners">Banners</a>
+        <a href="#stepper">Stepper</a>
+        <a href="#vazio">Estado vazio</a>
+      </nav>
+
+      <div class="stack-lg">
+
+        <!-- botões -->
+        <section class="card card-flush" id="botoes" data-od-id="ref-buttons">
+          <div class="panel-head"><h2>Botões</h2><span class="meta">44px · um primário por tela</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="row-tight">
+                <button class="btn btn-primary" type="button">Confirmar chamada</button>
+                <button class="btn btn-secondary" type="button">Exportar lista</button>
+              </div>
+              <div class="row-tight">
+                <button class="btn btn-ghost" type="button">Cancelar</button>
+                <button class="btn btn-sm btn-danger" type="button">Remover</button>
+                <button class="btn btn-primary" type="button" disabled>Faltam 4</button>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;button class="<span class="t">btn btn-primary</span>"&gt;…&lt;/button&gt;
+&lt;button class="<span class="t">btn btn-secondary</span>"&gt;…&lt;/button&gt;
+&lt;button class="<span class="t">btn btn-ghost</span>"&gt;…&lt;/button&gt;
+&lt;button class="<span class="t">btn btn-sm btn-danger</span>"&gt;…&lt;/button&gt;
+
+&lt;!-- desabilitado diz o motivo --&gt;
+&lt;button class="<span class="t">btn btn-primary</span>" disabled&gt;
+  Faltam 4
+&lt;/button&gt;
+
+&lt;!-- tamanhos: btn-sm 34 · btn-lg 52 --&gt;
+&lt;!-- btn-icon 40×40 · btn-block 100% --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- chips -->
+        <section class="card card-flush" id="chips" data-od-id="ref-chips">
+          <div class="panel-head"><h2>Chips</h2><span class="meta">O portador padrão de estado</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="row-tight">
+                <span class="chip chip-ok">Sincronizada</span>
+                <span class="chip chip-warn">Pendente</span>
+                <span class="chip chip-danger">Rejeitada</span>
+              </div>
+              <div class="row-tight">
+                <span class="chip chip-info">Sincronizando</span>
+                <span class="chip chip-gold">Renovação</span>
+                <span class="chip">Sem aula hoje</span>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;span class="<span class="t">chip chip-ok</span>"&gt;Sincronizada&lt;/span&gt;
+&lt;span class="<span class="t">chip chip-warn</span>"&gt;Pendente&lt;/span&gt;
+&lt;span class="<span class="t">chip chip-danger</span>"&gt;Rejeitada&lt;/span&gt;
+&lt;span class="<span class="t">chip chip-info</span>"&gt;Sincronizando&lt;/span&gt;
+&lt;span class="<span class="t">chip chip-gold</span>"&gt;Renovação&lt;/span&gt;
+&lt;span class="<span class="t">chip</span>"&gt;Sem aula hoje&lt;/span&gt;
+
+&lt;!-- chip-plain remove o ponto --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- campos -->
+        <section class="card card-flush" id="campos" data-od-id="ref-fields">
+          <div class="panel-head"><h2>Campos</h2><span class="meta">aria-invalid é o gancho de estilo</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="field">
+                <label for="r-nome">Nome completo</label>
+                <input class="input" id="r-nome" placeholder="Como consta na certidão de batismo" />
+              </div>
+              <div class="field">
+                <label for="r-mail">E-mail de contato</label>
+                <input class="input" id="r-mail" value="responsavel@" aria-invalid="true" />
+                <span class="err">O e-mail informado não parece válido.</span>
+              </div>
+              <div class="field">
+                <label for="r-turma">Turma</label>
+                <select class="select" id="r-turma"><option>2º ano · Primeira Comunhão</option><option>Crisma · Turma única</option></select>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">field</span>"&gt;
+  &lt;label for="nome"&gt;Nome completo&lt;/label&gt;
+  &lt;input class="<span class="t">input</span>" id="nome"
+    placeholder="Como consta na certidão…" /&gt;
+  &lt;span class="<span class="t">hint</span>"&gt;…&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- inválido --&gt;
+&lt;input class="<span class="t">input</span>" <span class="t">aria-invalid="true"</span> /&gt;
+&lt;span class="<span class="t">err</span>"&gt;O e-mail não parece válido.&lt;/span&gt;
+
+&lt;select class="<span class="t">select</span>"&gt;…&lt;/select&gt;
+&lt;textarea class="<span class="t">textarea</span>"&gt;&lt;/textarea&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- escolha -->
+        <section class="card card-flush" id="escolha" data-od-id="ref-choice">
+          <div class="panel-head"><h2>Ladrilhos de escolha</h2><span class="meta">:has(input:checked)</span></div>
+          <div class="ref">
+            <div class="live">
+              <fieldset class="field" style="border: 0; margin: 0; padding: 0;">
+                <legend class="field-label" style="padding: 0 0 6px;">Já fez a Primeira Comunhão?</legend>
+                <div class="choice-row">
+                  <label class="choice"><input type="radio" name="r-fc" checked />Sim</label>
+                  <label class="choice"><input type="radio" name="r-fc" />Não</label>
+                </div>
+              </fieldset>
+            </div>
+            <div class="code"><pre>&lt;fieldset class="<span class="t">field</span>"&gt;
+  &lt;legend class="<span class="t">field-label</span>"&gt;
+    Já fez a Primeira Comunhão?
+  &lt;/legend&gt;
+  &lt;div class="<span class="t">choice-row</span>"&gt;
+    &lt;label class="<span class="t">choice</span>"&gt;
+      &lt;input type="radio" name="fc" /&gt;Sim
+    &lt;/label&gt;
+    &lt;label class="<span class="t">choice</span>"&gt;
+      &lt;input type="radio" name="fc" /&gt;Não
+    &lt;/label&gt;
+  &lt;/div&gt;
+&lt;/fieldset&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- presença -->
+        <section class="card card-flush" id="presenca" data-od-id="ref-seg">
+          <div class="panel-head"><h2>Marcação de presença</h2><span class="chip chip-plain">sem padrão neutro escondido</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="list" style="border: 1px solid var(--border); border-radius: var(--r);">
+                <div class="list-row is-yes">
+                  <span class="avatar" aria-hidden="true">A</span>
+                  <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Ana Clara Bittencourt</span>
+                  <span class="seg">
+                    <button class="seg-btn seg-yes" type="button" aria-pressed="true" aria-label="Ana Clara presente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+                    <button class="seg-btn seg-no" type="button" aria-pressed="false" aria-label="Ana Clara ausente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                  </span>
+                </div>
+                <div class="list-row is-no">
+                  <span class="avatar" aria-hidden="true">B</span>
+                  <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Bernardo Sá Teixeira</span>
+                  <span class="seg">
+                    <button class="seg-btn seg-yes" type="button" aria-pressed="false" aria-label="Bernardo presente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+                    <button class="seg-btn seg-no" type="button" aria-pressed="true" aria-label="Bernardo ausente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                  </span>
+                </div>
+                <div class="list-row">
+                  <span class="avatar" aria-hidden="true">C</span>
+                  <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Cecília Moraes Rangel</span>
+                  <span class="seg">
+                    <button class="seg-btn seg-yes" type="button" aria-pressed="false" aria-label="Cecília presente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+                    <button class="seg-btn seg-no" type="button" aria-pressed="false" aria-label="Cecília ausente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">list-row is-yes</span>"&gt;
+  &lt;span class="<span class="t">avatar</span>"&gt;A&lt;/span&gt;
+  &lt;span class="<span class="t">row-title</span>"&gt;Ana Clara&lt;/span&gt;
+  &lt;span class="<span class="t">seg</span>"&gt;
+    &lt;button class="<span class="t">seg-btn seg-yes</span>"
+      <span class="t">aria-pressed="true"</span>
+      aria-label="Ana Clara presente"&gt;✓&lt;/button&gt;
+    &lt;button class="<span class="t">seg-btn seg-no</span>"
+      <span class="t">aria-pressed="false"</span>
+      aria-label="Ana Clara ausente"&gt;✕&lt;/button&gt;
+  &lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- .is-yes 5% accent · .is-no 4% danger --&gt;
+&lt;!-- sem classe = sem marcar, e contável --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- lista -->
+        <section class="card card-flush" id="lista" data-od-id="ref-list">
+          <div class="panel-head"><h2>Lista</h2><span class="meta">12 / 24 · avatar 38</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="list" style="border: 1px solid var(--border); border-radius: var(--r);">
+                <div class="list-row"><span class="avatar" aria-hidden="true">M</span><span class="row-title" style="flex: 1 1 auto; min-width: 0;">Marina Alves</span><span class="chip chip-ok">Ativo</span></div>
+                <div class="list-row"><span class="avatar" aria-hidden="true">H</span><span class="row-title" style="flex: 1 1 auto; min-width: 0;">Henrique Portela</span><span class="chip chip-warn">Senha provisória</span></div>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">list</span>"&gt;
+  &lt;div class="<span class="t">list-row</span>"&gt;
+    &lt;span class="<span class="t">avatar</span>"&gt;M&lt;/span&gt;
+    &lt;span class="<span class="t">row-title</span>"
+      style="flex: 1 1 auto; <span class="t">min-width: 0</span>;"&gt;
+      Marina Alves
+    &lt;/span&gt;
+    &lt;span class="<span class="t">chip chip-ok</span>"&gt;Ativo&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- min-width: 0 é obrigatório em toda --&gt;
+&lt;!-- linha flex que carrega um nome     --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- tabela -->
+        <section class="card card-flush" id="tabela" data-od-id="ref-table">
+          <div class="panel-head"><h2>Tabela</h2><span class="meta">Cabeçalho mono · números à direita</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="table-wrap">
+                <table class="table">
+                  <thead><tr><th scope="col">Aluno</th><th scope="col" class="num-col">Presenças</th><th scope="col" class="num-col">%</th></tr></thead>
+                  <tbody>
+                    <tr><td class="row-title">Ana Clara Bittencourt</td><td class="num-col">4</td><td class="num-col">100%</td></tr>
+                    <tr><td class="row-title">Bernardo Sá Teixeira</td><td class="num-col">2</td><td class="num-col"><span class="chip chip-danger">50%</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">table-wrap</span>"&gt;
+  &lt;table class="<span class="t">table</span>"&gt;
+    &lt;thead&gt;&lt;tr&gt;
+      &lt;th scope="col"&gt;Aluno&lt;/th&gt;
+      &lt;th scope="col" class="<span class="t">num-col</span>"&gt;%&lt;/th&gt;
+    &lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;&lt;tr&gt;
+      &lt;td class="<span class="t">row-title</span>"&gt;Ana Clara&lt;/td&gt;
+      &lt;td class="<span class="t">num-col</span>"&gt;100%&lt;/td&gt;
+    &lt;/tr&gt;&lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;
+
+&lt;!-- .act-col para a coluna de ação --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- métricas -->
+        <section class="card card-flush" id="metricas" data-od-id="ref-metrics">
+          <div class="panel-head"><h2>Métricas</h2><span class="meta">Barras preenchidas, nunca contornadas</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="row" style="gap: var(--sp-5);">
+                <div class="stat"><span class="stat-num num">86<span class="stat-unit">%</span></span><span class="stat-label">média do período</span></div>
+                <div class="stat"><span class="stat-num num">4</span><span class="stat-label">aulas realizadas</span></div>
+              </div>
+              <div class="stack-sm">
+                <div class="row-between"><span class="small muted">Presença acumulada</span><span class="num small" style="font-weight: 600;">71%</span></div>
+                <div class="meter" role="img" aria-label="71 por cento, abaixo do esperado"><div class="meter-fill warn" style="width: 71%;"></div></div>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">stat</span>"&gt;
+  &lt;span class="<span class="t">stat-num num</span>"&gt;86<span class="t">
+    &lt;span class="stat-unit"&gt;%&lt;/span&gt;</span>
+  &lt;/span&gt;
+  &lt;span class="<span class="t">stat-label</span>"&gt;média&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;div class="<span class="t">meter</span>" <span class="t">role="img"</span>
+  aria-label="71 por cento, abaixo do esperado"&gt;
+  &lt;div class="<span class="t">meter-fill warn</span>"
+    style="width: 71%;"&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- .bars para série · sempre role="img" --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- banners -->
+        <section class="card card-flush" id="banners" data-od-id="ref-banners">
+          <div class="panel-head"><h2>Banners</h2><span class="meta">O remédio dentro do aviso</span></div>
+          <div class="ref">
+            <div class="live">
+              <div class="banner banner-warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3.2-6.9"/><path d="M21 3v5h-5"/></svg>
+                <span style="flex: 1 1 180px;"><strong>1 chamada aguardando envio.</strong></span>
+                <button class="btn btn-sm btn-secondary" type="button">Sincronizar agora</button>
+              </div>
+              <div class="banner banner-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 19v.01"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M2 8.5a15 15 0 0 1 20 0"/></svg>
+                <span>Pode marcar sem conexão.</span>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">banner banner-warn</span>"&gt;
+  &lt;svg …&gt;&lt;/svg&gt;
+  &lt;span style="flex: 1 1 180px;"&gt;
+    &lt;strong&gt;1 chamada aguardando envio.&lt;/strong&gt;
+  &lt;/span&gt;
+  &lt;button class="<span class="t">btn btn-sm btn-secondary</span>"&gt;
+    Sincronizar agora
+  &lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- -ok · -warn · -danger · -info      --&gt;
+&lt;!-- erro de formulário: role="alert"  --&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- stepper -->
+        <section class="card card-flush" id="stepper" data-od-id="ref-stepper">
+          <div class="panel-head"><h2>Stepper</h2><span class="meta">Legendas somem em 720px</span></div>
+          <div class="ref">
+            <div class="live">
+              <nav class="stepper" aria-label="Etapas da inscrição">
+                <div class="step"><i class="bar-line done"></i><span>Catequizando</span></div>
+                <div class="step is-current"><i class="bar-line now"></i><span>Vida pastoral</span></div>
+                <div class="step"><i class="bar-line"></i><span>Responsável</span></div>
+                <div class="step"><i class="bar-line"></i><span>Revisão</span></div>
+              </nav>
+            </div>
+            <div class="code"><pre>&lt;nav class="<span class="t">stepper</span>" aria-label="Etapas"&gt;
+  &lt;div class="<span class="t">step</span>"&gt;
+    &lt;i class="<span class="t">bar-line done</span>"&gt;&lt;/i&gt;
+    &lt;span&gt;Catequizando&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="<span class="t">step is-current</span>"&gt;
+    &lt;i class="<span class="t">bar-line now</span>"&gt;&lt;/i&gt;
+    &lt;span&gt;Vida pastoral&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="<span class="t">step</span>"&gt;
+    &lt;i class="<span class="t">bar-line</span>"&gt;&lt;/i&gt;
+    &lt;span&gt;Responsável&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;</pre></div>
+          </div>
+        </section>
+
+        <!-- vazio -->
+        <section class="card card-flush" id="vazio" data-od-id="ref-empty">
+          <div class="panel-head"><h2>Estado vazio</h2><span class="meta">Sempre com um próximo passo</span></div>
+          <div class="ref">
+            <div class="live" style="padding: 0;">
+              <div class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+                <p class="small">Nenhuma aula marcada para hoje.</p>
+                <button class="btn btn-sm btn-secondary" type="button">Abrir o calendário do ano</button>
+              </div>
+            </div>
+            <div class="code"><pre>&lt;div class="<span class="t">empty</span>"&gt;
+  &lt;svg …&gt;&lt;/svg&gt;
+  &lt;p class="<span class="t">small</span>"&gt;
+    Nenhuma aula marcada para hoje.
+  &lt;/p&gt;
+  &lt;button class="<span class="t">btn btn-sm btn-secondary</span>"&gt;
+    Abrir o calendário do ano
+  &lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- nunca só "Nenhum resultado" --&gt;</pre></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <p class="meta" style="text-align: center;">Kit de interface · dados de demonstração</p>
+
+  </div>
+</main>
+
+</body>
+</html>

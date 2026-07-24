@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Componentes · botões — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../tokens.css" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  /* Régua de altura: mede o alvo de toque sem sair da tela. */
+  .measure { position: relative; display: inline-grid; place-items: center; padding: 5px; border: 1px dashed var(--accent-line); border-radius: var(--r); }
+  .measure::after {
+    content: attr(data-h); position: absolute; right: -6px; top: -9px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--accent-ink);
+    background: var(--surface); padding: 0 4px; border-radius: 4px;
+  }
+  .measure-off { border-color: var(--border); border-style: dotted; }
+  .measure-off::after { color: var(--muted); }
+
+  /* Tabela de anatomia: propriedade → valor, em mono. */
+  .anatomy { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 7px var(--sp-4); font-size: var(--fs-sm); }
+  .anatomy dt { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  .anatomy dd { margin: 0; overflow-wrap: anywhere; }
+
+  /* Par lado a lado para o contraste "assim / não assim". */
+  .versus { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items: start; }
+  .versus > div { display: grid; gap: var(--sp-3); padding: var(--sp-4); border-radius: var(--r); }
+  .versus .good { background: var(--accent-soft); border: 1px solid var(--accent-line); }
+  .versus .bad  { background: var(--surface-2); border: 1px solid var(--border); }
+  @media (max-width: 720px) { .versus { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Componentes · botões</h1>
+    <p class="pv-note">Quatro variantes, cinco tamanhos, e uma regra que define o produto: <strong>um botão desabilitado diz por que está desabilitado</strong>. Tudo nesta ficha é interativo — clique.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="variants">
+      <div class="row-between"><h2>Variantes</h2><span class="meta">Um primário por tela</span></div>
+      <div class="grid-2" style="align-items: start;">
+
+        <div class="card stack">
+          <div class="row-between"><h3>Primário</h3><span class="chip chip-ok chip-plain">no máximo 1 por tela</span></div>
+          <div class="pv-demo">
+            <button class="btn btn-primary" type="button">Confirmar chamada</button>
+            <button class="btn btn-primary" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"/></svg>
+              Iniciar chamada
+            </button>
+          </div>
+          <p class="pv-note">Preenchimento em <code>--accent</code>, <code>--shadow-2</code>, hover em <code>--accent-press</code>. Ícone opcional de 17px à esquerda.</p>
+        </div>
+
+        <div class="card stack">
+          <h3>Secundário</h3>
+          <div class="pv-demo">
+            <button class="btn btn-secondary" type="button">Exportar lista</button>
+            <button class="btn btn-secondary" type="button">Voltar</button>
+            <button class="btn btn-secondary" type="button">Sincronizar agora</button>
+          </div>
+          <p class="pv-note">Superfície + borda + <code>--shadow-1</code>. Barra de ferramentas, exportação, navegação de etapa.</p>
+        </div>
+
+        <div class="card stack">
+          <h3>Fantasma</h3>
+          <div class="pv-demo">
+            <button class="btn btn-ghost" type="button">Cancelar</button>
+            <button class="btn btn-ghost" type="button">Limpar</button>
+            <button class="btn btn-ghost btn-icon" type="button" aria-label="Fechar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <button class="btn btn-ghost btn-icon" type="button" aria-label="Voltar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="19" height="19" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+          </div>
+          <p class="pv-note">Transparente, tinta em <code>--muted</code>. Cancelar e botões de ícone.</p>
+        </div>
+
+        <div class="card stack">
+          <div class="row-between"><h3>Destrutivo</h3><span class="chip chip-danger chip-plain">contornado, nunca preenchido</span></div>
+          <div class="pv-demo">
+            <button class="btn btn-danger" type="button">Rejeitar inscrição</button>
+            <button class="btn btn-sm btn-danger" type="button">Remover</button>
+          </div>
+          <p class="pv-note">Superfície com borda em danger e texto em <code>--danger-ink</code>. <strong>Um botão vermelho preenchido é anti-padrão neste sistema.</strong></p>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="sizes">
+      <div class="row-between"><h2>Tamanhos</h2><span class="meta">34 · 40 · 44 · 52</span></div>
+      <div class="card stack">
+        <div class="pv-demo" style="align-items: flex-end; gap: var(--sp-5);">
+          <div class="stack-sm"><span class="eyebrow">.btn-lg</span><span class="measure" data-h="52"><button class="btn btn-primary btn-lg" type="button">Salvar e continuar</button></span></div>
+          <div class="stack-sm"><span class="eyebrow eyebrow-accent">padrão · o piso</span><span class="measure" data-h="44"><button class="btn btn-secondary" type="button">Analisar</button></span></div>
+          <div class="stack-sm"><span class="eyebrow">.btn-icon</span><span class="measure" data-h="40"><button class="btn btn-ghost btn-icon" type="button" aria-label="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/></svg></button></span></div>
+          <div class="stack-sm"><span class="eyebrow">.btn-sm · só admin</span><span class="measure measure-off" data-h="34"><button class="btn btn-sm btn-secondary" type="button">Baixar PDF</button></span></div>
+        </div>
+        <hr class="rule" />
+        <p class="pv-note"><strong><code>.btn-sm</code> é exclusivo de mesa.</strong> Barras de ferramenta e células de ação do console de coordenação. Nunca numa tela de catequista ou pública — lá o piso é 44px.</p>
+        <div class="stack-sm">
+          <span class="eyebrow">.btn-block</span>
+          <button class="btn btn-primary btn-lg btn-block" type="button">Entrar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="anatomy">
+      <div class="row-between"><h2>Anatomia</h2><span class="meta">Todo valor sai de um token</span></div>
+      <div class="card">
+        <dl class="anatomy">
+          <dt>Altura</dt><dd><code class="pv-code">min-height: 44px</code> — o piso de toque, subindo para 52 em <code class="pv-code">.btn-lg</code></dd>
+          <dt>Padding</dt><dd><code class="pv-code">0 18px</code> · 12px no small, 24px no large</dd>
+          <dt>Raio</dt><dd><code class="pv-code">--r</code> (12) · <code class="pv-code">--r-sm</code> no small · <code class="pv-code">--r-lg</code> no large</dd>
+          <dt>Peso</dt><dd>560, entreletra <code class="pv-code">-0.01em</code> — nunca 700</dd>
+          <dt>Ícone</dt><dd>17px, traço 1,7–1,8 sobre viewBox 24, sempre antes do rótulo</dd>
+          <dt>Sombra</dt><dd><code class="pv-code">--shadow-2</code> no primário · <code class="pv-code">--shadow-1</code> no secundário · nenhuma no fantasma</dd>
+          <dt>Transição</dt><dd>160ms em fundo, borda, cor e sombra</dd>
+          <dt>Pressão</dt><dd><code class="pv-code">translateY(1px)</code> em 60ms</dd>
+          <dt>Desabilitado</dt><dd><code class="pv-code">opacity: .45</code>, sem transformação — <strong>e com o rótulo trocado</strong></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="disabled-rule">
+      <div class="row-between"><h2>A regra do desabilitado</h2><span class="chip chip-plain">a assinatura do sistema</span></div>
+      <p class="pv-note">
+        Na chamada, o botão de confirmar lê <strong>“Faltam 4”</strong> até todo aluno estar marcado — e só então vira
+        “Confirmar chamada”. O usuário nunca precisa adivinhar o que está bloqueando.
+        <strong>Nunca envie um botão cinza com o rótulo inalterado.</strong>
+      </p>
+      <div class="versus">
+        <div class="good">
+          <span class="eyebrow eyebrow-accent">Assim</span>
+          <div class="pv-demo">
+            <button class="btn btn-primary btn-lg" type="button" id="countBtn" disabled>Faltam 4</button>
+            <button class="btn btn-sm btn-secondary" type="button" id="markOne">Marcar mais um</button>
+          </div>
+          <p class="pv-note">Clique em “marcar mais um” para ver o rótulo contar até zero e o botão liberar sozinho.</p>
+        </div>
+        <div class="bad">
+          <span class="eyebrow">Não assim</span>
+          <div class="pv-demo"><button class="btn btn-primary btn-lg" type="button" disabled>Confirmar chamada</button></div>
+          <p class="pv-note">Mesmo estado, nenhuma informação. O usuário fica sem saber o que ainda falta fazer.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="async">
+      <div class="row-between"><h2>Estados assíncronos</h2><span class="meta">Desabilita → gerúndio → confirmação</span></div>
+      <p class="pv-note">Todo envio no produto troca o rótulo por um gerúndio e depois resolve numa frase. <strong>Nunca um spinner sem palavras.</strong></p>
+      <div class="card stack">
+        <div class="pv-demo">
+          <button class="btn btn-primary" type="button" data-async="Entrando…">Entrar</button>
+          <button class="btn btn-primary" type="button" data-async="Salvando…">Salvar aluno</button>
+          <button class="btn btn-primary" type="button" data-async="Enviando…">Enviar inscrição</button>
+        </div>
+        <p class="pv-note">Clique em qualquer um. Depois de 900ms o botão volta ao repouso — nesta ficha, apenas para poder testar de novo.</p>
+        <hr class="rule" />
+        <div class="stack-sm">
+          <span class="eyebrow">Pressionar é físico</span>
+          <p class="pv-note">Segure um botão: <code>translateY(1px)</code> em 60ms. As transições de cor, borda e sombra levam 160ms.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  /* Demonstração do rótulo que conta — o mesmo comportamento de chamada.html. */
+  let left = 4;
+  const countBtn = document.getElementById('countBtn');
+  document.getElementById('markOne').addEventListener('click', () => {
+    left = left > 0 ? left - 1 : 4;
+    countBtn.disabled = left !== 0;
+    countBtn.textContent = left === 0 ? 'Confirmar chamada' : 'Faltam ' + left;
+  });
+
+  /* Demonstração dos três estados de envio. */
+  document.querySelectorAll('[data-async]').forEach((btn) => {
+    const resting = btn.textContent;
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      btn.textContent = btn.dataset.async;
+      setTimeout(() => { btn.disabled = false; btn.textContent = resting; }, 900);
+    });
+  });
+</script>
+
+</body>
+</html>

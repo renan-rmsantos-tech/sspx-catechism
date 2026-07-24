@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Espaçamento — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .gapdemo { border: 1px dashed var(--accent-line); border-radius: var(--r-sm); padding: var(--sp-3); background: var(--surface); }
+  .gapdemo .blk { background: var(--accent-soft); border-radius: 5px; height: 22px; }
+  .touch { position: relative; display: grid; place-items: center; border: 1px dashed var(--accent-line); border-radius: var(--r); }
+  .touch::after { content: attr(data-h); position: absolute; right: 6px; top: 4px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Espaçamento e densidade</h1>
+    <p class="pv-note">Múltiplos estritos de 4, dobrando a partir de 16. As barras abaixo estão desenhadas na largura real de cada token — dá para medir na tela.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="scale">
+      <div class="row-between"><h2>A escala, medida</h2><span class="meta">4 · 8 · 12 · 16 · 24 · 32 · 48 · 64</span></div>
+      <div class="card">
+        <div class="pv-ruler">
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-1);"></span><span class="pv-ruler-lab">--sp-1 · 4px</span><span class="small muted">Espaço óptico dentro de um rótulo</span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-2);"></span><span class="pv-ruler-lab">--sp-2 · 8px</span><span class="small muted">Aglomerado inline apertado, <code class="pv-code">.stack-sm</code></span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-3);"></span><span class="pv-ruler-lab">--sp-3 · 12px</span><span class="small muted">Padding de linha de lista, <code class="pv-code">.row</code></span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-4);"></span><span class="pv-ruler-lab">--sp-4 · 16px</span><span class="small muted"><strong>O cavalo de batalha.</strong> Grades, pilhas, gaps</span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-5);"></span><span class="pv-ruler-lab">--sp-5 · 24px</span><span class="small muted">Padding de cartão, gap entre seções</span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-6);"></span><span class="pv-ruler-lab">--sp-6 · 32px</span><span class="small muted"><code class="pv-code">.stack-lg</code>, topo de página</span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-7);"></span><span class="pv-ruler-lab">--sp-7 · 48px</span><span class="small muted">Estado vazio, respiro de abertura</span></div>
+          <div class="pv-ruler-row"><span class="pv-ruler-bar" style="width: var(--sp-8);"></span><span class="pv-ruler-lab">--sp-8 · 64px</span><span class="small muted">Rodapé de página</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="stack-helpers">
+      <div class="row-between"><h2>Os três empilhadores</h2><span class="meta">Fazem quase todo o layout</span></div>
+      <p class="pv-note">Copie-os literalmente. Junto com <code class="pv-code">.row</code>, <code class="pv-code">.row-tight</code> e <code class="pv-code">.row-between</code> — todos com <code class="pv-code">flex-wrap: wrap</code>, para nada estourar num celular — eles resolvem a maior parte da composição.</p>
+      <div class="grid-3" style="align-items: start;">
+        <div class="card card-tight stack-sm">
+          <span class="eyebrow">.stack-sm · 8</span>
+          <div class="gapdemo stack-sm"><i class="blk"></i><i class="blk"></i><i class="blk"></i></div>
+          <p class="pv-note">Rótulo + valor. Título + legenda.</p>
+        </div>
+        <div class="card card-tight stack-sm">
+          <span class="eyebrow">.stack · 16</span>
+          <div class="gapdemo stack"><i class="blk"></i><i class="blk"></i><i class="blk"></i></div>
+          <p class="pv-note">Campos de um formulário. Itens dentro de um cartão.</p>
+        </div>
+        <div class="card card-tight stack-sm">
+          <span class="eyebrow">.stack-lg · 32</span>
+          <div class="gapdemo stack-lg"><i class="blk"></i><i class="blk"></i><i class="blk"></i></div>
+          <p class="pv-note">Seções de uma página.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="touch">
+      <div class="row-between"><h2>Alvo de toque · 44px é o piso</h2><span class="chip chip-ok chip-plain">Não negociável</span></div>
+      <p class="pv-note">
+        O usuário principal está <strong>de pé, no salão paroquial, com um celular numa mão</strong>. Nenhum controle
+        numa superfície de catequista fica abaixo de 44px. <code class="pv-code">.btn-sm</code> (34px) existe, mas é
+        exclusivo de mesa — barras de ferramenta e células de ação do admin.
+      </p>
+      <div class="card">
+        <div class="row" style="gap: var(--sp-5); align-items: flex-end;">
+          <div class="stack-sm" style="min-width: 0;">
+            <span class="eyebrow">.btn-lg · 52</span>
+            <div class="touch" data-h="52" style="padding: 4px;"><button class="btn btn-primary btn-lg" type="button">Iniciar chamada</button></div>
+          </div>
+          <div class="stack-sm" style="min-width: 0;">
+            <span class="eyebrow eyebrow-accent">Padrão · 44 — o piso</span>
+            <div class="touch" data-h="44" style="padding: 4px;"><button class="btn btn-secondary" type="button">Exportar lista</button></div>
+          </div>
+          <div class="stack-sm" style="min-width: 0;">
+            <span class="eyebrow">.btn-sm · 34 — só admin</span>
+            <div class="touch" data-h="34" style="padding: 4px; border-style: dotted; border-color: var(--border);"><button class="btn btn-sm btn-secondary" type="button">Analisar</button></div>
+          </div>
+          <div class="stack-sm" style="min-width: 0;">
+            <span class="eyebrow">.seg-btn · 46 × 44</span>
+            <div class="touch" data-h="44" style="padding: 4px;">
+              <span class="seg">
+                <button class="seg-btn seg-yes" type="button" aria-pressed="true" aria-label="Presente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+                <button class="seg-btn seg-no" type="button" aria-pressed="false" aria-label="Ausente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="density">
+      <div class="row-between"><h2>Densidade na prática</h2><span class="meta">Denso, mas nunca apertado</span></div>
+      <p class="pv-note">Uma linha de lista tem 12px de padding vertical e 24px horizontal, com um avatar de 38px. Uma célula de tabela tem 11px por 16px. É denso o suficiente para 22 nomes caberem, folgado o suficiente para o dedo acertar.</p>
+      <div class="grid-2" style="align-items: start;">
+        <div class="card card-flush">
+          <div class="panel-head"><h3>Linha de lista</h3><span class="meta">12 / 24 · avatar 38</span></div>
+          <div class="list">
+            <div class="list-row"><span class="avatar" aria-hidden="true">A</span><span class="row-title" style="flex: 1 1 auto; min-width: 0;">Ana Clara Bittencourt</span><span class="meta">100%</span></div>
+            <div class="list-row"><span class="avatar" aria-hidden="true">B</span><span class="row-title" style="flex: 1 1 auto; min-width: 0;">Beatriz Nogueira Alves</span><span class="meta">75%</span></div>
+            <div class="list-row"><span class="avatar" aria-hidden="true">C</span><span class="row-title" style="flex: 1 1 auto; min-width: 0;">Cecília Moraes Rangel</span><span class="meta">100%</span></div>
+          </div>
+        </div>
+        <div class="card card-flush">
+          <div class="panel-head"><h3>Célula de tabela</h3><span class="meta">11 / 16</span></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th scope="col">Data</th><th scope="col">Turma</th><th scope="col" class="num-col">Presentes</th></tr></thead>
+              <tbody>
+                <tr><td class="num">25 jul</td><td>1º ano · Catecismo menor</td><td class="num-col">17</td></tr>
+                <tr><td class="num">19 jul</td><td>Crisma · Turma única</td><td class="num-col">9</td></tr>
+                <tr><td class="num">18 jul</td><td>2º ano · Primeira Comunhão</td><td class="num-col">20</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-od-id="spacing-rules">
+      <div class="stack">
+        <h2>Regras de espaço</h2>
+        <div class="pv-rules">
+          <p class="pv-yes"><b>USE</b><span>Sempre um token. Nenhum valor de espaço fora da escala de 4.</span></p>
+          <p class="pv-yes"><b>USE</b><span><code>--sp-4</code> como padrão quando estiver em dúvida; <code>--sp-5</code> para padding de cartão.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Controles abaixo de 44px em qualquer superfície de catequista ou pública.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Comprimir o layout de desktop para caber no celular. Abaixo de 720px as grades viram uma coluna e a ação primária desce para a <code>.actionbar</code> fixa.</span></p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

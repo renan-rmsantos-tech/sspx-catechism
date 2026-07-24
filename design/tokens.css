@@ -1,0 +1,76 @@
+/* ============================================================
+   Catequese — Shape, space, elevation & layout tokens
+   Design system: user:catechism-design-system
+   Extracted verbatim from assets/catequese-ds.css.
+
+   Load AFTER colors_and_type.css — the shadows here are mixed
+   from --fg, so the colour tokens must already be declared.
+   ============================================================ */
+
+:root {
+  /* --- radius ------------------------------------------------
+     Four steps and a pill. The rule the source holds to: radius
+     grows with the size of the thing. Small control 8, default
+     control 12, card 16, and 22 reserved for the single hero
+     card on a screen (the "next attendance" card). */
+  --r-sm:   8px;
+  --r:      12px;
+  --r-lg:   16px;
+  --r-xl:   22px;
+  --r-full: 999px;
+
+  /* --- spacing -----------------------------------------------
+     Strict multiples of 4, then doubling from 16 up. sp-4 is the
+     workhorse gap; sp-5 is card padding; sp-7/8 are page rhythm. */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* --- elevation ---------------------------------------------
+     Shadow means "this can move or be pressed". A panel that just
+     sits there uses --border instead. shadow-1 on resting
+     secondary controls, shadow-2 on primary buttons and hovered
+     cards, shadow-3 only on the drawer. */
+  --shadow-1: 0 1px 2px color-mix(in srgb, var(--fg) 7%, transparent);
+  --shadow-2: 0 2px 4px color-mix(in srgb, var(--fg) 6%, transparent),
+              0 8px 20px -6px color-mix(in srgb, var(--fg) 12%, transparent);
+  --shadow-3: 0 12px 40px -8px color-mix(in srgb, var(--fg) 22%, transparent);
+
+  /* --- layout ------------------------------------------------ */
+  --nav-w: 244px;          /* admin sidebar, collapses at 1024px */
+  --container:      1200px;  /* app shell max width              */
+  --container-read: 760px;   /* forms and prose max width        */
+  --touch:          44px;    /* minimum height of any control    */
+
+  /* --- motion ------------------------------------------------
+     140–220ms, and only on colour, shadow and position. Nothing
+     in this system animates height, width or opacity of content. */
+  --dur-fast: 140ms;
+  --dur:      160ms;
+  --dur-slow: 220ms;
+  --ease:     ease;
+  --ease-enter: cubic-bezier(.2, .7, .3, 1);
+}
+
+/* Non-negotiable: every control a volunteer taps while standing
+   up is at least 44px tall. */
+.btn, .input, .select, .textarea, .choice, .seg-btn { min-height: var(--touch); }
+
+/* Focus is always visible, always 2px, always the accent. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}

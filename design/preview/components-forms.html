@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Componentes · formulário — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .rulelist { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+  .rulelist li { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--muted); }
+  .rulelist li svg { width: 15px; height: 15px; flex: 0 0 15px; color: color-mix(in srgb, var(--muted) 55%, var(--surface)); }
+  .rulelist li.ok { color: var(--accent-ink); }
+  .rulelist li.ok svg { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Componentes · entrada de dados</h1>
+    <p class="pv-note">Campos, validação, ladrilhos de escolha, o stepper e o controle segmentado de presença — o componente mais usado do produto. Tudo interativo.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="fields">
+      <div class="row-between"><h2>Campos</h2><span class="meta">44px · rótulo → controle → dica</span></div>
+      <p class="pv-note">
+        <strong>O placeholder ensina, não repete o rótulo.</strong> “Nome completo” traz
+        <em>“Como consta na certidão de batismo”</em> — o placeholder responde à dúvida que o rótulo cria.
+      </p>
+      <div class="grid-2" style="align-items: start;">
+
+        <div class="card stack">
+          <h3>Estados</h3>
+          <div class="field">
+            <label for="f-nome">Nome completo</label>
+            <input class="input" id="f-nome" placeholder="Como consta na certidão de batismo" />
+          </div>
+          <div class="field">
+            <label for="f-tel">Telefone de contato</label>
+            <input class="input" id="f-tel" type="tel" value="(11) 98123-4477" />
+            <span class="hint">A coordenação usa este número para confirmar a matrícula.</span>
+          </div>
+          <div class="field">
+            <label for="f-mail">E-mail de contato</label>
+            <input class="input" id="f-mail" value="responsavel@" aria-invalid="true" />
+            <span class="err">O e-mail informado não parece válido.</span>
+          </div>
+          <p class="pv-note"><strong><code>aria-invalid="true"</code> é o gancho de estilo do estado inválido.</strong> O visual e o estado de acessibilidade não podem divergir, porque são a mesma coisa.</p>
+        </div>
+
+        <div class="card stack">
+          <h3>Seleção e texto longo</h3>
+          <div class="field">
+            <label for="f-turma">Turma de destino</label>
+            <select class="select" id="f-turma">
+              <option>2º ano · Primeira Comunhão</option>
+              <option>1º ano · Catecismo menor</option>
+              <option>Crisma · Turma única</option>
+              <option>Adultos · Catecumenato</option>
+            </select>
+            <span class="hint">O chevron é desenhado com dois gradientes — sem imagem de fundo.</span>
+          </div>
+          <div class="field">
+            <label for="f-antes">Já fez catequese antes? Onde?</label>
+            <textarea class="textarea" id="f-antes" placeholder="Paróquia, capela ou colégio — e por quanto tempo"></textarea>
+          </div>
+          <div class="field">
+            <span class="field-label">Busca</span>
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input class="input input-search" type="search" placeholder="Buscar aluno" aria-label="Buscar aluno" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="choices">
+      <div class="row-between"><h2>Ladrilhos de escolha</h2><span class="meta">:has(input:checked) · 44px</span></div>
+      <p class="pv-note">Rádios e caixas viram ladrilhos de 44px com borda. Perguntas de duas opções usam <code class="pv-code">.choice-row</code>. O estado marcado vem de <code class="pv-code">:has()</code> — sem JavaScript.</p>
+      <div class="grid-2" style="align-items: start;">
+        <div class="card stack">
+          <fieldset class="field" style="border: 0; margin: 0; padding: 0;">
+            <legend class="field-label" style="padding: 0 0 6px;">Já fez a Primeira Comunhão?</legend>
+            <div class="choice-row">
+              <label class="choice"><input type="radio" name="pv-fc" value="s" checked />Sim</label>
+              <label class="choice"><input type="radio" name="pv-fc" value="n" />Não</label>
+            </div>
+          </fieldset>
+          <fieldset class="field" style="border: 0; margin: 0; padding: 0;">
+            <legend class="field-label" style="padding: 0 0 6px;">Já frequentou a catequese nesta paróquia?</legend>
+            <div class="choice-row">
+              <label class="choice"><input type="radio" name="pv-rn" value="s" />Sim, é renovação</label>
+              <label class="choice"><input type="radio" name="pv-rn" value="n" checked />Não, é a primeira vez</label>
+            </div>
+          </fieldset>
+        </div>
+        <div class="card stack">
+          <div class="field">
+            <span class="field-label">Catequistas responsáveis</span>
+            <div class="row-tight">
+              <label class="choice" style="padding-inline: 14px;"><input type="checkbox" checked />Marina Alves</label>
+              <label class="choice" style="padding-inline: 14px;"><input type="checkbox" checked />Sofia Rangel</label>
+              <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Henrique Portela</label>
+              <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Clara Bandeira</label>
+            </div>
+          </div>
+          <p class="pv-note">Múltipla escolha usa os mesmos ladrilhos em <code>.row-tight</code>, que quebra linha sozinho.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="segmented">
+      <div class="row-between"><h2>Marcação de presença</h2><span class="chip chip-plain">o controle mais usado do produto</span></div>
+      <p class="pv-note">
+        Dois botões de 46&nbsp;×&nbsp;44 com <code class="pv-code">aria-pressed</code>.
+        <strong>Não existe padrão neutro escondido:</strong> enquanto ninguém marca, a linha fica branca e continua
+        contando como “sem marcar” — é isso que permite ao botão de confirmar dar um número honesto.
+        Clique de novo no mesmo botão para desmarcar.
+      </p>
+      <div class="card card-flush">
+        <div class="panel-head"><h3>2º ano · Primeira Comunhão</h3><span class="meta" id="tally">0 presentes · 0 ausentes · 4 sem marcar</span></div>
+        <div class="list" id="segList"></div>
+        <div class="panel-foot">
+          <div class="row-between">
+            <span class="meta">Linha marcada recebe lavagem de 5% accent / 4% danger</span>
+            <button class="btn btn-sm btn-primary" id="segConfirm" disabled>Faltam 4</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="stepper">
+      <div class="row-between"><h2>Stepper</h2><span class="meta">Trilhos de 4px · legendas em mono</span></div>
+      <p class="pv-note">A inscrição pública quebra treze campos em quatro etapas com revisão final. Feito = accent sólido; atual = gradiente 50/50. Abaixo de 720px as legendas somem e os trilhos ficam.</p>
+      <div class="card stack">
+        <nav class="stepper" id="pvStepper" aria-label="Etapas da inscrição">
+          <div class="step" data-i="0"><i class="bar-line done"></i><span>Catequizando</span></div>
+          <div class="step is-current" data-i="1"><i class="bar-line now"></i><span>Vida pastoral</span></div>
+          <div class="step" data-i="2"><i class="bar-line"></i><span>Responsável</span></div>
+          <div class="step" data-i="3"><i class="bar-line"></i><span>Revisão</span></div>
+        </nav>
+        <div class="row-tight">
+          <button class="btn btn-sm btn-secondary" id="stepBack">Voltar</button>
+          <button class="btn btn-sm btn-primary" id="stepNext">Continuar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="live-validation">
+      <div class="row-between"><h2>Validação ao vivo · aditiva</h2><span class="meta">aria-live="polite"</span></div>
+      <p class="pv-note">A tela de primeiro acesso <strong>não acusa erro enquanto a pessoa digita</strong>: cada regra satisfeita troca o círculo por um visto. Digite abaixo para ver.</p>
+      <div class="card stack" style="max-width: 420px;">
+        <div class="field">
+          <label for="pv-nova">Nova senha</label>
+          <input class="input" id="pv-nova" type="password" placeholder="Escolha uma senha" />
+        </div>
+        <div class="field">
+          <label for="pv-conf">Repetir a nova senha</label>
+          <input class="input" id="pv-conf" type="password" placeholder="Digite de novo" />
+        </div>
+        <ul class="rulelist" id="pvRules" aria-live="polite">
+          <li data-rule="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Pelo menos 6 caracteres</li>
+          <li data-rule="alpha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Uma letra e um número</li>
+          <li data-rule="match"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>As duas senhas coincidem</li>
+        </ul>
+        <button class="btn btn-primary btn-block" id="pvSave" disabled>Salvar e continuar</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  /* ── segmentado de presença ── */
+  const NAMES = ['Ana Clara Bittencourt', 'Bernardo Sá Teixeira', 'Cecília Moraes Rangel', 'Davi Aguiar Mendonça'];
+  const marks = new Map();
+  const segList = document.getElementById('segList');
+  const iconYes = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+  const iconNo  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function renderSeg() {
+    segList.innerHTML = NAMES.map((name, i) => {
+      const m = marks.get(i);
+      const state = m === true ? 'is-yes' : m === false ? 'is-no' : '';
+      return `<div class="list-row ${state}">
+        <span class="avatar" aria-hidden="true">${name.charAt(0)}</span>
+        <span class="row-title" style="flex: 1 1 auto; min-width: 0;">${name}</span>
+        <span class="seg">
+          <button class="seg-btn seg-yes" type="button" data-i="${i}" data-v="1" aria-pressed="${m === true}" aria-label="Marcar ${name} como presente">${iconYes}</button>
+          <button class="seg-btn seg-no" type="button" data-i="${i}" data-v="0" aria-pressed="${m === false}" aria-label="Marcar ${name} como ausente">${iconNo}</button>
+        </span>
+      </div>`;
+    }).join('');
+
+    let yes = 0, no = 0;
+    marks.forEach((v) => { if (v === true) yes++; else if (v === false) no++; });
+    const pend = NAMES.length - yes - no;
+    document.getElementById('tally').textContent = `${yes} presentes · ${no} ausentes · ${pend} sem marcar`;
+    const btn = document.getElementById('segConfirm');
+    btn.disabled = pend !== 0;
+    btn.textContent = pend === 0 ? 'Confirmar chamada' : 'Faltam ' + pend;
+  }
+
+  segList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    const i = Number(btn.dataset.i);
+    const v = btn.dataset.v === '1';
+    marks.set(i, marks.get(i) === v ? null : v);
+    renderSeg();
+  });
+  renderSeg();
+
+  /* ── stepper ── */
+  let step = 1;
+  const steps = [...document.querySelectorAll('#pvStepper .step')];
+  function paintSteps() {
+    steps.forEach((s, i) => {
+      s.classList.toggle('is-current', i === step);
+      s.querySelector('.bar-line').className = 'bar-line' + (i < step ? ' done' : i === step ? ' now' : '');
+    });
+    document.getElementById('stepBack').disabled = step === 0;
+    document.getElementById('stepNext').disabled = step === steps.length - 1;
+  }
+  document.getElementById('stepNext').addEventListener('click', () => { if (step < steps.length - 1) { step++; paintSteps(); } });
+  document.getElementById('stepBack').addEventListener('click', () => { if (step > 0) { step--; paintSteps(); } });
+  paintSteps();
+
+  /* ── validação aditiva ── */
+  const nova = document.getElementById('pv-nova');
+  const conf = document.getElementById('pv-conf');
+  const save = document.getElementById('pvSave');
+  const check  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+  const circle = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>';
+
+  function setRule(name, ok) {
+    const li = document.querySelector(`#pvRules [data-rule="${name}"]`);
+    li.classList.toggle('ok', ok);
+    li.querySelector('svg').outerHTML = ok ? check : circle;
+  }
+  function validate() {
+    const v = nova.value;
+    const len = v.length >= 6;
+    const alpha = /[a-zA-Z]/.test(v) && /[0-9]/.test(v);
+    const match = v.length > 0 && v === conf.value;
+    setRule('len', len); setRule('alpha', alpha); setRule('match', match);
+    save.disabled = !(len && alpha && match);
+  }
+  [nova, conf].forEach((el) => el.addEventListener('input', validate));
+</script>
+
+</body>
+</html>

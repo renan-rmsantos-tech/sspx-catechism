@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kit de interface — Catequese</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<!-- Tokens first, then the full component sheet. colors_and_type.css and
+     tokens.css are the portable foundations; catequese-ds.css carries the
+     same :root plus every component rule. -->
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="../../assets/catequese-ds.css" />
+<style>
+  .kit-art {
+    height: 138px; border-radius: var(--r); border: 1px solid var(--border);
+    background: var(--surface-2); padding: 11px; overflow: hidden;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sk { border-radius: 4px; background: var(--fg-line); }
+  .sk-acc { background: var(--accent); }
+  .sk-gold { background: var(--gold); }
+  .sk-srf { background: var(--surface); border: 1px solid var(--border); }
+  .sk-ink { background: var(--accent-ink); }
+  .kit-num {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  /* Slot for the mounted React kit. The fallback inside it is replaced on
+     mount, so a failed module load degrades to an honest message rather than
+     an empty box. */
+  #kitRoot { display: block; }
+  .kit-fallback {
+    display: flex; gap: 9px; align-items: flex-start;
+    padding: 12px var(--sp-4); border-radius: var(--r);
+    background: var(--info-soft); color: var(--info-ink);
+    border: 1px solid color-mix(in srgb, var(--info) 22%, var(--surface));
+    font-size: var(--fs-sm);
+  }
+  .src-tag {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--accent-ink);
+    background: var(--accent-soft); padding: 2px 7px; border-radius: 5px;
+    width: fit-content; overflow-wrap: anywhere;
+  }
+</style>
+</head>
+<body>
+
+<header class="appbar" data-od-id="appbar">
+  <div class="container appbar-inner">
+    <a class="brand" href="index.html">
+      <svg class="mark" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+      <span class="wordmark">Catequese
+        <span class="wordmark-sub">Kit de interface</span>
+      </span>
+    </a>
+    <span class="spacer"></span>
+    <a class="btn btn-sm btn-ghost" href="../../preview/index.html">Fichas de revisão</a>
+    <a class="btn btn-sm btn-primary" href="attendance-sheet.html">Abrir a chamada</a>
+  </div>
+</header>
+
+<main class="container" style="padding-block: var(--sp-7) var(--sp-8); max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="stack" data-od-id="intro">
+      <p class="eyebrow eyebrow-accent">Kit aplicado · 5 superfícies</p>
+      <h1 class="display" style="max-width: 19ch;">As superfícies reais do produto, prontas para copiar.</h1>
+      <p class="lead">
+        Não são maquetes: cada arquivo é uma superfície funcional do gerenciador de catequese, ligada ao
+        <span class="num">catequese-ds.css</span> e sem uma linha de cor fora dos tokens. Abra a que se parece com o que
+        você vai construir, copie a estrutura e troque o conteúdo.
+      </p>
+      <div class="row-tight" style="margin-top: var(--sp-2);">
+        <a class="btn btn-primary" href="attendance-sheet.html">Começar pela chamada</a>
+        <a class="btn btn-secondary" href="components.html">Ver a referência de componentes</a>
+      </div>
+    </section>
+
+    <section class="card card-accent" data-od-id="how">
+      <div class="grid-3" style="align-items: start;">
+        <div class="stack-sm">
+          <span class="eyebrow">1 · Escolha o shell</span>
+          <p class="small"><span class="num">.auth</span> para portas de entrada, <span class="num">.appbar</span> para catequista e público, <span class="num">.shell</span> para a coordenação. Errar aqui custa caro.</p>
+        </div>
+        <div class="stack-sm">
+          <span class="eyebrow">2 · Copie a estrutura</span>
+          <p class="small">Ligue <span class="num">assets/catequese-ds.css</span> e copie o esqueleto do arquivo mais próximo. Não reescreva componente nenhum.</p>
+        </div>
+        <div class="stack-sm">
+          <span class="eyebrow">3 · Verifique</span>
+          <p class="small">A lista de verificação está no fim do <span class="num">SKILL.md</span>. Um primário por tela, todo número em <span class="num">.num</span>, nada abaixo de 44px.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack" data-od-id="surfaces">
+      <div class="row-between">
+        <h2>As superfícies</h2>
+        <span class="meta">5 arquivos · todos interativos</span>
+      </div>
+
+      <div class="grid-2">
+
+        <a class="card card-tight card-link stack" href="attendance-sheet.html" data-od-id="kit-attendance">
+          <div class="kit-art" aria-hidden="true">
+            <div class="sk sk-acc" style="height: 4px; width: 62%; border-radius: 999px;"></div>
+            <div style="display: grid; gap: 5px; flex: 1;">
+              <div style="display: flex; align-items: center; gap: 6px;"><div class="sk" style="width: 14px; height: 14px; border-radius: 4px;"></div><div class="sk" style="height: 5px; flex: 1;"></div><div class="sk sk-acc" style="width: 15px; height: 15px; border-radius: 4px;"></div><div class="sk sk-srf" style="width: 15px; height: 15px; border-radius: 4px;"></div></div>
+              <div style="display: flex; align-items: center; gap: 6px;"><div class="sk" style="width: 14px; height: 14px; border-radius: 4px;"></div><div class="sk" style="height: 5px; flex: 1;"></div><div class="sk sk-srf" style="width: 15px; height: 15px; border-radius: 4px;"></div><div class="sk" style="width: 15px; height: 15px; border-radius: 4px; background: var(--danger);"></div></div>
+              <div style="display: flex; align-items: center; gap: 6px;"><div class="sk" style="width: 14px; height: 14px; border-radius: 4px;"></div><div class="sk" style="height: 5px; flex: 1;"></div><div class="sk sk-acc" style="width: 15px; height: 15px; border-radius: 4px;"></div><div class="sk sk-srf" style="width: 15px; height: 15px; border-radius: 4px;"></div></div>
+            </div>
+            <div class="sk sk-acc" style="height: 15px; border-radius: 5px;"></div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><h3>Chamada</h3><span class="chip chip-ok chip-plain">o núcleo</span></div>
+            <p class="small muted">A interação central do produto. Busca, marcar todos, progresso no topo, contagem honesta e o botão que diz quantos faltam. Funciona offline.</p>
+            <span class="kit-num">attendance-sheet.html · shell .appbar + .actionbar</span>
+          </div>
+        </a>
+
+        <a class="card card-tight card-link stack" href="shell-catechist.html" data-od-id="kit-catechist">
+          <div class="kit-art" aria-hidden="true">
+            <div class="sk" style="height: 11px; background: var(--warn); opacity: .35; border-radius: 5px;"></div>
+            <div class="sk sk-srf" style="height: 32px; border-color: var(--accent-line); border-radius: 8px; display: flex; align-items: center; gap: 7px; padding: 0 8px;">
+              <div class="sk" style="width: 19px; height: 19px; background: var(--accent-soft); border-radius: 5px;"></div>
+              <div style="display: grid; gap: 3px; flex: 1;"><div class="sk" style="height: 5px; width: 55%;"></div><div class="sk" style="height: 4px; width: 35%;"></div></div>
+              <div class="sk sk-acc" style="width: 40px; height: 15px; border-radius: 5px;"></div>
+            </div>
+            <div style="display: flex; gap: 6px; flex: 1;">
+              <div class="sk sk-srf" style="flex: 1; border-radius: 6px;"></div>
+              <div class="sk sk-srf" style="flex: 1; border-radius: 6px;"></div>
+              <div class="sk sk-srf" style="flex: 1; border-radius: 6px;"></div>
+            </div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><h3>Painel do catequista</h3><span class="chip chip-warn chip-plain">estado de rede</span></div>
+            <p class="small muted">Shell de appbar com chip de rede permanente, banner de fila de sincronização com ação, cartão da próxima chamada e turmas com medidor.</p>
+            <span class="kit-num">shell-catechist.html · shell .appbar</span>
+          </div>
+        </a>
+
+        <a class="card card-tight card-link stack" href="shell-admin.html" data-od-id="kit-admin">
+          <div class="kit-art" aria-hidden="true">
+            <div style="display: flex; gap: 7px; height: 100%;">
+              <div style="flex: 0 0 34px; display: grid; gap: 4px; align-content: start;">
+                <div class="sk sk-acc" style="height: 9px; border-radius: 3px;"></div>
+                <div class="sk" style="height: 9px; border-radius: 3px;"></div>
+                <div class="sk" style="height: 9px; border-radius: 3px;"></div>
+                <div class="sk" style="height: 9px; border-radius: 3px;"></div>
+              </div>
+              <div style="flex: 1; display: grid; gap: 5px; align-content: start;">
+                <div style="display: flex; gap: 5px;">
+                  <div class="sk sk-srf" style="flex: 1; height: 22px; border-radius: 5px;"></div>
+                  <div class="sk sk-srf" style="flex: 1; height: 22px; border-radius: 5px;"></div>
+                  <div class="sk sk-srf" style="flex: 1; height: 22px; border-radius: 5px;"></div>
+                </div>
+                <div class="sk sk-srf" style="height: 58px; border-radius: 5px; padding: 6px; display: grid; gap: 4px; align-content: start;">
+                  <div class="sk" style="height: 5px;"></div><div class="sk" style="height: 4px;"></div>
+                  <div class="sk" style="height: 4px;"></div><div class="sk sk-gold" style="height: 4px; width: 40%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><h3>Console de coordenação</h3><span class="chip chip-gold chip-plain">drawer</span></div>
+            <p class="small muted">Sidebar persistente com contador de pendências, métricas, tabela filtrável e o painel lateral de análise que aprova ou rejeita sem perder a lista.</p>
+            <span class="kit-num">shell-admin.html · shell .shell</span>
+          </div>
+        </a>
+
+        <a class="card card-tight card-link stack" href="shell-auth.html" data-od-id="kit-auth">
+          <div class="kit-art" aria-hidden="true">
+            <div style="display: flex; gap: 8px; height: 100%;">
+              <div class="sk sk-ink" style="flex: 1.05; border-radius: 6px; padding: 9px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="sk" style="width: 15px; height: 19px; background: color-mix(in srgb, var(--surface) 42%, transparent);"></div>
+                <div style="display: grid; gap: 4px;">
+                  <div class="sk" style="height: 6px; width: 80%; background: color-mix(in srgb, var(--surface) 70%, transparent);"></div>
+                  <div class="sk" style="height: 6px; width: 55%; background: color-mix(in srgb, var(--surface) 40%, transparent);"></div>
+                </div>
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px;">
+                <div class="sk" style="height: 5px; width: 40%;"></div>
+                <div class="sk sk-srf" style="height: 16px;"></div>
+                <div class="sk sk-srf" style="height: 16px;"></div>
+                <div class="sk sk-acc" style="height: 16px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><h3>Autenticação</h3><span class="chip chip-plain">2 modos</span></div>
+            <p class="small muted">O split de tinta cheia, com entrar e primeiro acesso na mesma página — inclusive as regras de senha que validam ao vivo, sem acusar erro enquanto se digita.</p>
+            <span class="kit-num">shell-auth.html · shell .auth</span>
+          </div>
+        </a>
+
+      </div>
+
+      <!-- Os primitivos React, montados de verdade a partir de components/. -->
+      <section class="stack" data-od-id="live-kit">
+        <div class="row-between">
+          <h2>Os primitivos, montados ao vivo</h2>
+          <span class="chip chip-ok chip-plain">React · components/</span>
+        </div>
+        <p class="lead" style="max-width: 68ch;">
+          O bloco abaixo não é uma captura: ele é renderizado agora, importando
+          <span class="num">Button.jsx</span>, <span class="num">Chip.jsx</span>,
+          <span class="num">AttendanceRow.jsx</span> e <span class="num">Metrics.jsx</span>
+          direto de <span class="num">components/</span>. São os mesmos arquivos que vão para o
+          <span class="num">sspx-catechism</span> — usam as classes do design system, sem tema
+          React paralelo para manter.
+        </p>
+        <div id="kitRoot" data-od-id="kit-root">
+          <div class="kit-fallback">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="17" height="17" style="flex: 0 0 17px; margin-top: 1px;" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8v.01"/></svg>
+            <span>Montando os componentes React… Se esta mensagem permanecer, a página foi aberta sem servidor ou sem rede: os primitivos em <strong>components/</strong> continuam válidos, e todas as outras superfícies do kit funcionam sem JavaScript externo.</span>
+          </div>
+        </div>
+      </section>
+
+      <a class="card card-link" href="components.html" data-od-id="kit-components">
+        <div class="row-between">
+          <div class="stack-sm" style="min-width: 0; flex: 1 1 380px;">
+            <span class="kit-num">components.html · referência</span>
+            <h3>Referência de componentes</h3>
+            <p class="small muted" style="max-width: 64ch;">
+              Cada componente do sistema com a marcação ao lado, pronta para copiar: botões, chips, campos,
+              segmentado, listas, tabelas, métricas, banners, stepper, estados vazios e o drawer.
+              É a página para consultar enquanto se constrói.
+            </p>
+          </div>
+          <span class="btn btn-secondary">Abrir</span>
+        </div>
+      </a>
+    </section>
+
+    <section class="card card-flush" data-od-id="rules">
+      <div class="panel-head">
+        <h2>O que o kit não abre mão</h2>
+        <span class="meta">Verificado em todos os cinco arquivos</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <dl class="kv">
+            <dt>Cor</dt><dd>Nenhum literal fora do <span class="num">:root</span>. Tudo deriva com <span class="num">color-mix()</span>.</dd>
+            <dt>Ação</dt><dd>Um <span class="num">.btn-primary</span> por tela. Desabilitado sempre diz por quê.</dd>
+            <dt>Toque</dt><dd>44px de piso. <span class="num">.btn-sm</span> só na coordenação.</dd>
+          </dl>
+          <dl class="kv">
+            <dt>Número</dt><dd>Todo valor comparável em <span class="num">.num</span>, mono tabular.</dd>
+            <dt>Serifa</dt><dd>Só no <span class="num">.wordmark</span>. Nunca num título.</dd>
+            <dt>Rede</dt><dd>O chip é permanente em qualquer tela que grave dados.</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <div class="row-between">
+          <span class="meta">Catequese · kit de interface aplicado</span>
+          <span class="meta">Protótipo · dados de demonstração</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ────────────────────────────────────────────────────────────
+     Runtime do kit React.
+
+     Os arquivos em components/ são módulos ES reais, porque o destino
+     deles é o codebase do sspx-catechism — não este arquivo. Para
+     montá-los aqui sem etapa de build: import map resolve 'react' e
+     'react-dom/client', e o Babel standalone compila o JSX em modo
+     módulo. React e ReactDOM ficam presos em 18.3.1.
+     ──────────────────────────────────────────────────────────── -->
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+  }
+}
+</script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel" data-type="module" data-presets="react">
+  import React, { useState } from 'react';
+  import { createRoot } from 'react-dom/client';
+
+  import { Button, ConfirmAttendanceButton } from './components/Button.jsx';
+  import { Chip, NetworkChip, AttendanceChip } from './components/Chip.jsx';
+  import { AttendanceRow, tallyMarks } from './components/AttendanceRow.jsx';
+  import { Stat, Meter, ProgressRail } from './components/Metrics.jsx';
+  import { SearchField } from './components/Field.jsx';
+
+  const STUDENTS = [
+    'Ana Clara Bittencourt',
+    'Bernardo Sá Teixeira',
+    'Cecília Moraes Rangel',
+    'Davi Aguiar Mendonça',
+    'Elisa Barroso Nunes',
+  ];
+
+  function KitDemo() {
+    const [marks, setMarks] = useState(() => new Map());
+    const [query, setQuery] = useState('');
+
+    // Uma única fonte de verdade: a mesma contagem alimenta o trilho de
+    // progresso e o rótulo do botão, então os dois não podem discordar.
+    const { present, absent, pending, percentDone } = tallyMarks(marks, STUDENTS.length);
+
+    const setMark = (index, value) => {
+      setMarks((previous) => {
+        const next = new Map(previous);
+        next.set(index, value);
+        return next;
+      });
+    };
+
+    const visible = STUDENTS
+      .map((name, index) => ({ name, index }))
+      .filter(({ name }) => !query || name.toLowerCase().includes(query.toLowerCase()));
+
+    return (
+      <div className="stack">
+        <div className="card card-flush">
+          <div className="panel-head">
+            <div className="stack-sm" style={{ minWidth: 0 }}>
+              <p className="eyebrow eyebrow-accent">Chamada · 2º ano</p>
+              <h3>Primeira Comunhão</h3>
+            </div>
+            <div className="row-tight">
+              <NetworkChip online={navigator.onLine} />
+              <Chip tone="gold">Renovação</Chip>
+            </div>
+          </div>
+
+          <ProgressRail done={present + absent} total={STUDENTS.length} />
+
+          <div className="panel-body stack">
+            <SearchField
+              label="Buscar aluno na lista"
+              placeholder="Buscar aluno"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+
+            <div className="list" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r)' }}>
+              {visible.map(({ name, index }) => (
+                <AttendanceRow
+                  key={name}
+                  name={name}
+                  index={index}
+                  mark={marks.get(index) ?? null}
+                  onChange={(value) => setMark(index, value)}
+                />
+              ))}
+            </div>
+
+            {visible.length === 0 ? (
+              <div className="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" />
+                </svg>
+                <p className="small">Nenhum aluno com esse nome nesta turma.</p>
+                <Button size="sm" onClick={() => setQuery('')}>Limpar a busca</Button>
+              </div>
+            ) : null}
+
+            <div className="grid-3">
+              <Stat value={present} label="presentes" />
+              <Stat value={absent} label="ausentes" />
+              <Stat value={percentDone} unit="%" label="da lista marcada" />
+            </div>
+
+            <Meter percent={86} label="Presença acumulada da turma" />
+          </div>
+
+          <div className="panel-foot">
+            <div className="row-between">
+              <span className="meta">
+                Presença de Ana Clara neste bimestre: <AttendanceChip percent={50} />
+              </span>
+              {/* O rótulo conta sozinho até liberar. */}
+              <ConfirmAttendanceButton
+                remaining={pending}
+                onConfirm={() => { window.location.href = 'attendance-sheet.html'; }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <p className="src-tag">
+          components/Button.jsx · Chip.jsx · AttendanceRow.jsx · Field.jsx · Metrics.jsx
+        </p>
+      </div>
+    );
+  }
+
+  createRoot(document.getElementById('kitRoot')).render(<KitDemo />);
+</script>
+
+</body>
+</html>

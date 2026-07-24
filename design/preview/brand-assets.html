@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marca · brasão e arquivos — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .asset { display: grid; gap: var(--sp-3); }
+  .asset .frame {
+    display: grid; place-items: center; min-height: 132px; padding: var(--sp-4);
+    border: 1px solid var(--border); border-radius: var(--r); background: var(--surface-2);
+  }
+  .asset .frame.dark { background: var(--accent-ink); border-color: transparent; }
+  .asset .frame.checker {
+    background-color: var(--surface);
+    background-image:
+      linear-gradient(45deg, var(--surface-3) 25%, transparent 25%, transparent 75%, var(--surface-3) 75%),
+      linear-gradient(45deg, var(--surface-3) 25%, transparent 25%, transparent 75%, var(--surface-3) 75%);
+    background-size: 14px 14px; background-position: 0 0, 7px 7px;
+  }
+  .asset img { display: block; }
+  .path {
+    font-family: var(--font-mono); font-size: 11px; color: var(--accent-ink);
+    background: var(--surface-3); padding: 3px 7px; border-radius: 5px;
+    width: fit-content; overflow-wrap: anywhere;
+  }
+  .sizes { display: flex; align-items: flex-end; gap: var(--sp-5); flex-wrap: wrap; }
+  .size-cell { display: grid; justify-items: center; gap: 7px; }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Marca · brasão, arquivos e ícones de runtime</h1>
+    <p class="pv-note">Todos os brasões nesta página são <strong>os arquivos reais</strong>, carregados de <code class="pv-code">../assets/</code> e <code class="pv-code">../build/</code> — não redesenhos. Se um deles não aparecer, o arquivo está faltando.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <!-- construção -->
+    <section class="pv-section" data-od-id="construction">
+      <div class="row-between"><h2>O brasão</h2><span class="meta">viewBox 0 0 40 51</span></div>
+      <p class="lead">Escudo <em>heater</em>, cruz latina de terminais chanfrados vazada no campo, filete dourado interno. A marca fala em voz institucional; a interface, não.</p>
+      <div class="grid-3" style="align-items: start;">
+
+        <div class="asset">
+          <div class="frame checker">
+            <img src="../assets/brasao.svg" alt="Brasão da Catequese, versão para fundo claro" width="86" height="110" />
+          </div>
+          <div class="stack-sm">
+            <h3>Fundo claro</h3>
+            <span class="path">assets/brasao.svg</span>
+            <p class="pv-note">Campo em <code>--accent-ink</code>, cruz vazada em branco, filete em <code>--gold</code>.</p>
+          </div>
+        </div>
+
+        <div class="asset">
+          <div class="frame dark">
+            <img src="../assets/brasao-claro.svg" alt="Brasão da Catequese, versão para fundo escuro" width="86" height="110" />
+          </div>
+          <div class="stack-sm">
+            <h3>Fundo escuro</h3>
+            <span class="path">assets/brasao-claro.svg</span>
+            <p class="pv-note">Campo e cruz invertem. <strong>O filete dourado permanece nos dois.</strong></p>
+          </div>
+        </div>
+
+        <div class="asset">
+          <div class="frame">
+            <div class="pv-demo" style="gap: var(--sp-5); align-items: flex-end;">
+              <img src="../assets/favicon.svg" alt="Favicon da Catequese, forma reduzida" width="52" height="66" />
+              <img src="../assets/favicon.svg" alt="" aria-hidden="true" width="24" height="31" />
+              <img src="../assets/favicon.svg" alt="" aria-hidden="true" width="16" height="20" />
+            </div>
+          </div>
+          <div class="stack-sm">
+            <h3>Forma reduzida</h3>
+            <span class="path">assets/favicon.svg</span>
+            <p class="pv-note"><strong>Sem filete</strong> — a este tamanho ele vira sujeira na borda — e cruz de braços retos, 38% mais grossa, para não fechar.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- inline vs arquivo -->
+    <section class="card stack-lg" data-od-id="inline-vs-file">
+      <div class="row-between"><h2>Duas formas de entrega, de propósito</h2><span class="chip chip-plain">a distinção importa</span></div>
+      <div class="grid-2" style="align-items: start;">
+        <div class="stack">
+          <span class="eyebrow eyebrow-accent">SVG inline · dentro do HTML</span>
+          <div class="pv-plate">
+            <div class="brand" style="gap: 14px;">
+              <svg class="mark mark-lg" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+              <span class="wordmark" style="font-size: 19px;">Catequese
+                <span class="wordmark-sub">Paróquia · presença</span>
+              </span>
+            </div>
+          </div>
+          <p class="pv-note"><strong>Use esta forma em qualquer tela.</strong> Campo, cruz e filete saem dos tokens, então a marca acompanha o sistema sozinha. Basta <code>class="mark"</code>.</p>
+        </div>
+        <div class="stack">
+          <span class="eyebrow">Arquivo · fora do documento</span>
+          <div class="pv-plate">
+            <img src="../assets/brasao.svg" alt="" aria-hidden="true" width="66" height="84" />
+          </div>
+          <p class="pv-note">Só onde as custom properties não alcançam: favicon, ícone de PWA, e-mail e impressão. Estes carregam <code>oklch()</code> literal e <strong>precisam ser atualizados à mão se os tokens mudarem</strong> — o comentário dentro de cada arquivo diz isso.</p>
+        </div>
+      </div>
+
+      <hr class="rule" />
+
+      <div class="grid-2" style="align-items: start;">
+        <div class="stack-sm">
+          <span class="eyebrow">Inversão automática</span>
+          <div class="pv-plate pv-plate-ink on-ink">
+            <div class="brand" style="gap: 14px;">
+              <svg class="mark mark-lg" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+              <span class="wordmark" style="font-size: 19px; color: var(--surface);">Catequese</span>
+            </div>
+          </div>
+          <p class="pv-note">A classe <code class="pv-code">.on-ink</code> no contêiner (ou <code class="pv-code">.auth-aside</code>) basta: campo e cruz trocam sozinhos.</p>
+        </div>
+        <div class="stack-sm">
+          <span class="eyebrow">Teste de redução · piso 20px</span>
+          <div class="pv-plate" style="min-height: 118px;">
+            <div class="sizes">
+              <div class="size-cell"><svg class="mark" style="width: 38px; height: 48px; flex-basis: 38px;" viewBox="0 0 40 51" aria-hidden="true"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg><span class="meta">38</span></div>
+              <div class="size-cell"><svg class="mark" style="width: 26px; height: 33px; flex-basis: 26px;" viewBox="0 0 40 51" aria-hidden="true"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg><span class="meta">26</span></div>
+              <div class="size-cell"><svg class="mark" style="width: 20px; height: 25px; flex-basis: 20px;" viewBox="0 0 40 51" aria-hidden="true"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg><span class="meta">20 · limite</span></div>
+              <div class="size-cell"><img src="../assets/favicon.svg" alt="" aria-hidden="true" width="16" height="20" /><span class="meta">16 · reduzida</span></div>
+            </div>
+          </div>
+          <p class="pv-note">Abaixo de 20px de altura, troque pela forma reduzida do favicon. Não encolha o brasão completo.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- runtime -->
+    <section class="pv-section" data-od-id="runtime-icons">
+      <div class="row-between"><h2>Ícones de runtime</h2><span class="meta">build/ · vetor, como na fonte</span></div>
+      <p class="pv-note">Derivados dos arquivos originais. <strong>Nenhum PNG foi inventado</strong> — a fonte é vetorial, e o conjunto raster deve ser gerado a partir de <code class="pv-code">build/icon-512.svg</code> se a plataforma exigir.</p>
+      <div class="grid-4" style="align-items: start;">
+
+        <div class="asset">
+          <div class="frame"><img src="../build/icon-512.svg" alt="Ícone de aplicativo 512 pixels" width="104" height="104" style="border-radius: 20px;" /></div>
+          <div class="stack-sm">
+            <h3>512 · maskable</h3>
+            <span class="path">build/icon-512.svg</span>
+            <p class="pv-note">Quadrado inteiro preenchido; o sistema operacional aplica o próprio recorte.</p>
+          </div>
+        </div>
+
+        <div class="asset">
+          <div class="frame"><img src="../build/icon-192.svg" alt="Ícone de aplicativo 192 pixels" width="76" height="76" style="border-radius: 16px;" /></div>
+          <div class="stack-sm">
+            <h3>192 · maskable</h3>
+            <span class="path">build/icon-192.svg</span>
+            <p class="pv-note">Mesma geometria. O filete ainda é legível neste tamanho.</p>
+          </div>
+        </div>
+
+        <div class="asset">
+          <div class="frame" style="color: var(--fg);"><img src="../build/icon-monochrome.svg" alt="Ícone monocromático para bandeja e notificações" width="64" height="64" /></div>
+          <div class="stack-sm">
+            <h3>Monocromático</h3>
+            <span class="path">build/icon-monochrome.svg</span>
+            <p class="pv-note">Cruz recortada com <code>fill-rule="evenodd"</code>, para a marca sobreviver a ser tingida de uma cor só.</p>
+          </div>
+        </div>
+
+        <div class="asset">
+          <div class="frame checker"><img src="../build/favicon-32.svg" alt="Favicon 32 pixels" width="32" height="41" /></div>
+          <div class="stack-sm">
+            <h3>Favicon 32</h3>
+            <span class="path">build/favicon-32.svg</span>
+            <p class="pv-note">Forma reduzida, no tamanho da aba do navegador.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="card">
+        <div class="row-between">
+          <div class="stack-sm" style="min-width: 0;">
+            <h3>Manifesto</h3>
+            <p class="pv-note"><code class="pv-code">build/manifest.webmanifest</code> liga os quatro ícones com <code>purpose</code> declarado. <strong>Os dois únicos hex sancionados do pacote vivem ali</strong> — <code>background_color</code> e <code>theme_color</code> — porque o formato do manifesto não sabe ler <code>oklch()</code>. Estão comentados no arquivo.</p>
+          </div>
+          <span class="chip chip-gold chip-plain">exceção documentada</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- regras -->
+    <section class="card" data-od-id="brand-rules">
+      <div class="stack">
+        <h2>Regras da marca</h2>
+        <div class="pv-rules">
+          <p class="pv-yes"><b>USE</b><span>SVG inline com <code>class="mark"</code> em qualquer tela. Copie a marcação de três caminhos de qualquer tela preservada.</span></p>
+          <p class="pv-yes"><b>USE</b><span>O espaço entre brasão e nome é sempre <strong>um terço da altura do escudo</strong>.</span></p>
+          <p class="pv-yes"><b>USE</b><span><code>.on-ink</code> sobre tinta cheia — a inversão é automática.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Encolher o brasão completo abaixo de 20px. Troque pela forma reduzida.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Usar <code>--font-logo</code> fora do <code>.wordmark</code>. É a única serifa do produto.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Repetir o motivo de pontos mais de uma vez por tela, nem colocá-lo dentro da interface de produto.</span></p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

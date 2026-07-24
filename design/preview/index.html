@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fichas de revisão — Catequese Design System</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .card-num {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .thumb {
+    height: 92px; border-radius: var(--r-sm); border: 1px solid var(--border);
+    background: var(--surface-2); overflow: hidden; display: flex;
+  }
+  .swatchbar { display: flex; width: 100%; }
+  .swatchbar i { flex: 1 1 0; }
+</style>
+</head>
+<body>
+
+<header class="appbar" data-od-id="appbar">
+  <div class="container appbar-inner">
+    <span class="brand">
+      <svg class="mark" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+      <span class="wordmark">Catequese
+        <span class="wordmark-sub">Design system</span>
+      </span>
+    </span>
+    <span class="spacer"></span>
+    <a class="btn btn-sm btn-secondary" href="../ui_kits/app/index.html">Kit aplicado</a>
+    <a class="btn btn-sm btn-primary" href="applied-surfaces.html">Superfícies aplicadas</a>
+  </div>
+</header>
+
+<main class="container" style="padding-block: var(--sp-7) var(--sp-8); max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="stack" data-od-id="intro">
+      <p class="eyebrow eyebrow-accent">Fichas de revisão · 10 cartões</p>
+      <h1 class="display" style="max-width: 20ch;">O sistema, uma dimensão de cada vez.</h1>
+      <p class="lead">
+        Cada ficha isola uma dimensão e mostra os valores reais em uso — nada é redesenhado para a documentação.
+        As fichas de <strong>marca</strong> e <strong>superfícies aplicadas</strong> carregam os arquivos preservados
+        de verdade, então servem também como verificação de que o pacote está íntegro.
+      </p>
+      <div class="row-tight" style="margin-top: var(--sp-2);">
+        <a class="btn btn-primary" href="colors-primary.html">Começar pela cor</a>
+        <a class="btn btn-secondary" href="../DESIGN.md">Ler o DESIGN.md</a>
+      </div>
+    </section>
+
+    <!-- fundações -->
+    <section class="stack" data-od-id="foundations">
+      <div class="row-between">
+        <h2>Fundações</h2>
+        <span class="meta">Tokens · o que não se negocia</span>
+      </div>
+      <div class="grid-3">
+
+        <a class="card card-tight card-link stack-sm" href="colors-primary.html" data-od-id="card-colors-primary">
+          <div class="thumb">
+            <div class="swatchbar" aria-hidden="true">
+              <i style="background: var(--bg);"></i><i style="background: var(--surface-3);"></i>
+              <i style="background: var(--muted);"></i><i style="background: var(--fg);"></i>
+              <i style="background: var(--accent);"></i><i style="background: var(--gold);"></i>
+            </div>
+          </div>
+          <span class="card-num">01 · cor</span>
+          <h3>Base e accent</h3>
+          <p class="small muted">Os seis do núcleo, os derivados e o dourado litúrgico. Valores lidos do CSS em tempo real.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="colors-states.html" data-od-id="card-colors-states">
+          <div class="thumb" style="padding: 12px; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
+            <span class="chip chip-ok">Sincronizada</span>
+            <span class="chip chip-warn">Pendente</span>
+            <span class="chip chip-danger">Rejeitada</span>
+          </div>
+          <span class="card-num">02 · cor</span>
+          <h3>Estados funcionais</h3>
+          <p class="small muted">As três tríades base/soft/ink, chips, banners e a lavagem de linha.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="typography-specimens.html" data-od-id="card-typography">
+          <div class="thumb" style="padding: 12px; flex-direction: column; justify-content: center; gap: 3px;">
+            <span style="font-family: var(--font-display); font-size: 21px; font-weight: 660; letter-spacing: -0.03em; line-height: 1;">Aa</span>
+            <span class="wordmark" style="font-size: 12px;">Catequese</span>
+            <span class="num" style="font-size: 11px;">92% · 18/22</span>
+          </div>
+          <span class="card-num">03 · tipografia</span>
+          <h3>Espécimes</h3>
+          <p class="small muted">Quatro pilhas, sete degraus, a exceção da serifa e a regra numérica.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="spacing-tokens.html" data-od-id="card-spacing">
+          <div class="thumb" style="padding: 12px; flex-direction: column; justify-content: center; gap: 5px;">
+            <i style="display: block; height: 7px; width: var(--sp-4); background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; height: 7px; width: var(--sp-5); background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; height: 7px; width: var(--sp-6); background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; height: 7px; width: var(--sp-7); background: var(--accent); border-radius: 3px;"></i>
+          </div>
+          <span class="card-num">04 · espaço</span>
+          <h3>Espaçamento e densidade</h3>
+          <p class="small muted">A escala de 4 medida na tela, os três empilhadores e o piso de 44px.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="layout-and-shape.html" data-od-id="card-layout">
+          <div class="thumb" style="padding: 12px; align-items: center; justify-content: center; gap: 8px;">
+            <i style="display: block; width: 26px; height: 26px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-sm);"></i>
+            <i style="display: block; width: 26px; height: 26px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r);"></i>
+            <i style="display: block; width: 26px; height: 26px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-lg);"></i>
+            <i style="display: block; width: 26px; height: 26px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-full);"></i>
+          </div>
+          <span class="card-num">05 · forma</span>
+          <h3>Raio, elevação e layout</h3>
+          <p class="small muted">A escada de raios, o que a sombra significa, os três shells e as quebras.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="brand-assets.html" data-od-id="card-brand">
+          <div class="thumb" style="background: var(--accent-ink); align-items: center; justify-content: center;">
+            <img src="../assets/brasao-claro.svg" alt="" aria-hidden="true" width="44" height="56" />
+          </div>
+          <span class="card-num">06 · marca ★</span>
+          <h3>Brasão e ícones</h3>
+          <p class="small muted">Carrega os SVG reais de <code class="pv-code">assets/</code> e <code class="pv-code">build/</code>: construção, redução, inversão, runtime.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- componentes -->
+    <section class="stack" data-od-id="components">
+      <div class="row-between">
+        <h2>Componentes</h2>
+        <span class="meta">Todos interativos</span>
+      </div>
+      <div class="grid-3">
+
+        <a class="card card-tight card-link stack-sm" href="components-buttons.html" data-od-id="card-buttons">
+          <div class="thumb" style="padding: 12px; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap;">
+            <span class="btn btn-sm btn-primary">Confirmar</span>
+            <span class="btn btn-sm btn-secondary">Exportar</span>
+          </div>
+          <span class="card-num">07 · componentes</span>
+          <h3>Botões</h3>
+          <p class="small muted">Quatro variantes, cinco tamanhos, a regra do desabilitado que fala e os três estados de envio.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="components-forms.html" data-od-id="card-forms">
+          <div class="thumb" style="padding: 12px; flex-direction: column; justify-content: center; gap: 6px;">
+            <i style="display: block; height: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px;"></i>
+            <i style="display: block; height: 14px; background: var(--surface); border: 1px solid var(--accent); border-radius: 5px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);"></i>
+          </div>
+          <span class="card-num">08 · componentes</span>
+          <h3>Entrada de dados</h3>
+          <p class="small muted">Campos, validação, ladrilhos, stepper e o segmentado de presença — todos funcionando.</p>
+        </a>
+
+        <a class="card card-tight card-link stack-sm" href="components-data.html" data-od-id="card-data">
+          <div class="thumb" style="padding: 12px; align-items: flex-end; justify-content: center; gap: 5px;">
+            <i style="display: block; width: 13px; height: 62%; background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; width: 13px; height: 46%; background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; width: 13px; height: 74%; background: var(--accent); border-radius: 3px;"></i>
+            <i style="display: block; width: 13px; height: 38%; background: color-mix(in srgb, var(--accent) 45%, var(--surface-3)); border-radius: 3px;"></i>
+          </div>
+          <span class="card-num">09 · componentes</span>
+          <h3>Dados e estado</h3>
+          <p class="small muted">Tabelas, métricas, medidores, barras, calendário, drawer e estados vazios.</p>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- aplicado -->
+    <section class="stack" data-od-id="applied">
+      <div class="row-between">
+        <h2>Aplicado</h2>
+        <span class="chip chip-ok chip-plain">carrega os arquivos preservados</span>
+      </div>
+      <a class="card card-link" href="applied-surfaces.html" data-od-id="card-applied">
+        <div class="row-between">
+          <div class="stack-sm" style="min-width: 0; flex: 1 1 380px;">
+            <span class="card-num">10 · aplicado ★</span>
+            <h3>Superfícies aplicadas</h3>
+            <p class="small muted" style="max-width: 62ch;">
+              As dez telas de origem rodando de verdade dentro de quadros — chamada, painel, console de coordenação,
+              autenticação, inscrição, e a documentação de marca da própria fonte. É a melhor prova de que o sistema
+              se sustenta, e a verificação de que o pacote está íntegro.
+            </p>
+          </div>
+          <span class="btn btn-primary">Abrir</span>
+        </div>
+      </a>
+    </section>
+
+    <!-- pacote -->
+    <section class="card card-flush" data-od-id="package">
+      <div class="panel-head">
+        <h2>O resto do pacote</h2>
+        <span class="meta">Fora de preview/</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-2" style="align-items: start;">
+          <dl class="kv">
+            <dt>DESIGN.md</dt><dd>O sistema por escrito, em dez seções.</dd>
+            <dt>SKILL.md</dt><dd>Instruções de construção e a lista de verificação.</dd>
+            <dt>README.md</dt><dd>Como usar o pacote e o que há em cada pasta.</dd>
+          </dl>
+          <dl class="kv">
+            <dt>colors_and_type.css</dt><dd>Fundações portáveis de cor e tipografia.</dd>
+            <dt>tokens.css</dt><dd>Forma, espaço, elevação, movimento.</dd>
+            <dt>assets/catequese-ds.css</dt><dd>A folha de estilo completa da fonte, verbatim.</dd>
+            <dt>context/provenance.md</dt><dd>De onde veio cada afirmação, e o que falta.</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <div class="row-between">
+          <span class="meta">Catequese · design system extraído do projeto Catechism</span>
+          <span class="meta">Protótipo · dados de demonstração</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

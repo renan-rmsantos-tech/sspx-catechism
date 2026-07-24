@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tipografia — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .stack-cmp { display: grid; gap: var(--sp-2); }
+  .stack-cmp .sample { font-size: 21px; line-height: 1.3; overflow-wrap: anywhere; }
+  .align-demo { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+  .align-demo .col { display: grid; gap: 3px; }
+  .align-demo .r { display: flex; justify-content: space-between; gap: var(--sp-4); font-size: var(--fs-sm); padding: 3px 0; border-bottom: 1px dashed var(--fg-line); }
+  .align-demo .bad { font-family: var(--font-body); }
+  @media (max-width: 720px) { .align-demo { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Tipografia</h1>
+    <p class="pv-note">Quatro pilhas, sete degraus e duas regras que não se negociam: <strong>a serifa é só da marca</strong> e <strong>todo número comparável vai em mono tabular</strong>. Nenhuma webfont é carregada em lugar nenhum.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <!-- pilhas -->
+    <section class="pv-section" data-od-id="stacks">
+      <div class="row-between"><h2>As quatro pilhas</h2><span class="meta">Zero webfont · zero custo de rede</span></div>
+      <p class="pv-note">
+        Não carregar fonte é decisão, não omissão: voluntários abrem isto no celular, no wifi do salão paroquial.
+        O texto precisa aparecer na primeira pintura.
+      </p>
+      <div class="grid-2" style="align-items: start;">
+
+        <div class="card stack-cmp">
+          <span class="eyebrow">--font-display</span>
+          <span class="sample" style="font-family: var(--font-display); font-weight: 640; letter-spacing: -0.02em;">Bom dia, Marina — 2º ano</span>
+          <p class="pv-note">Söhne → Avenir Next → sistema. Títulos, <code>.display</code>, números de métrica, iniciais de avatar.</p>
+        </div>
+
+        <div class="card stack-cmp">
+          <span class="eyebrow">--font-body</span>
+          <span class="sample" style="font-family: var(--font-body);">A chamada fica salva no aparelho.</span>
+          <p class="pv-note">Sistema (<code>-apple-system</code>…). Corpo, rótulos, campos, botões.</p>
+        </div>
+
+        <div class="card stack-cmp">
+          <span class="eyebrow">--font-mono</span>
+          <span class="sample num">92% · 18/22 · 2026-07-25</span>
+          <p class="pv-note">Todo número, toda sobrancelha, todo cabeçalho de tabela, todo <code>.meta</code>.</p>
+        </div>
+
+        <div class="card stack-cmp" style="border-color: var(--accent-line);">
+          <span class="eyebrow eyebrow-accent">--font-logo · exceção declarada</span>
+          <span class="wordmark" style="font-size: 21px;">Catequese</span>
+          <p class="pv-note"><strong>Só no <code>.wordmark</code>.</strong> Nunca num título, tabela, botão ou rótulo.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- a exceção -->
+    <section class="card stack-lg" data-od-id="serif-exception">
+      <div class="row-between">
+        <h2>A exceção da serifa, e por quê</h2>
+        <span class="chip chip-plain">A única serifa do produto</span>
+      </div>
+      <p class="lead">
+        O sans geométrico da interface diz <em>“ferramenta”</em>. A serifa em versalete com entreletra de 0,17&nbsp;em
+        diz <em>“instituição”</em>. Só a marca troca de voz — a tela inteira continua no sans.
+      </p>
+      <div class="grid-2" style="align-items: center;">
+        <div class="pv-plate" style="min-height: 150px;">
+          <div class="stack-sm" style="align-items: center; text-align: center;">
+            <span class="wordmark" style="font-size: 28px;">Catequese
+              <span class="wordmark-sub">Paróquia · presença</span>
+            </span>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="pv-rules">
+            <p class="pv-yes"><b>SIM</b><span>Iowan Old Style → Charter → Hoefler Text → Georgia. Serifas de transição, presentes na maioria dos sistemas, sem fonte carregada.</span></p>
+            <p class="pv-yes"><b>SIM</b><span>Peso 500, caixa alta, entreletra 0,17&nbsp;em — a proporção da letra incisa em pedra.</span></p>
+            <p class="pv-no"><b>NÃO</b><span>Um <code>h1</code>, um cabeçalho de tabela ou um botão em serifa. Quebrar isto é a forma mais rápida de a saída deixar de pertencer a este sistema.</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- escala -->
+    <section class="pv-section" data-od-id="scale">
+      <div class="row-between"><h2>A escala</h2><span class="meta">Corpo em 15px — não 16</span></div>
+      <p class="pv-note">
+        O corpo fica em 15px porque as telas são densas de nomes e datas: <strong>15/1,5 faz caber a lista de uma turma
+        inteira num celular sem um segundo rolar.</strong> Títulos usam 640/620/600, nunca 700 — nestes tamanhos, 700 grita.
+        A entreletra negativa aperta conforme o corpo cresce.
+      </p>
+      <div class="card stack">
+        <div class="pv-spec">
+          <span class="k">Display · clamp 30–44</span><span class="display">Bom dia, Marina</span>
+          <span class="k">H1 · clamp 24–30</span><h1>Inscrições</h1>
+          <span class="k">H2 · 20</span><h2>Minhas turmas</h2>
+          <span class="k">H3 · 16</span><h3>2º ano · Primeira Comunhão</h3>
+          <span class="k">Corpo · 15 / 1,5</span><span>A chamada fica salva no aparelho e sobe sozinha quando o sinal voltar.</span>
+          <span class="k">Apoio · 13,5</span><span class="small muted">Sábado, 10h30 · Salão paroquial · 22 alunos</span>
+          <span class="k">Lead · 17 / 1,55</span><span class="lead">Três turmas atribuídas a você neste ano letivo. Duas têm aula hoje.</span>
+          <span class="k">Sobrancelha · 11 mono</span><span class="eyebrow eyebrow-accent">Próxima chamada</span>
+          <span class="k">Meta · 12 mono</span><span class="meta">ANO LETIVO 2026 · ATUALIZADO 10H14</span>
+          <span class="k">Numérico</span><span class="num" style="font-size: 22px; font-weight: 600;">92% · 18/22 · 2026-07-25</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- números -->
+    <section class="pv-section" data-od-id="numeric-rule">
+      <div class="row-between"><h2>A regra numérica</h2><span class="meta">.num · tabular-nums</span></div>
+      <p class="pv-note">
+        <strong>Todo número que o usuário compara vai em <code>.num</code></strong> — porcentagem, contagem, data,
+        telefone, protocolo, ano letivo. É isto que faz as colunas de uma tabela de 22 alunos realmente se alinharem.
+      </p>
+      <div class="card">
+        <div class="align-demo">
+          <div class="col">
+            <span class="eyebrow eyebrow-accent">Com .num — colunas alinham</span>
+            <div class="r"><span>Ana Clara Bittencourt</span><span class="num">100%</span></div>
+            <div class="r"><span>Beatriz Nogueira Alves</span><span class="num">75%</span></div>
+            <div class="r"><span>Bernardo Sá Teixeira</span><span class="num">50%</span></div>
+            <div class="r"><span>Valentina Ottoni Maia</span><span class="num">91%</span></div>
+          </div>
+          <div class="col">
+            <span class="eyebrow">Sem — largura de dígito varia</span>
+            <div class="r"><span>Ana Clara Bittencourt</span><span class="bad">100%</span></div>
+            <div class="r"><span>Beatriz Nogueira Alves</span><span class="bad">75%</span></div>
+            <div class="r"><span>Bernardo Sá Teixeira</span><span class="bad">50%</span></div>
+            <div class="r"><span>Valentina Ottoni Maia</span><span class="bad">91%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card card-flush">
+        <div class="panel-head"><h3>Na tabela</h3><span class="meta">Cabeçalho mono 11px maiúsculo · coluna numérica à direita</span></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Aluno</th><th scope="col" class="num-col">Presenças</th><th scope="col" class="num-col">Faltas</th><th scope="col" class="num-col">%</th></tr></thead>
+            <tbody>
+              <tr><td class="row-title">Ana Clara Bittencourt</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td></tr>
+              <tr><td class="row-title">Beatriz Nogueira Alves</td><td class="num-col">3</td><td class="num-col">1</td><td class="num-col">75%</td></tr>
+              <tr><td class="row-title">Bernardo Sá Teixeira</td><td class="num-col">2</td><td class="num-col">2</td><td class="num-col"><span class="chip chip-danger">50%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>

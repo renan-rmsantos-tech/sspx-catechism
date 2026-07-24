@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cor · base e accent — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../tokens.css" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  /* Fita de paleta: os oito tons da tela inteira, lado a lado, sem
+     rótulo — para julgar o conjunto antes de julgar cada token. */
+  .palette-strip {
+    display: flex; border-radius: var(--r); overflow: hidden;
+    border: 1px solid var(--border); box-shadow: var(--shadow-1);
+  }
+  .palette-strip i { flex: 1 1 0; height: 58px; }
+  .palette-strip i + i { border-left: 1px solid color-mix(in srgb, var(--fg) 6%, transparent); }
+
+  /* Prova de contraste: o par tinta/fundo de cada família,
+     no tamanho real do corpo do produto. */
+  .contrast { display: grid; gap: 2px; border-radius: var(--r); overflow: hidden; }
+  .contrast > div {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--sp-4); padding: 11px var(--sp-4); font-size: var(--fs-body);
+  }
+  .contrast .lab { font-family: var(--font-mono); font-size: 11px; opacity: .85; }
+
+  /* Reforça a leitura de "no máximo dois usos cheios por tela". */
+  .accent-count { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+  .accent-count b {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent-ink);
+    background: var(--accent-soft); padding: 3px 8px; border-radius: var(--r-full);
+  }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Cor · base e accent</h1>
+    <p class="pv-note">Os seis tokens de base, os derivados do accent e o dourado litúrgico. Os valores abaixo são lidos do CSS em tempo de execução — não estão digitados à mão, então não podem divergir da folha de estilo.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <!-- a paleta inteira, de uma vez -->
+    <section class="pv-section" data-od-id="palette-strip">
+      <div class="row-between">
+        <h2>A paleta inteira</h2>
+        <span class="meta">8 tons · é tudo o que existe</span>
+      </div>
+      <div class="palette-strip" role="img" aria-label="Paleta: fundo, superfície escurecida, texto secundário, texto, accent, dourado, atenção, negativo">
+        <i style="background: var(--bg);"></i>
+        <i style="background: var(--surface-3);"></i>
+        <i style="background: var(--muted);"></i>
+        <i style="background: var(--fg);"></i>
+        <i style="background: var(--accent);"></i>
+        <i style="background: var(--gold);"></i>
+        <i style="background: var(--warn);"></i>
+        <i style="background: var(--danger);"></i>
+      </div>
+      <p class="pv-note">Do fundo ao negativo. <strong>Três dos oito são de estado</strong> e só aparecem quando algo aconteceu — na prática, uma tela em repouso usa cinco.</p>
+    </section>
+
+    <!-- núcleo -->
+    <section class="pv-section" data-od-id="core-six">
+      <div class="row-between">
+        <h2>Os seis do núcleo</h2>
+        <span class="meta">Tudo o mais é color-mix()</span>
+      </div>
+      <p class="pv-note">
+        Estes seis carregam o produto inteiro. O matiz 240° em todos os neutros é deliberado: os cinzas são frios,
+        então o teal do accent lê como parte da mesma família, e não como um adesivo colado por cima.
+      </p>
+      <div class="grid-3" id="coreGrid"></div>
+    </section>
+
+    <!-- accent -->
+    <section class="pv-section" data-od-id="accent-family">
+      <div class="row-between">
+        <h2>Accent · a aposta central</h2>
+        <span class="chip chip-ok chip-plain">ação <em>e</em> presença</span>
+      </div>
+      <p class="pv-note">
+        <strong>O teal significa a mesma coisa em todo lugar:</strong> é o botão primário, a marcação de presente,
+        o preenchimento do medidor e o item ativo da navegação. Não é sobrecarga — é a regra semântica do sistema.
+        Nunca introduza uma segunda cor de ação.
+      </p>
+      <div class="grid-4" id="accentGrid"></div>
+
+      <div class="card" style="margin-top: var(--sp-2);">
+        <div class="grid-2" style="align-items: center;">
+          <div class="stack">
+            <span class="eyebrow">O mesmo teal, quatro papéis</span>
+            <div class="pv-demo">
+              <button class="btn btn-primary" type="button">Confirmar chamada</button>
+              <span class="seg">
+                <button class="seg-btn seg-yes" type="button" aria-pressed="true" aria-label="Presente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+                <button class="seg-btn seg-no" type="button" aria-pressed="false" aria-label="Ausente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </span>
+            </div>
+            <div class="stack-sm">
+              <div class="row-between"><span class="small muted">Presença acumulada</span><span class="num small" style="font-weight: 600;">86%</span></div>
+              <div class="meter" role="img" aria-label="86 por cento"><div class="meter-fill" style="width: 86%;"></div></div>
+            </div>
+          </div>
+          <div class="stack-sm">
+            <span class="eyebrow">Sobre tinta cheia</span>
+            <div class="pv-plate pv-plate-ink on-ink" style="min-height: 118px;">
+              <svg class="mark mark-lg" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+            </div>
+            <p class="pv-note"><span class="pv-code">--accent-ink</span> é a superfície de tinta cheia do painel de autenticação, e o texto sobre qualquer fundo <span class="pv-code">-soft</span>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- dourado -->
+    <section class="pv-section" data-od-id="gold-family">
+      <div class="row-between">
+        <h2>Dourado litúrgico · accent de domínio</h2>
+        <span class="meta">Sinal, nunca ação</span>
+      </div>
+      <p class="pv-note">
+        O dourado aparece em exatamente três lugares no produto: <strong>festas de guarda</strong> no calendário e no
+        motivo de pontos, o chip de <strong>renovação</strong> de matrícula, e o filete interno do brasão.
+        Nunca é um botão, nunca é uma terceira cor de marca, nunca é um gradiente.
+      </p>
+      <div class="grid-3" id="goldGrid"></div>
+      <div class="card">
+        <div class="row" style="gap: var(--sp-5);">
+          <div class="pv-demo">
+            <span class="chip chip-gold">Renovação</span>
+            <span class="chip chip-gold">N. S. do Carmo</span>
+          </div>
+          <span class="spacer"></span>
+          <div class="dot-grid" style="max-width: 210px;" aria-hidden="true">
+            <i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="gold"></i><i></i><i></i>
+            <i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- pares de tinta -->
+    <section class="pv-section" data-od-id="ink-pairs">
+      <div class="row-between"><h2>Os pares de tinta</h2><span class="meta">Cada família tem um texto que lhe serve</span></div>
+      <p class="pv-note">
+        Cada linha é um par tinta/fundo do sistema, no tamanho real do corpo (15px).
+        <strong>A cor base de um estado nunca é texto sobre branco</strong> — é para isso que existe a variante
+        <span class="pv-code">-ink</span>.
+      </p>
+      <div class="card card-tight">
+        <div class="contrast">
+          <div style="background: var(--surface); color: var(--fg);"><span>Texto primário sobre superfície</span><span class="lab">--fg / --surface</span></div>
+          <div style="background: var(--surface); color: var(--muted);"><span>Texto secundário sobre superfície</span><span class="lab">--muted / --surface</span></div>
+          <div style="background: var(--accent-soft); color: var(--accent-ink);"><span>Chip de confirmação</span><span class="lab">--accent-ink / --accent-soft</span></div>
+          <div style="background: var(--gold-soft); color: var(--gold-ink);"><span>Chip de renovação</span><span class="lab">--gold-ink / --gold-soft</span></div>
+          <div style="background: var(--warn-soft); color: var(--warn-ink);"><span>Aviso de fila pendente</span><span class="lab">--warn-ink / --warn-soft</span></div>
+          <div style="background: var(--danger-soft); color: var(--danger-ink);"><span>Inscrição rejeitada</span><span class="lab">--danger-ink / --danger-soft</span></div>
+          <div style="background: var(--accent); color: var(--surface);"><span>Botão primário</span><span class="lab">--surface / --accent</span></div>
+          <div style="background: var(--accent-ink); color: var(--surface);"><span>Painel de autenticação</span><span class="lab">--surface / --accent-ink</span></div>
+        </div>
+      </div>
+      <div class="accent-count">
+        <b>orçamento de accent</b>
+        <span class="pv-note" style="margin: 0;">no máximo <strong>dois usos em força total</strong> por tela — normalmente o botão primário e a marcação de presença.</span>
+      </div>
+    </section>
+
+    <!-- regras -->
+    <section class="card" data-od-id="color-rules">
+      <div class="stack">
+        <h2>As regras de cor</h2>
+        <div class="pv-rules">
+          <p class="pv-yes"><b>USE</b><span>Accent para a única ação primária da tela e para a marcação de presença — no máximo dois usos em força total por tela.</span></p>
+          <p class="pv-yes"><b>USE</b><span>Dourado só para o calendário litúrgico e para renovação de matrícula.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Colorir cartões inteiros por estado. O estado vive no chip e numa lavagem de 4–5% na linha, não no bloco.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Criar tokens novos de cor. Deriva-se com <code>color-mix()</code> a partir dos que existem.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Escrever nenhum literal de cor fora do <code>:root</code>. Esse é exatamente o defeito que o redesenho veio corrigir.</span></p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  /* Os valores são lidos do CSS aplicado, e não digitados nesta página:
+     é o que impede a documentação de divergir da folha de estilo — a
+     única divergência encontrada na fonte original foi exatamente essa
+     (ver context/provenance.md). */
+  const CORE = [
+    ['--bg',      'Fundo',             'Tela de fundo. Branco frio — nunca creme.'],
+    ['--surface', 'Superfície',        'Cartões, campos, painéis, corpo de tabela.'],
+    ['--fg',      'Texto',             'Tinta primária.'],
+    ['--muted',   'Texto secundário',  'Legendas, rótulos de navegação em repouso.'],
+    ['--border',  'Borda',             'Fios de 1px e borda de cartão em repouso.'],
+    ['--accent',  'Accent',            'Ação primária E marcação de presença.']
+  ];
+  const ACCENT = [
+    ['--accent-soft',  'Accent suave',   'Fundo de chip e banner. 12% sobre superfície.'],
+    ['--accent-line',  'Accent linha',   'Borda de cartão em hover. 32%.'],
+    ['--accent-ink',   'Accent tinta',   'Texto sobre suave; painel de tinta cheia.'],
+    ['--accent-press', 'Accent pressão', 'Hover do botão primário. 86% + preto.']
+  ];
+  const GOLD = [
+    ['--gold',      'Dourado',        'Festa de guarda, filete do brasão.'],
+    ['--gold-soft', 'Dourado suave',  'Fundo do chip de renovação.'],
+    ['--gold-ink',  'Dourado tinta',  'Texto sobre dourado suave.']
+  ];
+
+  const cs = getComputedStyle(document.documentElement);
+  function swatch([token, name, use]) {
+    const value = cs.getPropertyValue(token).trim();
+    const needsEdge = token === '--surface' || token === '--bg' || token === '--border';
+    return `<div class="pv-swatch">
+      <span class="plate" style="background: var(${token}); ${needsEdge ? 'border-bottom: 1px solid var(--border);' : ''}"></span>
+      <span class="body">
+        <b>${name}</b>
+        <span class="tok">${token}</span>
+        <span class="val">${value}</span>
+        <span class="use">${use}</span>
+      </span>
+    </div>`;
+  }
+  document.getElementById('coreGrid').innerHTML   = CORE.map(swatch).join('');
+  document.getElementById('accentGrid').innerHTML = ACCENT.map(swatch).join('');
+  document.getElementById('goldGrid').innerHTML   = GOLD.map(swatch).join('');
+</script>
+
+</body>
+</html>

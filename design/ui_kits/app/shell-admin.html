@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coordenação — Kit Catequese</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<!-- Tokens first, then the full component sheet. colors_and_type.css and
+     tokens.css are the portable foundations; catequese-ds.css carries the
+     same :root plus every component rule. -->
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="../../tokens.css" />
+<link rel="stylesheet" href="../../assets/catequese-ds.css" />
+<style>
+  .view[hidden] { display: none; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--sp-4); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; max-width: 320px; }
+  .cal-grid span, .cal-grid b {
+    aspect-ratio: 1; display: grid; place-items: center; border-radius: 7px;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; color: var(--muted);
+  }
+  .cal-grid b.on { background: var(--accent); color: var(--surface); font-weight: 500; }
+  .cal-grid b.gold { background: var(--gold-soft); color: var(--gold-ink); font-weight: 500; }
+  .cal-head { font-size: 10px !important; letter-spacing: 0.06em; text-transform: uppercase; color: color-mix(in srgb, var(--muted) 70%, var(--surface)); }
+</style>
+</head>
+<body>
+
+<div class="shell" data-od-id="admin-shell">
+
+  <!-- ── navegação: sempre visível, nunca um hambúrguer ────── -->
+  <aside class="sidebar" data-od-id="admin-sidebar">
+    <a class="brand" href="index.html" style="padding: 6px 10px;">
+      <svg class="mark" viewBox="0 0 40 51" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1 H39 V25 C39 37.5 29.8 45.4 20 49.5 C10.2 45.4 1 37.5 1 25 Z" /><path fill="var(--mk-field)" d="M20 8 L22.6 11 L22.6 18 L30.4 18 L33.4 20.8 L30.4 23.6 L22.6 23.6 L22.6 38.5 L20 41.5 L17.4 38.5 L17.4 23.6 L9.6 23.6 L6.6 20.8 L9.6 18 L17.4 18 L17.4 11 Z" /><path fill="none" stroke="var(--gold)" stroke-width="1.2" d="M5 5 H35 V24.6 C35 34.6 27.6 41.3 20 45 C12.4 41.3 5 34.6 5 24.6 Z" /></svg>
+      <span class="wordmark">Catequese
+        <span class="wordmark-sub">Coordenação</span>
+      </span>
+    </a>
+
+    <div class="nav-group">
+      <p class="nav-label">Ano letivo</p>
+      <button class="nav-item is-active" data-view="inscricoes" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 8v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7z"/><path d="M9 14l2 2 4-4"/></svg>
+        Inscrições <span class="badge num" id="pendingBadge">4</span>
+      </button>
+      <button class="nav-item" data-view="turmas" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M6 10v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>
+        Turmas
+      </button>
+      <button class="nav-item" data-view="alunos" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3 3 0 0 1 0 5.6M17.5 20a5.6 5.6 0 0 0-2-4"/></svg>
+        Alunos
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <p class="nav-label">Estrutura</p>
+      <button class="nav-item" data-view="calendario" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 15h.01M12 15h.01M16 15h.01"/></svg>
+        Calendário
+      </button>
+      <button class="nav-item" data-view="relatorios" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Relatórios
+      </button>
+    </div>
+
+    <span class="spacer sidebar-foot"></span>
+    <div class="nav-group sidebar-foot">
+      <div class="row-tight" style="padding: 8px 10px; flex-wrap: nowrap;">
+        <span class="avatar" aria-hidden="true">P</span>
+        <div style="line-height: 1.25; min-width: 0;">
+          <div class="small" style="font-weight: 560;">Pe. Tomás Reis</div>
+          <div class="meta">Coordenador</div>
+        </div>
+      </div>
+      <a class="nav-item" href="shell-auth.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/></svg>
+        Sair
+      </a>
+    </div>
+  </aside>
+
+  <main class="workarea">
+
+    <!-- ── Inscrições ─────────────────────────────────────── -->
+    <section class="view" data-view="inscricoes" data-od-id="view-inscricoes">
+      <div class="page-head">
+        <div class="stack-sm">
+          <p class="eyebrow">Ano letivo 2026 · inscrições até 30 ago</p>
+          <h1>Inscrições</h1>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-sm btn-secondary" type="button">Exportar lista</button>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom: var(--sp-5);">
+        <div class="card card-tight stat"><span class="stat-num num" id="statPending">4</span><span class="stat-label">aguardando análise</span></div>
+        <div class="card card-tight stat"><span class="stat-num num" id="statOk">38</span><span class="stat-label">aprovadas e alocadas</span></div>
+        <div class="card card-tight stat"><span class="stat-num num" id="statNo">2</span><span class="stat-label">rejeitadas</span></div>
+        <div class="card card-tight stat"><span class="stat-num num">11</span><span class="stat-label">renovações</span></div>
+      </div>
+
+      <div class="card card-flush">
+        <div class="panel-head">
+          <div class="row-tight" style="flex: 1 1 320px;">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input class="input input-search" type="search" id="enrollSearch" placeholder="Buscar por nome do catequizando" aria-label="Buscar inscrições" />
+            </div>
+            <select class="select" aria-label="Filtrar por situação" style="max-width: 190px;">
+              <option>Pendentes</option><option>Aprovadas</option><option>Rejeitadas</option><option>Todas</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr>
+              <th scope="col">Catequizando</th><th scope="col">Nascimento</th><th scope="col">Cidade</th>
+              <th scope="col">Responsável</th><th scope="col">Recebida</th>
+              <th scope="col">Situação</th><th scope="col" class="act-col">Ação</th>
+            </tr></thead>
+            <tbody id="enrollRows"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="enrollEmpty" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <p class="small">Nenhuma inscrição com esse nome.</p>
+        </div>
+        <div class="panel-foot"><span class="meta">Kit de interface · dados de demonstração</span></div>
+      </div>
+    </section>
+
+    <!-- ── Turmas ─────────────────────────────────────────── -->
+    <section class="view" data-view="turmas" hidden data-od-id="view-turmas">
+      <div class="page-head">
+        <div class="stack-sm"><p class="eyebrow">Ano letivo 2026</p><h1>Turmas</h1></div>
+        <button class="btn btn-sm btn-primary" type="button" id="toggleClassForm">Nova turma</button>
+      </div>
+
+      <div class="card stack" id="classForm" hidden style="margin-bottom: var(--sp-5);">
+        <h2>Nova turma</h2>
+        <div class="form-grid">
+          <div class="field"><label for="t-nome">Nome</label><input class="input" id="t-nome" placeholder="3º ano · Catecismo maior" /></div>
+          <div class="field"><label for="t-nivel">Nível</label><input class="input" id="t-nivel" placeholder="Catecismo maior" /></div>
+          <div class="field"><label for="t-hora">Horário</label><input class="input" id="t-hora" placeholder="Sábado 09h00" /></div>
+        </div>
+        <div class="field">
+          <span class="field-label">Catequistas responsáveis</span>
+          <div class="row-tight">
+            <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Marina Alves</label>
+            <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Sofia Rangel</label>
+            <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Henrique Portela</label>
+            <label class="choice" style="padding-inline: 14px;"><input type="checkbox" />Clara Bandeira</label>
+          </div>
+        </div>
+        <div class="row-tight">
+          <button class="btn btn-primary" type="button">Criar turma</button>
+          <button class="btn btn-ghost" type="button" id="cancelClass">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="card card-flush">
+        <div class="panel-head"><h2>Turmas do ano</h2><span class="meta">4 turmas · 68 alunos</span></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr>
+              <th scope="col">Turma</th><th scope="col">Nível</th><th scope="col">Horário</th>
+              <th scope="col">Catequistas</th><th scope="col" class="num-col">Alunos</th>
+              <th scope="col" class="num-col">Presença</th><th scope="col" class="act-col">Ação</th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="row-title">1º ano · Catecismo menor</td><td>Menor</td><td class="num">Sáb 09h00</td><td>Marina Alves</td><td class="num-col">18</td><td class="num-col">92%</td><td class="act-col"><button class="btn btn-sm btn-danger" type="button">Remover</button></td></tr>
+              <tr><td class="row-title">2º ano · Primeira Comunhão</td><td>Menor</td><td class="num">Sáb 10h30</td><td>Marina Alves, Sofia Rangel</td><td class="num-col">22</td><td class="num-col">86%</td><td class="act-col"><button class="btn btn-sm btn-danger" type="button">Remover</button></td></tr>
+              <tr><td class="row-title">Crisma · Turma única</td><td>Maior</td><td class="num">Dom 08h00</td><td>Henrique Portela</td><td class="num-col">14</td><td class="num-col"><span class="chip chip-danger">71%</span></td><td class="act-col"><button class="btn btn-sm btn-danger" type="button">Remover</button></td></tr>
+              <tr><td class="row-title">Adultos · Catecumenato</td><td>Adultos</td><td class="num">Qui 20h00</td><td>Clara Bandeira</td><td class="num-col">14</td><td class="num-col">88%</td><td class="act-col"><button class="btn btn-sm btn-danger" type="button">Remover</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Alunos ─────────────────────────────────────────── -->
+    <section class="view" data-view="alunos" hidden data-od-id="view-alunos">
+      <div class="page-head">
+        <div class="stack-sm"><p class="eyebrow">Ano letivo 2026</p><h1>Alunos</h1></div>
+      </div>
+      <div class="card card-flush">
+        <div class="panel-head">
+          <div class="row-tight" style="flex: 1 1 320px;">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input class="input input-search" type="search" id="studentSearch" placeholder="Buscar por nome" aria-label="Buscar alunos" />
+            </div>
+            <select class="select" aria-label="Filtrar por turma" style="max-width: 230px;">
+              <option>Todas as turmas</option><option>1º ano · Catecismo menor</option><option>2º ano · Primeira Comunhão</option><option>Crisma · Turma única</option>
+            </select>
+          </div>
+          <span class="meta" id="studentCount">6 alunos</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr>
+              <th scope="col">Aluno</th><th scope="col">Turma</th><th scope="col">Responsável</th>
+              <th scope="col">Contato</th><th scope="col" class="num-col">Presença</th>
+            </tr></thead>
+            <tbody id="studentRows"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="studentEmpty" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <p class="small">Nenhum aluno encontrado com esse nome.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Calendário ─────────────────────────────────────── -->
+    <section class="view" data-view="calendario" hidden data-od-id="view-calendario">
+      <div class="page-head">
+        <div class="stack-sm"><p class="eyebrow">Estrutura</p><h1>Calendário de aulas</h1></div>
+      </div>
+      <div class="grid-2" style="align-items: start;">
+        <div class="card stack">
+          <div class="stack-sm">
+            <h2>Dias de aula</h2>
+            <p class="small muted">Uma data por linha. Só nesses dias o catequista consegue abrir a chamada.</p>
+          </div>
+          <div class="field">
+            <label for="cal-datas">Datas</label>
+            <textarea class="textarea num" id="cal-datas" style="min-height: 172px; line-height: 1.7;">2026-07-04
+2026-07-11
+2026-07-18
+2026-07-25
+2026-08-01
+2026-08-08</textarea>
+            <span class="hint">Formato AAAA-MM-DD.</span>
+          </div>
+          <div class="row-tight">
+            <button class="btn btn-primary" type="button">Salvar calendário</button>
+            <span class="chip chip-gold">Festas de guarda ficam destacadas</span>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="row-between"><h2>Julho 2026</h2><span class="meta">4 dias de aula</span></div>
+          <div class="cal-grid" role="img" aria-label="Julho de 2026 com aulas nos sábados 4, 11, 18 e 25, e festa de guarda em 16">
+            <span class="cal-head">D</span><span class="cal-head">S</span><span class="cal-head">T</span><span class="cal-head">Q</span><span class="cal-head">Q</span><span class="cal-head">S</span><span class="cal-head">S</span>
+            <span></span><span></span><span></span><b>1</b><b>2</b><b>3</b><b class="on">4</b>
+            <b>5</b><b>6</b><b>7</b><b>8</b><b>9</b><b>10</b><b class="on">11</b>
+            <b>12</b><b>13</b><b>14</b><b>15</b><b class="gold">16</b><b>17</b><b class="on">18</b>
+            <b>19</b><b>20</b><b>21</b><b>22</b><b>23</b><b>24</b><b class="on">25</b>
+            <b>26</b><b>27</b><b>28</b><b>29</b><b>30</b><b>31</b><span></span>
+          </div>
+          <hr class="rule" />
+          <div class="row-tight">
+            <span class="chip chip-ok">Dia de aula</span>
+            <span class="chip chip-gold">N. S. do Carmo</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Relatórios ─────────────────────────────────────── -->
+    <section class="view" data-view="relatorios" hidden data-od-id="view-relatorios">
+      <div class="page-head">
+        <div class="stack-sm"><p class="eyebrow">Estrutura</p><h1>Relatórios de presença</h1></div>
+        <div class="toolbar">
+          <button class="btn btn-sm btn-secondary" type="button">Baixar PDF</button>
+          <button class="btn btn-sm btn-secondary" type="button">Baixar XLSX</button>
+        </div>
+      </div>
+
+      <div class="card stack" style="margin-bottom: var(--sp-5);">
+        <div class="form-grid" style="align-items: end;">
+          <div class="field"><label for="r-turma">Turma</label>
+            <select class="select" id="r-turma"><option>2º ano · Primeira Comunhão</option><option>1º ano · Catecismo menor</option><option>Crisma · Turma única</option></select>
+          </div>
+          <div class="field"><label for="r-de">De</label><input class="input" id="r-de" type="date" value="2026-07-01" /></div>
+          <div class="field"><label for="r-ate">Até</label><input class="input" id="r-ate" type="date" value="2026-07-31" /></div>
+          <div><button class="btn btn-primary btn-block" type="button">Gerar relatório</button></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items: start;">
+        <div class="card stack">
+          <div class="row-between"><h2>Presença por aula</h2><span class="meta">2º ano · jul 2026</span></div>
+          <div class="bars" role="img" aria-label="Presença por aula: 4 de julho 91 por cento, 11 de julho 86, 18 de julho 91, 25 de julho 77">
+            <div><span class="bar-val">91%</span><span class="bar-track"><i class="bar" style="height: 91%;"></i></span><span class="bar-cap">04/07</span></div>
+            <div><span class="bar-val">86%</span><span class="bar-track"><i class="bar" style="height: 86%;"></i></span><span class="bar-cap">11/07</span></div>
+            <div><span class="bar-val">91%</span><span class="bar-track"><i class="bar" style="height: 91%;"></i></span><span class="bar-cap">18/07</span></div>
+            <div><span class="bar-val">77%</span><span class="bar-track"><i class="bar bar-alt" style="height: 77%;"></i></span><span class="bar-cap">25/07</span></div>
+          </div>
+          <hr class="rule" />
+          <div class="grid-3">
+            <div class="stat"><span class="stat-num num">86<span class="stat-unit">%</span></span><span class="stat-label">média do período</span></div>
+            <div class="stat"><span class="stat-num num">4</span><span class="stat-label">aulas realizadas</span></div>
+            <div class="stat"><span class="stat-num num">3</span><span class="stat-label">alunos abaixo de 75%</span></div>
+          </div>
+        </div>
+
+        <div class="card card-flush">
+          <div class="panel-head"><h2>Frequência por aluno</h2><span class="meta">22 alunos</span></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th scope="col">Aluno</th><th scope="col" class="num-col">Presenças</th><th scope="col" class="num-col">Faltas</th><th scope="col" class="num-col">%</th></tr></thead>
+              <tbody>
+                <tr><td class="row-title">Ana Clara Bittencourt</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td></tr>
+                <tr><td class="row-title">Antônio Vilela Prado</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td></tr>
+                <tr><td class="row-title">Beatriz Nogueira Alves</td><td class="num-col">3</td><td class="num-col">1</td><td class="num-col">75%</td></tr>
+                <tr><td class="row-title">Bernardo Sá Teixeira</td><td class="num-col">2</td><td class="num-col">2</td><td class="num-col"><span class="chip chip-danger">50%</span></td></tr>
+                <tr><td class="row-title">Cecília Moraes Rangel</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel-foot"><span class="meta">Mostrando 5 de 22 · exportação traz a lista completa</span></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── drawer de análise: a lista continua atrás ──────────── -->
+<div class="drawer" id="drawer" data-open="false" role="dialog" aria-modal="true" aria-labelledby="drawerName" data-od-id="enrollment-drawer">
+  <div class="drawer-scrim" data-close></div>
+  <div class="drawer-panel">
+    <div class="panel-head">
+      <div class="stack-sm" style="min-width: 0;">
+        <p class="eyebrow">Inscrição · <span class="num" id="drawerProtocol"></span></p>
+        <h2 id="drawerName" style="overflow-wrap: anywhere;"></h2>
+      </div>
+      <button class="btn btn-ghost btn-icon" type="button" data-close aria-label="Fechar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="drawer-body stack-lg">
+      <dl class="kv" id="drawerFacts"></dl>
+
+      <div class="stack" id="decideBox">
+        <hr class="rule" />
+        <h3>Aprovar e alocar</h3>
+        <div class="field">
+          <label for="d-turma">Turma de destino</label>
+          <select class="select" id="d-turma">
+            <option value="">Selecione uma turma</option>
+            <option>1º ano · Catecismo menor</option>
+            <option>2º ano · Primeira Comunhão</option>
+            <option>Crisma · Turma única</option>
+            <option>Adultos · Catecumenato</option>
+          </select>
+          <span class="err" id="turmaErr" hidden>Escolha a turma antes de aprovar.</span>
+        </div>
+        <div class="field">
+          <label for="d-existente">Vincular a aluno existente (opcional)</label>
+          <select class="select" id="d-existente">
+            <option value="">Criar novo cadastro</option>
+            <option>Beatriz Nogueira Alves — 2025</option>
+            <option>Davi Aguiar Mendonça — 2025</option>
+          </select>
+          <span class="hint">Use em renovações para preservar o histórico de presença.</span>
+        </div>
+        <button class="btn btn-primary btn-block" type="button" id="approveBtn">Aprovar inscrição</button>
+
+        <hr class="rule" />
+        <h3>Rejeitar</h3>
+        <div class="field">
+          <label for="d-motivo">Motivo (enviado ao responsável)</label>
+          <textarea class="textarea" id="d-motivo" placeholder="Ex.: turma da faixa etária já completa neste ano"></textarea>
+          <span class="err" id="motivoErr" hidden>O responsável precisa saber o motivo.</span>
+        </div>
+        <button class="btn btn-danger btn-block" type="button" id="rejectBtn">Rejeitar inscrição</button>
+      </div>
+
+      <div class="banner banner-ok" id="decidedNote" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+        <span id="decidedText"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── navegação entre módulos ── */
+  const views = [...document.querySelectorAll('.view')];
+  const navItems = [...document.querySelectorAll('.nav-item[data-view]')];
+  navItems.forEach((btn) => btn.addEventListener('click', () => {
+    const target = btn.dataset.view;
+    navItems.forEach((b) => b.classList.toggle('is-active', b === btn));
+    views.forEach((v) => { v.hidden = v.dataset.view !== target; });
+    window.scrollTo({ top: 0 });   /* nunca scrollIntoView */
+  }));
+
+  /* ── inscrições ── */
+  const ENROLLMENTS = [
+    { p: '2026-0184', nome: 'Miguel Antunes Serra',     nasc: '14/03/2017', cidade: 'São Paulo', resp: 'Paula Antunes Serra',  tel: '(11) 98123-4477', mail: 'paula.serra@email.com',  data: '22 jul', renov: false, comunhao: 'Não', crisma: 'Não', antes: 'Nunca frequentou',            livros: '—' },
+    { p: '2026-0183', nome: 'Teresa Lobo Carvalho',     nasc: '02/11/2015', cidade: 'São Paulo', resp: 'Rui Lobo Carvalho',    tel: '(11) 99640-1120', mail: 'rui.carvalho@email.com', data: '21 jul', renov: true,  comunhao: 'Sim', crisma: 'Não', antes: 'Dois anos nesta paróquia',    livros: 'História Sagrada ilustrada' },
+    { p: '2026-0182', nome: 'Francisco Vasques Rocha',  nasc: '30/06/2016', cidade: 'Osasco',    resp: 'Helena Vasques',       tel: '(11) 97730-8890', mail: 'helena.v@email.com',     data: '20 jul', renov: false, comunhao: 'Não', crisma: 'Não', antes: 'Um ano em colégio',           livros: '—' },
+    { p: '2026-0181', nome: 'Valentina Ottoni Maia',    nasc: '09/01/2014', cidade: 'São Paulo', resp: 'Marcos Ottoni Maia',   tel: '(11) 96612-3301', mail: 'marcos.maia@email.com',  data: '19 jul', renov: true,  comunhao: 'Sim', crisma: 'Não', antes: 'Três anos nesta paróquia',    livros: 'Catecismo de São Pio X' }
+  ];
+  const decided = new Map();
+
+  const enrollRows = document.getElementById('enrollRows');
+  const enrollSearch = document.getElementById('enrollSearch');
+
+  function renderEnrollments() {
+    const q = enrollSearch.value.trim().toLowerCase();
+    const rows = ENROLLMENTS.map((e, i) => ({ e, i })).filter(({ e }) => !q || e.nome.toLowerCase().includes(q));
+
+    enrollRows.innerHTML = rows.map(({ e, i }) => {
+      const d = decided.get(i);
+      const chip = d === 'ok'  ? '<span class="chip chip-ok">Aprovada</span>'
+                 : d === 'no'  ? '<span class="chip chip-danger">Rejeitada</span>'
+                 : '<span class="chip chip-warn">Pendente</span>';
+      return `<tr>
+        <td class="row-title">${e.nome}${e.renov ? ' <span class="chip chip-gold" style="margin-left:6px;">renovação</span>' : ''}</td>
+        <td class="num">${e.nasc}</td>
+        <td>${e.cidade}</td>
+        <td>${e.resp}</td>
+        <td class="num">${e.data}</td>
+        <td>${chip}</td>
+        <td class="act-col"><button class="btn btn-sm btn-secondary" type="button" data-open-drawer="${i}">${d ? 'Rever' : 'Analisar'}</button></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('enrollEmpty').hidden = rows.length > 0;
+
+    let pend = 0, ok = 0, no = 0;
+    ENROLLMENTS.forEach((_, i) => {
+      const d = decided.get(i);
+      if (d === 'ok') ok++; else if (d === 'no') no++; else pend++;
+    });
+    document.getElementById('statPending').textContent = pend;
+    document.getElementById('statOk').textContent = 38 + ok;
+    document.getElementById('statNo').textContent = 2 + no;
+    const badge = document.getElementById('pendingBadge');
+    badge.textContent = pend;
+    badge.hidden = pend === 0;
+  }
+
+  enrollSearch.addEventListener('input', renderEnrollments);
+
+  /* ── drawer ── */
+  const drawer = document.getElementById('drawer');
+  const decideBox = document.getElementById('decideBox');
+  const decidedNote = document.getElementById('decidedNote');
+  let current = null;
+
+  enrollRows.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('[data-open-drawer]');
+    if (!btn) return;
+    current = Number(btn.dataset.openDrawer);
+    const e = ENROLLMENTS[current];
+    document.getElementById('drawerName').textContent = e.nome;
+    document.getElementById('drawerProtocol').textContent = e.p;
+    document.getElementById('drawerFacts').innerHTML = `
+      <dt>Nascimento</dt><dd class="num">${e.nasc}</dd>
+      <dt>Cidade</dt><dd>${e.cidade}</dd>
+      <dt>Primeira Comunhão</dt><dd>${e.comunhao}</dd>
+      <dt>Crisma</dt><dd>${e.crisma}</dd>
+      <dt>Catequese anterior</dt><dd>${e.antes}</dd>
+      <dt>Leituras</dt><dd>${e.livros}</dd>
+      <dt>Responsável</dt><dd>${e.resp}</dd>
+      <dt>Telefone</dt><dd class="num">${e.tel}</dd>
+      <dt>E-mail</dt><dd>${e.mail}</dd>
+      <dt>Recebida em</dt><dd class="num">${e.data} de 2026</dd>`;
+    decideBox.hidden = false;
+    decidedNote.hidden = true;
+    document.getElementById('d-turma').value = '';
+    document.getElementById('d-turma').setAttribute('aria-invalid', 'false');
+    document.getElementById('d-motivo').value = '';
+    document.getElementById('turmaErr').hidden = true;
+    document.getElementById('motivoErr').hidden = true;
+    drawer.dataset.open = 'true';
+  });
+
+  function closeDrawer() { drawer.dataset.open = 'false'; }
+  drawer.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeDrawer));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+  function decide(kind, text) {
+    decided.set(current, kind);
+    decideBox.hidden = true;
+    document.getElementById('decidedText').textContent = text;
+    decidedNote.hidden = false;
+    renderEnrollments();
+  }
+
+  document.getElementById('approveBtn').addEventListener('click', () => {
+    const turma = document.getElementById('d-turma');
+    if (!turma.value) {
+      turma.setAttribute('aria-invalid', 'true');
+      document.getElementById('turmaErr').hidden = false;
+      turma.focus();
+      return;
+    }
+    decide('ok', 'Inscrição aprovada e aluno alocado em ' + turma.value + '. O responsável foi avisado por e-mail.');
+  });
+
+  document.getElementById('rejectBtn').addEventListener('click', () => {
+    const motivo = document.getElementById('d-motivo');
+    if (!motivo.value.trim()) {
+      document.getElementById('motivoErr').hidden = false;
+      motivo.focus();
+      return;
+    }
+    decide('no', 'Inscrição rejeitada. O motivo foi enviado ao responsável.');
+  });
+
+  /* ── alunos ── */
+  const STUDENTS = [
+    ['Ana Clara Bittencourt', '2º ano · Primeira Comunhão', 'Regina Bittencourt', '(11) 98812-4410', '100%'],
+    ['Beatriz Nogueira Alves', '2º ano · Primeira Comunhão', 'Paulo Nogueira', '(11) 99120-3388', '75%'],
+    ['Bernardo Sá Teixeira', '2º ano · Primeira Comunhão', 'Marta Sá', '(11) 97744-2019', '50%'],
+    ['Cecília Moraes Rangel', '1º ano · Catecismo menor', 'Joana Moraes', '(11) 96031-7745', '100%'],
+    ['Davi Aguiar Mendonça', '1º ano · Catecismo menor', 'Sérgio Mendonça', '(11) 98550-1123', '75%'],
+    ['Valentina Ottoni Maia', 'Crisma · Turma única', 'Marcos Ottoni Maia', '(11) 96612-3301', '91%']
+  ];
+  const studentRows = document.getElementById('studentRows');
+  const studentSearch = document.getElementById('studentSearch');
+
+  function renderStudents() {
+    const q = studentSearch.value.trim().toLowerCase();
+    const rows = STUDENTS.filter((s) => !q || s[0].toLowerCase().includes(q));
+    studentRows.innerHTML = rows.map((s) => {
+      const pct = parseInt(s[4], 10);
+      const cell = pct < 75 ? `<span class="chip chip-danger">${s[4]}</span>` : s[4];
+      return `<tr>
+        <td class="row-title">${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td>
+        <td class="num">${s[3]}</td><td class="num-col">${cell}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('studentEmpty').hidden = rows.length > 0;
+    document.getElementById('studentCount').textContent = rows.length + (rows.length === 1 ? ' aluno' : ' alunos');
+  }
+  studentSearch.addEventListener('input', renderStudents);
+
+  /* ── formulário recolhível ── */
+  const classForm = document.getElementById('classForm');
+  document.getElementById('toggleClassForm').addEventListener('click', () => { classForm.hidden = !classForm.hidden; });
+  document.getElementById('cancelClass').addEventListener('click', () => { classForm.hidden = true; });
+
+  renderEnrollments();
+  renderStudents();
+</script>
+
+</body>
+</html>

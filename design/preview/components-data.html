@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Componentes · dados — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; max-width: 300px; }
+  .cal-grid span, .cal-grid b {
+    aspect-ratio: 1; display: grid; place-items: center; border-radius: 7px;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; color: var(--muted);
+  }
+  .cal-grid b.on { background: var(--accent); color: var(--surface); font-weight: 500; }
+  .cal-grid b.gold { background: var(--gold-soft); color: var(--gold-ink); font-weight: 500; }
+  .cal-head { font-size: 10px !important; letter-spacing: 0.06em; text-transform: uppercase; color: color-mix(in srgb, var(--muted) 70%, var(--surface)); }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Componentes · dados e estado</h1>
+    <p class="pv-note">Tabelas, métricas, medidores, gráficos, o drawer e os estados vazios — tudo o que exibe informação em vez de coletá-la.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="table">
+      <div class="row-between"><h2>Tabela</h2><span class="meta">Cabeçalho mono maiúsculo · números à direita</span></div>
+      <p class="pv-note">Corpo em 13,5px. O cabeçalho é mono de 11px maiúsculo com entreletra 0,08em sobre <code class="pv-code">--surface-2</code> — é o que separa rótulo de dado sem precisar de peso ou régua. Colunas numéricas levam <code class="pv-code">.num-col</code>.</p>
+      <div class="card card-flush">
+        <div class="panel-head">
+          <h3>Frequência por aluno</h3>
+          <span class="meta">2º ano · jul 2026 · 22 alunos</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr>
+              <th scope="col">Aluno</th><th scope="col">Turma</th>
+              <th scope="col" class="num-col">Presenças</th><th scope="col" class="num-col">Faltas</th>
+              <th scope="col" class="num-col">%</th><th scope="col" class="act-col">Ação</th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="row-title">Ana Clara Bittencourt</td><td>2º ano</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td><td class="act-col"><button class="btn btn-sm btn-secondary" type="button">Ver</button></td></tr>
+              <tr><td class="row-title">Beatriz Nogueira Alves</td><td>2º ano</td><td class="num-col">3</td><td class="num-col">1</td><td class="num-col">75%</td><td class="act-col"><button class="btn btn-sm btn-secondary" type="button">Ver</button></td></tr>
+              <tr><td class="row-title">Bernardo Sá Teixeira</td><td>2º ano</td><td class="num-col">2</td><td class="num-col">2</td><td class="num-col"><span class="chip chip-danger">50%</span></td><td class="act-col"><button class="btn btn-sm btn-secondary" type="button">Ver</button></td></tr>
+              <tr><td class="row-title">Valentina Ottoni Maia <span class="chip chip-gold" style="margin-left: 6px;">renovação</span></td><td>2º ano</td><td class="num-col">4</td><td class="num-col">0</td><td class="num-col">100%</td><td class="act-col"><button class="btn btn-sm btn-secondary" type="button">Ver</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-foot"><span class="meta">Mostrando 4 de 22 · exportação traz a lista completa</span></div>
+      </div>
+      <p class="pv-note">Uma porcentagem abaixo do esperado vira <strong>chip</strong>, não texto vermelho: o estado ganha forma além da cor, e não depende de o leitor distinguir matiz.</p>
+    </section>
+
+    <section class="pv-section" data-od-id="metrics">
+      <div class="row-between"><h2>Métricas</h2><span class="meta">Número em display · rótulo em corpo</span></div>
+      <div class="grid-4">
+        <div class="card card-tight stat"><span class="stat-num num">4</span><span class="stat-label">aguardando análise</span></div>
+        <div class="card card-tight stat"><span class="stat-num num">38</span><span class="stat-label">aprovadas e alocadas</span></div>
+        <div class="card card-tight stat"><span class="stat-num num">86<span class="stat-unit">%</span></span><span class="stat-label">média do período</span></div>
+        <div class="card card-tight stat"><span class="stat-num num">11</span><span class="stat-label">renovações</span></div>
+      </div>
+      <p class="pv-note">O número vai em <code class="pv-code">--font-display</code> a 30px, peso 660, entreletra −0,035em e tabular. <code class="pv-code">.stat-unit</code> reduz o sufixo a 0,5em em <code class="pv-code">--muted</code>, para “86%” ler como <em>uma</em> coisa e não duas.</p>
+
+      <div class="grid-2" style="align-items: start;">
+        <div class="card stack">
+          <h3>Medidor</h3>
+          <div class="stack-sm">
+            <div class="row-between"><span class="small muted">1º ano · Catecismo menor</span><span class="num small" style="font-weight: 600;">92%</span></div>
+            <div class="meter" role="img" aria-label="92 por cento de presença acumulada"><div class="meter-fill" style="width: 92%;"></div></div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><span class="small muted">2º ano · Primeira Comunhão</span><span class="num small" style="font-weight: 600;">86%</span></div>
+            <div class="meter" role="img" aria-label="86 por cento de presença acumulada"><div class="meter-fill" style="width: 86%;"></div></div>
+          </div>
+          <div class="stack-sm">
+            <div class="row-between"><span class="small muted">Crisma · Turma única</span><span class="num small" style="font-weight: 600;">71%</span></div>
+            <div class="meter" role="img" aria-label="71 por cento de presença acumulada, abaixo do esperado"><div class="meter-fill warn" style="width: 71%;"></div></div>
+          </div>
+          <p class="pv-note">Trilho de 7px em pílula. Abaixo da meta, o preenchimento troca para <code>--warn</code> — nunca o rótulo.</p>
+        </div>
+
+        <div class="card stack">
+          <div class="row-between"><h3>Barras</h3><span class="meta">Preenchidas, nunca contornadas</span></div>
+          <div class="bars" role="img" aria-label="Presença por aula: 4 de julho 91 por cento, 11 de julho 86, 18 de julho 91, 25 de julho 77">
+            <div><span class="bar-val">91%</span><span class="bar-track"><i class="bar" style="height: 91%;"></i></span><span class="bar-cap">04/07</span></div>
+            <div><span class="bar-val">86%</span><span class="bar-track"><i class="bar" style="height: 86%;"></i></span><span class="bar-cap">11/07</span></div>
+            <div><span class="bar-val">91%</span><span class="bar-track"><i class="bar" style="height: 91%;"></i></span><span class="bar-cap">18/07</span></div>
+            <div><span class="bar-val">77%</span><span class="bar-track"><i class="bar bar-alt" style="height: 77%;"></i></span><span class="bar-cap">25/07</span></div>
+          </div>
+          <p class="pv-note"><strong>Todo gráfico carrega <code>role="img"</code> e um <code>aria-label</code> que lê a série inteira.</strong> Valor acima, legenda em mono abaixo, sem eixo desenhado.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="calendar">
+      <div class="row-between"><h2>Calendário</h2><span class="meta">Onde o dourado tem função</span></div>
+      <div class="grid-2" style="align-items: start;">
+        <div class="card stack">
+          <div class="row-between"><h3>Julho 2026</h3><span class="meta">4 dias de aula</span></div>
+          <div class="cal-grid" role="img" aria-label="Julho de 2026 com aulas nos sábados 4, 11, 18 e 25, e festa de guarda em 16">
+            <span class="cal-head">D</span><span class="cal-head">S</span><span class="cal-head">T</span><span class="cal-head">Q</span><span class="cal-head">Q</span><span class="cal-head">S</span><span class="cal-head">S</span>
+            <span></span><span></span><span></span><b>1</b><b>2</b><b>3</b><b class="on">4</b>
+            <b>5</b><b>6</b><b>7</b><b>8</b><b>9</b><b>10</b><b class="on">11</b>
+            <b>12</b><b>13</b><b>14</b><b>15</b><b class="gold">16</b><b>17</b><b class="on">18</b>
+            <b>19</b><b>20</b><b>21</b><b>22</b><b>23</b><b>24</b><b class="on">25</b>
+            <b>26</b><b>27</b><b>28</b><b>29</b><b>30</b><b>31</b><span></span>
+          </div>
+          <hr class="rule" />
+          <div class="row-tight">
+            <span class="chip chip-ok">Dia de aula</span>
+            <span class="chip chip-gold">N. S. do Carmo</span>
+          </div>
+        </div>
+        <div class="card stack">
+          <h3>O motivo gráfico</h3>
+          <div class="dot-grid" aria-hidden="true">
+            <i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="gold"></i><i></i><i></i>
+            <i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i>
+            <i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i>
+          </div>
+          <p class="pv-note">A grade do ano letivo em 12 colunas. Ponto cheio é dia de aula, dourado é festa de guarda. <strong>Uma aparição por tela</strong>, e só em superfície de marca — nunca dentro da interface de produto.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="drawer">
+      <div class="row-between"><h2>Drawer, não modal</h2><span class="chip chip-plain">a lista continua atrás</span></div>
+      <p class="pv-note">Analisar uma inscrição abre um painel lateral de <code class="pv-code">min(460px, 100%)</code> com <code class="pv-code">--shadow-3</code> e entrada de 220ms. <strong>O coordenador nunca perde a lista de onde veio.</strong> Escape e o scrim fecham.</p>
+      <div class="card">
+        <div class="row-between">
+          <div class="stack-sm" style="min-width: 0;">
+            <span class="eyebrow">Inscrição · <span class="num">2026-0184</span></span>
+            <h3>Miguel Antunes Serra</h3>
+          </div>
+          <button class="btn btn-primary" type="button" id="openDrawer">Analisar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="empty">
+      <div class="row-between"><h2>Estados vazios</h2><span class="meta">Diz o que houve e qual o próximo passo</span></div>
+      <p class="pv-note">Nunca um “Nenhum resultado” pelado. O estado vazio nomeia a causa e, quando existe, a saída.</p>
+      <div class="grid-2" style="align-items: start;">
+        <div class="card card-flush">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <p class="small">Nenhum aluno com esse nome nesta turma.</p>
+          </div>
+        </div>
+        <div class="card card-flush">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            <p class="small">Nenhuma aula marcada para hoje.</p>
+            <button class="btn btn-sm btn-secondary" type="button">Abrir o calendário do ano</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- drawer real, com o mesmo comportamento de admin.html -->
+<div class="drawer" id="drawer" data-open="false" role="dialog" aria-modal="true" aria-labelledby="drawerName" data-od-id="enrollment-drawer">
+  <div class="drawer-scrim" data-close></div>
+  <div class="drawer-panel">
+    <div class="panel-head">
+      <div class="stack-sm" style="min-width: 0;">
+        <p class="eyebrow">Inscrição · <span class="num">2026-0184</span></p>
+        <h2 id="drawerName" style="overflow-wrap: anywhere;">Miguel Antunes Serra</h2>
+      </div>
+      <button class="btn btn-ghost btn-icon" type="button" data-close aria-label="Fechar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body stack-lg">
+      <dl class="kv">
+        <dt>Nascimento</dt><dd class="num">14/03/2017</dd>
+        <dt>Cidade</dt><dd>São Paulo</dd>
+        <dt>Primeira Comunhão</dt><dd>Não</dd>
+        <dt>Crisma</dt><dd>Não</dd>
+        <dt>Catequese anterior</dt><dd>Nunca frequentou</dd>
+        <dt>Responsável</dt><dd>Paula Antunes Serra</dd>
+        <dt>Telefone</dt><dd class="num">(11) 98123-4477</dd>
+        <dt>E-mail</dt><dd>paula.serra@email.com</dd>
+        <dt>Recebida em</dt><dd class="num">22 jul de 2026</dd>
+      </dl>
+      <div class="stack">
+        <hr class="rule" />
+        <h3>Aprovar e alocar</h3>
+        <div class="field">
+          <label for="dw-turma">Turma de destino</label>
+          <select class="select" id="dw-turma">
+            <option value="">Selecione uma turma</option>
+            <option>1º ano · Catecismo menor</option>
+            <option>2º ano · Primeira Comunhão</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" type="button">Aprovar inscrição</button>
+        <hr class="rule" />
+        <h3>Rejeitar</h3>
+        <div class="field">
+          <label for="dw-motivo">Motivo (enviado ao responsável)</label>
+          <textarea class="textarea" id="dw-motivo" placeholder="Ex.: turma da faixa etária já completa neste ano"></textarea>
+        </div>
+        <button class="btn btn-danger btn-block" type="button">Rejeitar inscrição</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const drawer = document.getElementById('drawer');
+  document.getElementById('openDrawer').addEventListener('click', () => { drawer.dataset.open = 'true'; });
+  drawer.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', () => { drawer.dataset.open = 'false'; }));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') drawer.dataset.open = 'false'; });
+</script>
+
+</body>
+</html>

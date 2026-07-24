@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cor · estados — Catequese DS</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="../assets/catequese-ds.css" />
+<link rel="stylesheet" href="preview.css" />
+<style>
+  .triad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: var(--r); overflow: hidden; border: 1px solid var(--border); }
+  .triad div { padding: 10px 12px; min-height: 76px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+  .triad .lab { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .triad .val { font-family: var(--font-mono); font-size: 10px; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+
+<header class="pv-head" data-od-id="card-head">
+  <div class="container">
+    <a class="pv-back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Todas as fichas
+    </a>
+    <h1>Cor · estados funcionais</h1>
+    <p class="pv-note">Cada estado é uma <strong>tríade</strong>: a base preenche barras, bordas e botões pressionados; <span class="pv-code">-soft</span> é o fundo do chip e do banner; <span class="pv-code">-ink</span> é o texto sobre esse fundo. A base <strong>nunca</strong> é cor de texto sobre branco.</p>
+  </div>
+</header>
+
+<main class="container pv-main" style="max-width: 1080px;">
+  <div class="stack-lg">
+
+    <section class="pv-section" data-od-id="state-triads">
+      <h2>As três tríades</h2>
+
+      <div class="grid-3" style="align-items: start;">
+
+        <div class="card card-tight stack">
+          <div class="row-between"><h3>Atenção</h3><span class="chip chip-warn">Pendente</span></div>
+          <div class="triad">
+            <div style="background: var(--warn); color: var(--surface);"><span class="lab">base</span><span class="val">--warn</span></div>
+            <div style="background: var(--warn-soft); color: var(--warn-ink);"><span class="lab">soft</span><span class="val">18%</span></div>
+            <div style="background: var(--surface); color: var(--warn-ink); border-left: 1px solid var(--border);"><span class="lab">ink</span><span class="val">--warn-ink</span></div>
+          </div>
+          <p class="pv-note">Chamada na fila de envio, senha provisória, presença abaixo da meta.</p>
+        </div>
+
+        <div class="card card-tight stack">
+          <div class="row-between"><h3>Negativo</h3><span class="chip chip-danger">Rejeitada</span></div>
+          <div class="triad">
+            <div style="background: var(--danger); color: var(--surface);"><span class="lab">base</span><span class="val">--danger</span></div>
+            <div style="background: var(--danger-soft); color: var(--danger-ink);"><span class="lab">soft</span><span class="val">12%</span></div>
+            <div style="background: var(--surface); color: var(--danger-ink); border-left: 1px solid var(--border);"><span class="lab">ink</span><span class="val">--danger-ink</span></div>
+          </div>
+          <p class="pv-note">Ausente, inscrição rejeitada, ação destrutiva.</p>
+        </div>
+
+        <div class="card card-tight stack">
+          <div class="row-between"><h3>Informativo</h3><span class="chip chip-info">Sincronizando</span></div>
+          <div class="triad">
+            <div style="background: var(--info); color: var(--surface);"><span class="lab">base</span><span class="val">--info</span></div>
+            <div style="background: var(--info-soft); color: var(--info-ink);"><span class="lab">soft</span><span class="val">12%</span></div>
+            <div style="background: var(--surface); color: var(--info-ink); border-left: 1px solid var(--border);"><span class="lab">ink</span><span class="val">--info-ink</span></div>
+          </div>
+          <p class="pv-note">Aviso neutro. Na prática: a nota de que dá para marcar sem conexão.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="chips">
+      <div class="row-between"><h2>Chips · o portador principal de estado</h2><span class="meta">12px · peso 560 · ponto de 6px</span></div>
+      <p class="pv-note">Este é o lugar onde o estado vive. Um ponto de <span class="pv-code">currentColor</span> precede o rótulo; <span class="pv-code">.chip-plain</span> o remove quando o chip é um selo e não um estado.</p>
+      <div class="card">
+        <div class="pv-demo">
+          <span class="chip chip-ok">Sincronizada</span>
+          <span class="chip chip-warn">Pendente</span>
+          <span class="chip chip-danger">Rejeitada</span>
+          <span class="chip chip-info">Sincronizando</span>
+          <span class="chip chip-gold">Renovação</span>
+          <span class="chip">Sem aula hoje</span>
+          <span class="chip chip-plain">Human / approachable</span>
+          <span class="chip chip-gold chip-plain num">Protocolo 2026-0184</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="banners">
+      <div class="row-between"><h2>Banners</h2><span class="meta">Fundo soft · borda tingida · texto ink</span></div>
+      <p class="pv-note">Quatro variantes, uma por tríade mais o accent. O banner de fila carrega a ação de sincronizar dentro dele — o estado e o remédio no mesmo lugar.</p>
+      <div class="card stack">
+        <div class="banner banner-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>Tudo sincronizado. Nenhuma chamada pendente.</span></div>
+        <div class="banner banner-warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3.2-6.9"/><path d="M21 3v5h-5"/></svg>
+          <span style="flex: 1 1 220px;"><strong>1 chamada aguardando envio.</strong> Foi registrada sem conexão e será sincronizada automaticamente.</span>
+          <button class="btn btn-sm btn-secondary" type="button">Sincronizar agora</button>
+        </div>
+        <div class="banner banner-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg><span>E-mail ou senha incorretos.</span></div>
+        <div class="banner banner-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 19v.01"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><path d="M5 12a10 10 0 0 1 14 0"/><path d="M2 8.5a15 15 0 0 1 20 0"/></svg><span>Pode marcar sem conexão. A chamada fica salva no aparelho e sobe sozinha quando o sinal voltar.</span></div>
+      </div>
+    </section>
+
+    <section class="pv-section" data-od-id="row-wash">
+      <div class="row-between"><h2>Estado na linha · lavagem, não bloco</h2><span class="meta">5% accent · 4% danger</span></div>
+      <p class="pv-note">
+        <strong>Cartão inteiro colorido por estado é anti-padrão.</strong> Numa lista, o estado entra como uma lavagem
+        muito fraca na linha — suficiente para varrer com o olho, fraca o bastante para o nome continuar sendo o
+        elemento mais forte.
+      </p>
+      <div class="card card-flush">
+        <div class="list">
+          <div class="list-row is-yes">
+            <span class="avatar" aria-hidden="true">A</span>
+            <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Ana Clara Bittencourt</span>
+            <span class="chip chip-ok">Presente</span>
+          </div>
+          <div class="list-row is-no">
+            <span class="avatar" aria-hidden="true">B</span>
+            <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Bernardo Sá Teixeira</span>
+            <span class="chip chip-danger">Ausente</span>
+          </div>
+          <div class="list-row">
+            <span class="avatar" aria-hidden="true">C</span>
+            <span class="row-title" style="flex: 1 1 auto; min-width: 0;">Cecília Moraes Rangel</span>
+            <span class="chip">Sem marcar</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-od-id="state-rules">
+      <div class="stack">
+        <h2>Regras de estado</h2>
+        <div class="pv-rules">
+          <p class="pv-yes"><b>USE</b><span>A tríade completa: base para preenchimento, <code>-soft</code> para fundo, <code>-ink</code> para texto.</span></p>
+          <p class="pv-yes"><b>USE</b><span>Chip como portador padrão de estado, em qualquer lista, tabela ou cartão.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Usar <code>--danger</code> ou <code>--warn</code> como cor de texto direto sobre branco. Use a variante <code>-ink</code>.</span></p>
+          <p class="pv-no"><b>NÃO</b><span>Preencher um botão de vermelho. <code>.btn-danger</code> é contornado, com texto em <code>--danger-ink</code>.</span></p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>
