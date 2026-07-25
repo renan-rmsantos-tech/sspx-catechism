@@ -186,7 +186,9 @@ export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminDa
     try {
       const payload = values as unknown as AcademicYearPayload
       if (editing) {
-        await adminApi.updateAcademicYear(editing.id, payload)
+        // `year` é imutável e o backend rejeita campos desconhecidos no PATCH.
+        const { year: _year, ...update } = payload
+        await adminApi.updateAcademicYear(editing.id, update)
         setEditing(null)
         setMessage('Ano letivo atualizado.')
       } else {
@@ -374,12 +376,15 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
     setMessage(null)
     try {
       const parsed = values as unknown as ClassPayload
+      // O backend rejeita campos desconhecidos: o create não aceita `id` nem
+      // `isArchived`; o update não aceita `id`.
+      const { id: _id, isArchived, ...base } = parsed
       if (editing) {
-        await adminApi.updateClass(editing.id, parsed)
+        await adminApi.updateClass(editing.id, { ...base, isArchived })
         setEditing(null)
         setMessage('Turma atualizada.')
       } else {
-        await adminApi.createClass(parsed)
+        await adminApi.createClass(base)
         setMessage('Turma criada.')
       }
       form.reset({ name: '', academicYearId: '', level: '', schedule: '', catechistIds: [], isArchived: false })

@@ -259,6 +259,54 @@ describe('AdminPage', () => {
     })
   })
 
+  it('edits academic years without sending immutable fields (BUG-20260724-editar-ano-sempre-falha)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/anos')
+
+    await screen.findByRole('heading', { name: 'Anos letivos' })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar ano' }))
+
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/academic-years/year-1' && call.init?.method === 'PATCH')).toBe(true),
+    )
+    const patch = calls.find((call) => call.path === '/api/academic-years/year-1' && call.init?.method === 'PATCH')
+    const body = JSON.parse(String(patch?.init?.body))
+    expect(body).not.toHaveProperty('year')
+    expect(body).toMatchObject({ isActive: true, classDays: [6] })
+  })
+
+  it('creates and edits classes without fields the API rejects (BUG-20260724-criar-turma-impossivel)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/turmas')
+
+    await screen.findByRole('heading', { name: 'Turmas' })
+    await screen.findByRole('option', { name: '2026' })
+    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Perseverança' } })
+    fireEvent.change(screen.getByLabelText('Ano letivo'), { target: { value: 'year-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Criar turma' }))
+
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/classes' && call.init?.method === 'POST')).toBe(true),
+    )
+    const post = JSON.parse(
+      String(calls.find((call) => call.path === '/api/classes' && call.init?.method === 'POST')?.init?.body),
+    )
+    expect(post).not.toHaveProperty('isArchived')
+    expect(post).not.toHaveProperty('id')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar turma' }))
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/classes/class-1' && call.init?.method === 'PATCH')).toBe(true),
+    )
+    const patch = JSON.parse(
+      String(calls.find((call) => call.path === '/api/classes/class-1' && call.init?.method === 'PATCH')?.init?.body),
+    )
+    expect(patch).not.toHaveProperty('id')
+    expect(patch).toHaveProperty('isArchived')
+  })
+
   it('creates students with validated contact data', async () => {
     const { calls } = setupFetch()
     renderAdmin('/admin/alunos')
