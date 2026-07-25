@@ -43,20 +43,22 @@ export async function syncPendingSessions(): Promise<AttendanceSyncResult> {
 export async function submitAttendanceSession(
   session: PendingSession,
   online = typeof navigator === 'undefined' ? true : navigator.onLine,
-): Promise<'synced' | 'queued'> {
+): Promise<'synced' | 'queued' | 'skipped'> {
+  // O registro de Background Sync nunca pode segurar a resposta ao usuário:
+  // sem service worker ativo, `navigator.serviceWorker.ready` não resolve nunca.
   if (!online) {
     await enqueuePendingSession(session)
-    await registerOneShotBackgroundSync()
+    void registerOneShotBackgroundSync()
     return 'queued'
   }
 
   try {
-    await postAttendanceSessions([session])
-    return 'synced'
+    const result = await postAttendanceSessions([session])
+    return result.synced === 0 && result.skipped > 0 ? 'skipped' : 'synced'
   } catch (error) {
     if (isConnectivityError(error)) {
       await enqueuePendingSession(session)
-      await registerOneShotBackgroundSync()
+      void registerOneShotBackgroundSync()
       return 'queued'
     }
     throw error

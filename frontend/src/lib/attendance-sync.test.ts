@@ -94,4 +94,29 @@ describe('attendance offline sync', () => {
 
     expect(await getPendingSessionCount()).toBe(1)
   })
+
+  it('resolve o envio offline mesmo se o registro de background sync nunca concluir (BUG-20260724-salvando-infinito-offline)', async () => {
+    vi.stubGlobal('SyncManager', class {})
+    Object.defineProperty(navigator, 'serviceWorker', {
+      // Sem service worker registrado, `ready` é uma promessa que nunca resolve.
+      value: { ready: new Promise(() => {}) },
+      configurable: true,
+    })
+    try {
+      const outcome = await Promise.race([
+        submitAttendanceSession(session(), false),
+        new Promise((resolve) => setTimeout(() => resolve('timeout'), 300)),
+      ])
+      expect(outcome).toBe('queued')
+      expect(await getPendingSessionCount()).toBe(1)
+    } finally {
+      delete (navigator as { serviceWorker?: unknown }).serviceWorker
+    }
+  })
+
+  it('devolve skipped quando o servidor descarta a sessão (BUG-20260724-refazer-chamada-descartada-em-silencio)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ synced: 0, skipped: 1 }))
+
+    await expect(submitAttendanceSession(session(), true)).resolves.toBe('skipped')
+  })
 })
