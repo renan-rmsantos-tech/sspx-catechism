@@ -9,6 +9,13 @@ import { ApiError } from '@/lib/api'
 import { CHANGE_PASSWORD_PATH } from '@/lib/auth-routing'
 import { roleHome } from '@/lib/roles'
 
+export function friendlyLoginError(err: unknown): string {
+  if (err instanceof ApiError && err.status === 429) {
+    return 'Muitas tentativas. Aguarde um minuto e tente novamente.'
+  }
+  return err instanceof ApiError ? err.message : 'Não foi possível entrar.'
+}
+
 export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -33,7 +40,7 @@ export function LoginPage() {
         replace: true,
       })
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Não foi possível entrar.')
+      setError(friendlyLoginError(err))
     } finally {
       setIsSubmitting(false)
     }

@@ -3,6 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { App } from "@/App";
 import { db } from "@/lib/db";
 import { enqueuePendingSession } from "@/lib/attendance-sync";
+import { localToday } from "@/lib/dates";
 
 const catechistUser = {
   id: "22222222-2222-2222-2222-222222222222",
@@ -37,7 +38,7 @@ const students = [
   },
 ];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localToday();
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -258,6 +259,74 @@ describe("catechist dashboard pages", () => {
     );
     await waitFor(() =>
       expect(screen.queryByText(/aguardando envio/i)).not.toBeInTheDocument(),
+    );
+  });
+
+  it("sincroniza a fila pendente ao abrir o app já online (BUG-20260724-salvando-infinito-offline)", async () => {
+    const { calls } = setupDashboardFetch();
+    await enqueuePendingSession({
+      id: "55555555-5555-5555-5555-555555555555",
+      classId: classItem.id,
+      date: today(),
+      catechistId: catechistUser.id,
+      records: [{ studentId: students[0].id, present: true }],
+      createdAt: Date.now(),
+    });
+
+    renderAt("/dashboard");
+
+    await waitFor(() =>
+      expect(
+        calls.some(
+          (call) => call.path === "/api/attendance" && call.init?.method === "POST",
+        ),
+      ).toBe(true),
+    );
+    await waitFor(async () => expect(await db.pending_sessions.count()).toBe(0));
+  });
+
+  it("avisa quando o servidor descarta chamadas na sincronização (BUG-20260724-refazer-chamada-descartada-em-silencio)", async () => {
+    const { calls } = setupDashboardFetch();
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const path = String(input);
+      calls.push({ path, init: init ?? undefined });
+      if (path === "/api/auth/me") return jsonResponse(catechistUser);
+      if (path === "/api/classes") return jsonResponse([classItem]);
+      if (path === "/api/academic-years")
+        return jsonResponse([{ id: "year-1", year: 2026, isActive: true }]);
+      if (path === "/api/attendance" && init?.method === "POST")
+        return jsonResponse({ synced: 0, skipped: 1 });
+      if (path === "/api/attendance") return jsonResponse([]);
+      if (path === "/api/class-dates?academicYearId=year-1")
+        return jsonResponse({ dates: [today()], lockedDates: [] });
+      if (path === `/api/classes/${classItem.id}/students`)
+        return jsonResponse(students);
+      return jsonResponse({ status: "ok" });
+    });
+    await enqueuePendingSession({
+      id: "66666666-6666-6666-6666-666666666666",
+      classId: classItem.id,
+      date: today(),
+      catechistId: catechistUser.id,
+      records: [{ studentId: students[0].id, present: true }],
+      createdAt: Date.now(),
+    });
+
+    renderAt("/dashboard");
+
+    await screen.findByTestId("sync-skipped-notice");
+    expect(screen.getByTestId("sync-skipped-notice").textContent).toMatch(/não foi aceita/i);
+  });
+
+  it("cada card de turma dá acesso à própria chamada (BUG-20260724-so-proxima-turma-tem-chamada)", async () => {
+    setupDashboardFetch();
+
+    renderAt("/dashboard");
+
+    const link = await screen.findByTestId(`class-card-open-${classItem.id}`);
+    expect(link).toHaveAttribute(
+      "href",
+      `/dashboard/turmas/${classItem.id}/chamada`,
     );
   });
 });

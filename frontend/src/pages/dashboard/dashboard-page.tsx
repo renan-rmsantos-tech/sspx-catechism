@@ -15,8 +15,9 @@ import {
   registerAttendanceSyncHandlers,
   syncPendingSessions,
 } from "@/lib/attendance-sync";
+import { greetingForHour, localToday } from "@/lib/dates";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localToday();
 
 function formatGreetingDate(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
@@ -33,6 +34,7 @@ export function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   async function refreshPendingCount() {
     setPendingCount(await getPendingSessionCount());
@@ -57,8 +59,13 @@ export function DashboardPage() {
   async function syncNow() {
     setSyncing(true);
     try {
-      await syncPendingSessions();
-      await refreshPendingCount();
+      const result = await syncPendingSessions();
+      setSyncNotice(
+        result.skipped > 0
+          ? `${result.skipped} chamada${result.skipped === 1 ? "" : "s"} não ${result.skipped === 1 ? "foi aceita" : "foram aceitas"} pelo servidor (já registrada ou fora do calendário). Fale com a coordenação se precisar corrigir.`
+          : null,
+      );
+      await refreshData();
     } catch {
       await refreshPendingCount();
     } finally {
@@ -68,7 +75,13 @@ export function DashboardPage() {
 
   useEffect(() => {
     registerAttendanceSyncHandlers();
-    void refreshData();
+    void refreshData().then(async () => {
+      // A promessa "será sincronizada automaticamente" precisa valer também
+      // para quem reabre o app já online (o evento 'online' não dispara aí).
+      if (navigator.onLine && (await getPendingSessionCount()) > 0) {
+        void syncNow();
+      }
+    });
   }, []);
   useEffect(() => {
     const onOnline = () => void syncNow();
@@ -154,7 +167,9 @@ export function DashboardPage() {
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
         <section className="space-y-2" data-od-id="greeting">
           <p className="eyebrow">{formatGreetingDate(new Date())}</p>
-          <h1>Bom dia, {firstName}</h1>
+          <h1>
+            {greetingForHour(new Date().getHours())}, {firstName}
+          </h1>
           <p className="max-w-2xl text-sm text-muted">
             {data
               ? `${data.classes.length} turma${data.classes.length === 1 ? "" : "s"} atribuída${data.classes.length === 1 ? "" : "s"} a você neste ano letivo.`
@@ -186,6 +201,16 @@ export function DashboardPage() {
             >
               {syncing ? "Enviando…" : "Sincronizar agora"}
             </Button>
+          </section>
+        )}
+
+        {syncNotice && (
+          <section
+            role="status"
+            className="rounded-[var(--r)] border border-warn bg-warn-soft p-4 text-sm text-warn-ink"
+            data-testid="sync-skipped-notice"
+          >
+            {syncNotice}
           </section>
         )}
 
@@ -286,6 +311,13 @@ export function DashboardPage() {
                             percent={stat.percent}
                             label="Presença acumulada"
                           />
+                          <Link
+                            to={`/dashboard/turmas/${item.id}/chamada`}
+                            className="inline-flex min-h-touch items-center justify-center rounded-[var(--r)] border border-border px-4 text-sm font-semibold text-fg transition-colors hover:bg-surface-2"
+                            data-testid={`class-card-open-${item.id}`}
+                          >
+                            Abrir chamada
+                          </Link>
                         </Card>
                       );
                     })}

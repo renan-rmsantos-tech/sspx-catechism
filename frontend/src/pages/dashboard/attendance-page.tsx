@@ -18,9 +18,10 @@ import {
   loadAttendanceSheetData,
   type DashboardStudent,
 } from "@/lib/dashboard-api";
+import { localToday } from "@/lib/dates";
 
 type Mark = boolean | null;
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localToday();
 function formatDisplayDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
@@ -142,6 +143,12 @@ export function AttendancePage() {
       if (result === "queued") {
         setOfflineSaved(true);
         await refreshPendingCount();
+        return;
+      }
+      if (result === "skipped") {
+        setError(
+          "Esta chamada já estava registrada e nada foi alterado. Para corrigir uma chamada enviada, fale com a coordenação.",
+        );
         return;
       }
       navigate("/dashboard");

@@ -33,6 +33,7 @@ import {
   type Student,
 } from '@/lib/admin-api'
 import { ApiError } from '@/lib/api'
+import { localToday } from '@/lib/dates'
 import { useAuth } from '@/contexts/auth-context'
 import {
   academicYearSchema,
@@ -335,7 +336,7 @@ export function CalendarView({ data }: { data: ReturnType<typeof useAdminData> }
 
 function CalendarGrid({ dates, highlights = {} }: { dates: string[]; highlights?: Record<string, string> }) {
   const year = Number(dates[0]?.slice(0, 4) ?? new Date().getFullYear())
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localToday()
   return <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label={`Calendário de ${year}`}>
     {Array.from({ length: 12 }, (_, month) => {
       const first = new Date(year, month, 1)
