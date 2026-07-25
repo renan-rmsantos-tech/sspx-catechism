@@ -83,15 +83,15 @@ export interface CalendarDates {
   lockedDates: string[]
 }
 
+// Shape real do backend: students/sessions/records vêm em listas planas —
+// não há records aninhado por aluno.
 export interface AttendanceReport {
   className: string
   from: string
   to: string
-  students: Array<{
-    id: string
-    full_name: string
-    records: Array<{ session_id: string; student_id: string; date: string; present: boolean }>
-  }>
+  students: Array<{ id: string; full_name: string }>
+  sessions: Array<{ id: string; date: string }>
+  records: Array<{ session_id: string; student_id: string; present: boolean }>
 }
 
 export type EnrollmentStatus = 'pending' | 'approved' | 'rejected'

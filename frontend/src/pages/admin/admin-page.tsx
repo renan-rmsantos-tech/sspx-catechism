@@ -933,19 +933,22 @@ export function ReportsView({ data }: { data: ReturnType<typeof useAdminData> })
         <div className="mt-6 grid gap-6">
           <h3 className="mb-2 font-semibold">{report.className}</h3>
           {(() => {
-            const total = report.students.reduce((sum, student) => sum + student.records.length, 0)
-            const present = report.students.reduce((sum, student) => sum + student.records.filter((record) => record.present).length, 0)
+            const records = report.records ?? []
+            const sessions = report.sessions ?? []
+            const presentsByStudent = (id: string) =>
+              records.filter((record) => record.student_id === id && record.present).length
+            const total = records.length
+            const present = records.filter((record) => record.present).length
             const percentage = total ? Math.round((present / total) * 100) : 0
-            const bars = report.students.map((student) => ({ label: student.full_name.split(' ')[0], value: student.records.filter((record) => record.present).length }))
-            return <><div className="grid gap-3 sm:grid-cols-3"><StatCard value={report.students.length} label="Catequizandos" /><StatCard value={present} label="Presenças" /><StatCard value={percentage} unit="%" label="Frequência" /></div><Meter percent={percentage} label="Frequência da turma" /><BarChart data={bars} label={`Presenças por catequizando: ${bars.map((bar) => `${bar.label} ${bar.value}`).join(', ')}`} /></>
-          })()}
-          <DataTable
-            headers={['Aluno', 'Registros']}
+            const bars = report.students.map((student) => ({ label: student.full_name.split(' ')[0], value: presentsByStudent(student.id) }))
+            return <><div className="grid gap-3 sm:grid-cols-3"><StatCard value={report.students.length} label="Catequizandos" /><StatCard value={present} label="Presenças" /><StatCard value={percentage} unit="%" label="Frequência" /></div><Meter percent={percentage} label="Frequência da turma" /><BarChart data={bars} label={`Presenças por catequizando: ${bars.map((bar) => `${bar.label} ${bar.value}`).join(', ')}`} /><DataTable
+            headers={['Aluno', 'Presenças']}
             rows={report.students.map((student) => [
               student.full_name,
-              `${student.records.filter((record) => record.present).length}/${student.records.length}`,
+              `${presentsByStudent(student.id)}/${sessions.length}`,
             ])}
-          />
+          /></>
+          })()}
         </div>
       ) : null}
     </Section>

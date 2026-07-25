@@ -140,15 +140,14 @@ function setupFetch() {
     }
     if (path.startsWith('/api/enrollments?')) return jsonResponse([enrollment])
     if (path.includes('/api/reports/attendance') && path.includes('format=json')) {
+      // Shape real do backend: listas planas de students/sessions/records.
       return jsonResponse({
         className: 'Primeira Comunhão',
         from: '2026-01-01',
         to: '2026-01-31',
-        students: [{
-          id: 'student-1',
-          full_name: 'Ana Clara',
-          records: [{ session_id: 's1', student_id: 'student-1', date: '2026-01-07', present: true }],
-        }],
+        students: [{ id: 'student-1', full_name: 'Ana Clara' }],
+        sessions: [{ id: 's1', date: '2026-01-07' }],
+        records: [{ session_id: 's1', student_id: 'student-1', present: true }],
       })
     }
     if (path.includes('/api/reports/attendance') && path.includes('format=pdf')) return fileResponse()
