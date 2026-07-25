@@ -73,8 +73,22 @@ export async function loadDashboardData(): Promise<DashboardData> {
 export async function loadAttendanceSheetData(classId: string) {
   const data = await loadDashboardData()
   const classItem = data.classes.find((item) => item.id === classId) ?? null
+  // O dia de aula é definido pelo calendário do ANO DA TURMA — uma turma de
+  // outro ano letivo não herda as datas do ano ativo.
+  let classDates = data.classDates
+  let scheduleYearId = data.activeYear?.id ?? null
+  if (classItem && classItem.academicYearId !== data.activeYear?.id) {
+    scheduleYearId = classItem.academicYearId
+    classDates = (
+      await apiFetch<CalendarDates>(
+        `/api/class-dates?academicYearId=${encodeURIComponent(classItem.academicYearId)}`,
+      )
+    ).dates
+  }
   return {
     ...data,
+    classDates,
+    scheduleYearId,
     classItem,
     students: data.studentsByClass[classId] ?? [],
   }

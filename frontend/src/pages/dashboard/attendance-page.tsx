@@ -77,8 +77,8 @@ export function AttendancePage() {
         const data = await loadAttendanceSheetData(classId);
         if (!data.classItem) throw new Error("Turma não encontrada");
         let scheduled = data.classDates.includes(today());
-        if (!scheduled && data.activeYear)
-          scheduled = await isDateScheduledOffline(data.activeYear.id, today());
+        if (!scheduled && data.scheduleYearId)
+          scheduled = await isDateScheduledOffline(data.scheduleYearId, today());
         if (cancelled) return;
         setClassName(data.classItem.name);
         setStudents(data.students);
@@ -147,7 +147,7 @@ export function AttendancePage() {
       }
       if (result === "skipped") {
         setError(
-          "Esta chamada já estava registrada e nada foi alterado. Para corrigir uma chamada enviada, fale com a coordenação.",
+          "O servidor não aceitou esta chamada (já registrada ou fora do calendário). Nada foi alterado — fale com a coordenação.",
         );
         return;
       }

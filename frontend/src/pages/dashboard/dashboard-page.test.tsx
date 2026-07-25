@@ -318,6 +318,44 @@ describe("catechist dashboard pages", () => {
     expect(screen.getByTestId("sync-skipped-notice").textContent).toMatch(/não foi aceita/i);
   });
 
+  it("usa o calendário do ano da turma, não do ano ativo (BUG-20260725-dia-de-aula-do-ano-errado)", async () => {
+    const otherYearClass = {
+      ...classItem,
+      id: "99999999-9999-9999-9999-999999999999",
+      academicYearId: "year-2",
+      name: "Perseverança",
+    };
+    const { calls } = setupDashboardFetch();
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const path = String(input);
+      calls.push({ path, init: init ?? undefined });
+      if (path === "/api/auth/me") return jsonResponse(catechistUser);
+      if (path === "/api/classes") return jsonResponse([classItem, otherYearClass]);
+      if (path === "/api/academic-years")
+        return jsonResponse([
+          { id: "year-1", year: 2026, isActive: true },
+          { id: "year-2", year: 2027, isActive: false },
+        ]);
+      if (path === "/api/attendance") return jsonResponse([]);
+      if (path === "/api/class-dates?academicYearId=year-1")
+        return jsonResponse({ dates: [today()], lockedDates: [] });
+      if (path === "/api/class-dates?academicYearId=year-2")
+        return jsonResponse({ dates: [], lockedDates: [] });
+      if (path === `/api/classes/${classItem.id}/students`)
+        return jsonResponse(students);
+      if (path === `/api/classes/${otherYearClass.id}/students`)
+        return jsonResponse([
+          { id: "77777777-7777-7777-7777-777777777777", classId: otherYearClass.id, fullName: "Felipe Costa", isActive: true },
+        ]);
+      return jsonResponse({ status: "ok" });
+    });
+
+    renderAt(`/dashboard/turmas/${otherYearClass.id}/chamada`);
+
+    await screen.findByText("Hoje não há aula programada");
+    expect(screen.queryByText("Marcar todos presentes")).not.toBeInTheDocument();
+  });
+
   it("cada card de turma dá acesso à própria chamada (BUG-20260724-so-proxima-turma-tem-chamada)", async () => {
     setupDashboardFetch();
 
