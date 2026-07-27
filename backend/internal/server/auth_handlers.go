@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rmtech/sspx-catechism/backend/internal/auth"
 	"github.com/rmtech/sspx-catechism/backend/internal/httpx"
 	"github.com/rmtech/sspx-catechism/backend/internal/pgconv"
 	"github.com/rmtech/sspx-catechism/backend/internal/users"
@@ -93,8 +94,8 @@ func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 	if !httpx.DecodeJSON(w, r, &req) {
 		return
 	}
-	if len(req.NewPassword) < 6 {
-		httpx.Error(w, http.StatusBadRequest, "a senha deve ter ao menos 6 caracteres")
+	if err := auth.ValidatePassword(req.NewPassword); err != nil {
+		httpx.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := s.users.ChangePassword(r.Context(), claims.UserID(), req.NewPassword); err != nil {

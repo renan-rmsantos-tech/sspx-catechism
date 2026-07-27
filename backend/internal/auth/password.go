@@ -2,11 +2,35 @@ package auth
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 	"strings"
+	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// ValidatePassword aplica a política prometida na UI de troca de senha:
+// mínimo de 6 caracteres, pelo menos uma letra e um número
+// (BUG-20260724-regras-senha-divergentes).
+func ValidatePassword(plain string) error {
+	if len(plain) < 6 {
+		return errors.New("a senha deve ter ao menos 6 caracteres")
+	}
+	var hasLetter, hasDigit bool
+	for _, r := range plain {
+		switch {
+		case unicode.IsLetter(r):
+			hasLetter = true
+		case unicode.IsDigit(r):
+			hasDigit = true
+		}
+	}
+	if !hasLetter || !hasDigit {
+		return errors.New("a senha deve conter ao menos uma letra e um número")
+	}
+	return nil
+}
 
 // HashPassword returns a bcrypt hash of the plaintext password.
 func HashPassword(plain string) (string, error) {

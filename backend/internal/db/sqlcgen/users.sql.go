@@ -108,9 +108,12 @@ func (q *Queries) GetProfileByID(ctx context.Context, id pgtype.UUID) (Profile, 
 }
 
 const listCatechists = `-- name: ListCatechists :many
-SELECT id, email, password_hash, full_name, role, is_active, must_change_password, created_at FROM profiles WHERE role = 'catechist' ORDER BY full_name
+SELECT id, email, password_hash, full_name, role, is_active, must_change_password, created_at FROM profiles ORDER BY role, full_name
 `
 
+// Lista TODOS os perfis (catequistas, coordenadores e admin) para a tela de
+// pessoas: quem é promovido não pode sumir da gestão
+// (BUG-20260724-promovida-some-da-lista).
 func (q *Queries) ListCatechists(ctx context.Context) ([]Profile, error) {
 	rows, err := q.db.Query(ctx, listCatechists)
 	if err != nil {

@@ -46,8 +46,14 @@ type CreateInput struct {
 }
 
 // Create inserts a new academic year. Unique-violation (23505) errors surface as
-// *pgconn.PgError for the caller to map to 409.
+// *pgconn.PgError for the caller to map to 409. Ativar o ano novo desativa o
+// anterior (troca atômica garantida pelo índice parcial single_active).
 func (s *Service) Create(ctx context.Context, in CreateInput) (sqlcgen.AcademicYear, error) {
+	if in.IsActive {
+		if err := s.q.DeactivateAllAcademicYears(ctx); err != nil {
+			return sqlcgen.AcademicYear{}, err
+		}
+	}
 	return s.q.CreateAcademicYear(ctx, sqlcgen.CreateAcademicYearParams{
 		Year:               in.Year,
 		IsActive:           in.IsActive,
@@ -74,6 +80,11 @@ func (s *Service) Update(ctx context.Context, id string, in UpdateInput) (sqlcge
 	uid, err := pgconv.ParseUUID(id)
 	if err != nil {
 		return sqlcgen.AcademicYear{}, ErrNotFound
+	}
+	if in.IsActive != nil && *in.IsActive {
+		if err := s.q.DeactivateOtherAcademicYears(ctx, uid); err != nil {
+			return sqlcgen.AcademicYear{}, err
+		}
 	}
 	params := sqlcgen.UpdateAcademicYearParams{
 		ID:            uid,

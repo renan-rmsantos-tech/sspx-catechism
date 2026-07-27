@@ -45,6 +45,24 @@ func (q *Queries) CreateAcademicYear(ctx context.Context, arg CreateAcademicYear
 	return i, err
 }
 
+const deactivateAllAcademicYears = `-- name: DeactivateAllAcademicYears :exec
+UPDATE academic_years SET is_active = FALSE WHERE is_active
+`
+
+func (q *Queries) DeactivateAllAcademicYears(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, deactivateAllAcademicYears)
+	return err
+}
+
+const deactivateOtherAcademicYears = `-- name: DeactivateOtherAcademicYears :exec
+UPDATE academic_years SET is_active = FALSE WHERE is_active AND id <> $1
+`
+
+func (q *Queries) DeactivateOtherAcademicYears(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deactivateOtherAcademicYears, id)
+	return err
+}
+
 const deleteAcademicYear = `-- name: DeleteAcademicYear :execrows
 DELETE FROM academic_years WHERE id = $1
 `

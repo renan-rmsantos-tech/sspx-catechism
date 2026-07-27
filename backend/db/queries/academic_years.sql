@@ -28,3 +28,9 @@ RETURNING *;
 
 -- name: DeleteAcademicYear :execrows
 DELETE FROM academic_years WHERE id = $1;
+
+-- name: DeactivateAllAcademicYears :exec
+UPDATE academic_years SET is_active = FALSE WHERE is_active;
+
+-- name: DeactivateOtherAcademicYears :exec
+UPDATE academic_years SET is_active = FALSE WHERE is_active AND id <> $1;

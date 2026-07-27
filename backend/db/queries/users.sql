@@ -21,7 +21,10 @@ WHERE email = $1
 RETURNING *;
 
 -- name: ListCatechists :many
-SELECT * FROM profiles WHERE role = 'catechist' ORDER BY full_name;
+-- Lista TODOS os perfis (catequistas, coordenadores e admin) para a tela de
+-- pessoas: quem é promovido não pode sumir da gestão
+-- (BUG-20260724-promovida-some-da-lista).
+SELECT * FROM profiles ORDER BY role, full_name;
 
 -- name: SetRole :exec
 UPDATE profiles SET role = $2 WHERE id = $1;
