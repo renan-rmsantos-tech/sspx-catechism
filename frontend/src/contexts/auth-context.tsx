@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import * as authApi from '@/lib/auth-api'
-import { isUnauthorizedError } from '@/lib/api'
+import { isUnauthorizedError, UNAUTHORIZED_EVENT } from '@/lib/api'
 import type { AuthUser } from '@/types/auth'
 
 interface AuthContextValue {
@@ -55,6 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true
     }
   }, [refreshUser])
+
+  // Qualquer 401 vindo da API derruba a sessão local, para que o guard leve a
+  // pessoa ao login em vez de deixá-la num painel que só mostra erro.
+  useEffect(() => {
+    const onUnauthorized = () => setUser(null)
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized)
+  }, [])
 
   const login = useCallback(
     async (email: string, password: string) => {

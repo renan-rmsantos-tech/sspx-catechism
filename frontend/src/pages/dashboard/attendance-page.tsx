@@ -64,7 +64,6 @@ export function AttendancePage() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [offlineSaved, setOfflineSaved] = useState(false);
-  const [sessionExpired, setSessionExpired] = useState(false);
   const [doneSession, setDoneSession] = useState<AttendanceSession | null>(
     null,
   );
@@ -168,7 +167,8 @@ export function AttendancePage() {
         return;
       }
       if (result === "queued-expired") {
-        setSessionExpired(true);
+        // A chamada ficou na fila; o 401 derruba a sessão local e o guard leva
+        // ao login, que mostra o aviso de chamada guardada.
         await refreshPendingCount();
         return;
       }
@@ -423,19 +423,6 @@ export function AttendancePage() {
               >
                 Chamada salva no aparelho. Será enviada quando a conexão
                 retornar.
-              </p>
-            )}
-            {sessionExpired && (
-              <p
-                role="alert"
-                className="w-full text-sm text-warn-ink"
-                data-testid="session-expired-message"
-              >
-                Sua sessão expirou, mas a chamada está guardada no aparelho.{" "}
-                <Link to="/login" className="font-semibold underline">
-                  Entre novamente
-                </Link>{" "}
-                e toque em Sincronizar agora.
               </p>
             )}
           </div>

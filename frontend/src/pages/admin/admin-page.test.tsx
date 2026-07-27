@@ -423,6 +423,14 @@ describe('AdminPage', () => {
     fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
 
+    // Renovação substitui o cadastro escolhido: exige confirmação explícita
+    // (BUG-20260727-renovacao-sobrescreve-sem-aviso).
+    expect(calls.some((call) => call.path === '/api/enrollments/enrollment-1/approve')).toBe(false)
+    const dialog = await screen.findByText(/será substituído pelos dados desta inscrição/i)
+    expect(dialog).toHaveTextContent('Ana Clara')
+    expect(dialog).toHaveTextContent('Pedro Santos')
+    fireEvent.click(screen.getByTestId('confirm-destructive'))
+
     await waitFor(() =>
       expect(calls.some((call) => call.path === '/api/enrollments/enrollment-1/approve')).toBe(true),
     )
@@ -431,6 +439,20 @@ describe('AdminPage', () => {
     )
     expect(body).toEqual({ classId: 'class-1', existingStudentId: 'student-1' })
     expect(calls.some((call) => call.path === '/api/students?q=ana')).toBe(true)
+  })
+
+  it('aprova sem confirmação quando não é renovação (BUG-20260727-renovacao-sobrescreve-sem-aviso)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/inscricoes')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pedro Santos' }))
+    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
+
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/enrollments/enrollment-1/approve')).toBe(true),
+    )
+    expect(screen.queryByTestId('confirm-destructive')).not.toBeInTheDocument()
   })
 
   it('mostra o motivo da rejeição ao reabrir a inscrição processada (BUG-20260725-motivo-rejeicao-invisivel)', async () => {

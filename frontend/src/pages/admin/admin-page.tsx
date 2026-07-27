@@ -762,6 +762,8 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [selected, setSelected] = useState<Enrollment | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [renewalTarget, setRenewalTarget] = useState<Student | null>(null)
+  const [pendingApproval, setPendingApproval] = useState<ApproveEnrollmentPayload | null>(null)
   const approveForm = useForm<ApproveEnrollmentFormValues>({
     resolver: zodResolver(approveEnrollmentSchema) as never,
     defaultValues: { classId: '', existingStudentId: '' },
@@ -781,13 +783,31 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
     void load()
   }, [load])
 
-  async function approve(values: ApproveEnrollmentFormValues) {
+  function approve(values: ApproveEnrollmentFormValues) {
     if (!selected) return
+    const parsed = values as unknown as ApproveEnrollmentPayload
+    // Renovação SUBSTITUI o cadastro escolhido: a consequência precisa ser dita
+    // antes de gravar (BUG-20260727-renovacao-sobrescreve-sem-aviso).
+    if (parsed.existingStudentId) {
+      setPendingApproval(parsed)
+      return
+    }
+    void confirmApprove(parsed)
+  }
+
+  async function confirmApprove(parsed: ApproveEnrollmentPayload) {
+    if (!selected) return
+    setPendingApproval(null)
     setMessage(null)
     try {
-      const parsed = values as unknown as ApproveEnrollmentPayload
       await adminApi.approveEnrollment(selected.id, parsed)
-      setMessage('Inscrição aprovada.')
+      setMessage(
+        parsed.existingStudentId
+          ? `Inscrição aprovada como renovação — o cadastro passou a ser ${selected.fullName}.`
+          : 'Inscrição aprovada.',
+      )
+      setRenewalTarget(null)
+      approveForm.reset({ classId: '', existingStudentId: '' })
       await load()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -869,7 +889,10 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
                     </Field>
                     <StudentPicker
                       value={approveForm.watch('existingStudentId') ?? ''}
-                      onChange={(id) => approveForm.setValue('existingStudentId', id)}
+                      onChange={(student) => {
+                        setRenewalTarget(student)
+                        approveForm.setValue('existingStudentId', student?.id ?? '')
+                      }}
                     />
                     <Button type="submit">
                       <Check />
@@ -905,6 +928,26 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
             <p className="text-sm text-muted-foreground">Selecione uma inscrição.</p>
           )}
         </Drawer>
+        <ConfirmDialog
+          open={pendingApproval !== null}
+          onOpenChange={(open) => !open && setPendingApproval(null)}
+          title="Substituir o cadastro deste aluno?"
+          description={
+            <>
+              O cadastro de <strong>{renewalTarget?.fullName ?? 'aluno selecionado'}</strong>
+              {renewalTarget?.className ? ` (${renewalTarget.className})` : ''} será substituído pelos
+              dados desta inscrição (<strong>{selected?.fullName}</strong>)
+              {(() => {
+                const klass = data.classes.find((item) => item.id === pendingApproval?.classId)
+                return klass ? <> e movido para <strong>{klass.name}</strong></> : null
+              })()}
+              . As presenças já registradas continuam nesse cadastro. Se não for a mesma criança,
+              cancele e aprove sem vincular.
+            </>
+          }
+          confirmLabel="Substituir e aprovar"
+          onConfirm={() => pendingApproval && void confirmApprove(pendingApproval)}
+        />
       </div>
     </Section>
   )
@@ -918,7 +961,13 @@ function formatReviewedAt(value: string | null) {
 
 // Renovação: o coordenador conhece o NOME do aluno, nunca o uuid interno
 // (BUG-20260725-renovacao-exige-uuid).
-function StudentPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+function StudentPicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (student: Student | null) => void
+}) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Student[]>([])
   const [selected, setSelected] = useState<Student | null>(null)
@@ -944,7 +993,7 @@ function StudentPicker({ value, onChange }: { value: string; onChange: (id: stri
 
   function pick(student: Student) {
     setSelected(student)
-    onChange(student.id)
+    onChange(student)
     setResults([])
     setQuery('')
   }
@@ -963,7 +1012,7 @@ function StudentPicker({ value, onChange }: { value: string; onChange: (id: stri
             variant="ghost"
             onClick={() => {
               setSelected(null)
-              onChange('')
+              onChange(null)
             }}
           >
             Trocar

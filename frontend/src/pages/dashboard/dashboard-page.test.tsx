@@ -392,15 +392,14 @@ describe("catechist dashboard pages", () => {
     fireEvent.click(await screen.findByText("Marcar todos presentes"));
     fireEvent.click(screen.getByTestId("btn-confirm"));
 
-    const message = await screen.findByTestId("session-expired-message");
-    expect(message).toHaveTextContent(/sessão expirou/i);
-    expect(message).toHaveTextContent(/guardada no aparelho/i);
-    expect(screen.getByRole("link", { name: /Entre novamente/i })).toHaveAttribute(
-      "href",
-      "/login",
-    );
-    // A chamada não se perde: fica na fila para o sync depois do login.
+    // A chamada não se perde: fica na fila para o sync depois do login...
     await waitFor(async () => expect(await db.pending_sessions.count()).toBe(1));
+    // ...e a sessão morta leva ao login (não a um painel quebrado), com a
+    // tranquilização onde a pessoa precisa agir.
+    await screen.findByRole("heading", { name: "Entrar" });
+    expect(await screen.findByTestId("pending-attendance-notice")).toHaveTextContent(
+      /guardada no aparelho/i,
+    );
   });
 
   it("usa o calendário do ano da turma, não do ano ativo (BUG-20260725-dia-de-aula-do-ano-errado)", async () => {

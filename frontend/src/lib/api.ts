@@ -2,6 +2,8 @@ export interface ApiFetchOptions extends RequestInit {
   json?: unknown
 }
 
+export const UNAUTHORIZED_EVENT = 'auth:unauthorized'
+
 export class ApiError extends Error {
   readonly status: number
   readonly payload: unknown
@@ -61,7 +63,15 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
 
   if (!response.ok) {
     const message = errorMessage(response.status, payload)
-    if (response.status === 401) throw new ApiUnauthorizedError(message, payload)
+    if (response.status === 401) {
+      // Avisa a aplicação que a sessão morreu: sem isso a SPA continua se
+      // achando autenticada e o caminho de volta ao login não funciona
+      // (BUG-20260727-sessao-expirada-preso-no-dashboard).
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT))
+      }
+      throw new ApiUnauthorizedError(message, payload)
+    }
     throw new ApiError(response.status, message, payload)
   }
 

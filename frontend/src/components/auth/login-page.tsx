@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { LogIn } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AuthShell } from '@/components/auth/auth-shell'
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Field, Input } from '@/components/ui/field'
 import { useAuth } from '@/contexts/auth-context'
 import { ApiError } from '@/lib/api'
+import { getPendingSessionCount } from '@/lib/attendance-sync'
 import { CHANGE_PASSWORD_PATH } from '@/lib/auth-routing'
 import { roleHome } from '@/lib/roles'
 
@@ -23,6 +24,19 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Quem chega aqui com chamada na fila (sessão expirada) precisa saber que o
+  // trabalho não se perdeu (BUG-20260727-sessao-expirada-preso-no-dashboard).
+  const [pendingAttendance, setPendingAttendance] = useState(0)
+
+  useEffect(() => {
+    let active = true
+    void getPendingSessionCount()
+      .then((count) => active && setPendingAttendance(count))
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,6 +63,17 @@ export function LoginPage() {
   return (
     <AuthShell title="Entrar" description="Use o e-mail cadastrado pela coordenação da paróquia.">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        {pendingAttendance > 0 && (
+          <p
+            role="status"
+            className="rounded-[var(--r-sm)] bg-info-soft px-3 py-2 text-sm text-info-ink"
+            data-testid="pending-attendance-notice"
+          >
+            {pendingAttendance === 1
+              ? 'Sua chamada está guardada no aparelho. Entre para enviá-la.'
+              : `Você tem ${pendingAttendance} chamadas guardadas no aparelho. Entre para enviá-las.`}
+          </p>
+        )}
         <Field id="email" label="E-mail">
           <Input
             id="email"
