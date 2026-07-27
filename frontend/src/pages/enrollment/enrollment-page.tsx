@@ -1,5 +1,5 @@
 import { CheckCircle2, Send } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, type FieldPath } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Brand } from '@/components/ui/brand'
@@ -79,16 +79,69 @@ function ErrorBanner({ children }: { children: string }) {
   )
 }
 
+const DRAFT_KEY = 'inscricao-rascunho'
+
 export function EnrollmentPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [draftRestored, setDraftRestored] = useState(false)
+  const stepRef = useRef(0)
   const form = useForm<EnrollmentValues, unknown, PublicEnrollmentPayload>({
     defaultValues: emptyValues,
     resolver: zodResolver(publicEnrollmentSchema),
   })
   const { formState: { errors, isSubmitting }, getValues, handleSubmit, register, setError, setValue, watch } = form
   const isRenewal = watch('isRenewal')
+
+  // O voltar do celular precisa voltar UM PASSO (não sair do site) e o que já
+  // foi digitado precisa sobreviver a saídas e retornos
+  // (BUG-20260725-voltar-do-navegador-perde-inscricao).
+  useEffect(() => {
+    let restoredStep = 0
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY)
+      if (raw) {
+        const draft = JSON.parse(raw) as { values?: EnrollmentValues; step?: number }
+        if (draft.values) {
+          form.reset({ ...emptyValues, ...draft.values })
+          restoredStep = Math.min(Math.max(draft.step ?? 0, 0), steps.length - 1)
+          setDraftRestored(true)
+        }
+      }
+    } catch {
+      sessionStorage.removeItem(DRAFT_KEY)
+    }
+    stepRef.current = restoredStep
+    setCurrentStep(restoredStep)
+    window.history.replaceState({ enrollmentStep: restoredStep }, '')
+    const onPop = (event: PopStateEvent) => {
+      const step = (event.state as { enrollmentStep?: number } | null)?.enrollmentStep
+      if (typeof step === 'number') {
+        stepRef.current = step
+        setCurrentStep(step)
+        window.scrollTo({ top: 0 })
+      }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ values, step: stepRef.current }))
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  function goToStep(step: number, push: boolean) {
+    stepRef.current = step
+    setCurrentStep(step)
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ values: getValues(), step }))
+    if (push) window.history.pushState({ enrollmentStep: step }, '')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function advance() {
     const result = stepSchemas[currentStep]?.safeParse(getValues())
@@ -99,14 +152,14 @@ export function EnrollmentPage() {
       }
       return
     }
-    setCurrentStep((step) => Math.min(step + 1, steps.length - 1))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    goToStep(Math.min(currentStep + 1, steps.length - 1), true)
   }
 
   async function submit(values: PublicEnrollmentPayload) {
     setSubmissionError(null)
     try {
       await submitPublicEnrollment(values)
+      sessionStorage.removeItem(DRAFT_KEY)
       setSaved(true)
     } catch (error) {
       setSubmissionError(error instanceof Error ? error.message : 'Não foi possível enviar a inscrição. Tente de novo.')
@@ -146,6 +199,11 @@ export function EnrollmentPage() {
         </header>
 
         <Stepper steps={steps} current={currentStep} data-od-id="enrollment-stepper" />
+        {draftRestored && (
+          <div role="status" className="rounded-[var(--r)] border border-info bg-info-soft p-4 text-sm text-info-ink" data-testid="draft-restored">
+            Recuperamos o que você já tinha preenchido. Continue de onde parou.
+          </div>
+        )}
         {submissionError && <ErrorBanner>{submissionError}</ErrorBanner>}
 
         {currentStep === 0 && (
@@ -210,7 +268,7 @@ export function EnrollmentPage() {
         )}
 
         <footer className="flex flex-wrap gap-3" data-od-id="enrollment-actions">
-          {currentStep > 0 && <Button type="button" variant="secondary" onClick={() => setCurrentStep((step) => step - 1)}>Voltar</Button>}
+          {currentStep > 0 && <Button type="button" variant="secondary" onClick={() => window.history.back()}>Voltar</Button>}
           {currentStep < steps.length - 1 ? <Button type="button" onClick={advance}>Continuar</Button> : <Button type="submit" disabled={isSubmitting} disabledReason="Enviando…"><Send aria-hidden="true" size={18} />{isSubmitting ? 'Enviando…' : 'Enviar inscrição'}</Button>}
         </footer>
       </form>

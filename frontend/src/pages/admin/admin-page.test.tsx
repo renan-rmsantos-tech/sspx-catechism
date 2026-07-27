@@ -199,8 +199,24 @@ describe('AdminPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar ano' }))
     await waitFor(() => expect(calls.some((call) => call.path === '/api/academic-years/year-1' && call.init?.method === 'PATCH')).toBe(true))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remover ano' }))
+    // Exclusão só acontece após confirmar (BUG-20260724-remover-ano-sem-confirmacao).
+    fireEvent.click(screen.getByRole('button', { name: 'Remover ano 2026' }))
+    expect(calls.some((call) => call.path === '/api/academic-years/year-1' && call.init?.method === 'DELETE')).toBe(false)
+    fireEvent.click(await screen.findByTestId('confirm-destructive'))
     await waitFor(() => expect(calls.some((call) => call.path === '/api/academic-years/year-1' && call.init?.method === 'DELETE')).toBe(true))
+    await screen.findByText('Ano letivo 2026 removido.')
+  })
+
+  it('cancela a exclusão do ano sem chamar a API (BUG-20260724-remover-ano-sem-confirmacao)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/anos')
+
+    await screen.findByRole('heading', { name: 'Anos letivos' })
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover ano 2026' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() => expect(screen.queryByTestId('confirm-destructive')).not.toBeInTheDocument())
+    expect(calls.some((call) => call.init?.method === 'DELETE')).toBe(false)
   })
 
   it('searches students through q and renders the result list', async () => {
@@ -332,7 +348,7 @@ describe('AdminPage', () => {
     const { calls } = setupFetch()
     renderAdmin('/admin/catequistas')
 
-    await screen.findByRole('heading', { name: 'Catequistas' })
+    await screen.findByRole('heading', { name: 'Catequistas e coordenadores' })
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Nova Catequista' } })
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'nova@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Criar catequista' }))
@@ -342,6 +358,110 @@ describe('AdminPage', () => {
 
     await waitFor(() => expect(calls.some((call) => call.path === '/api/catechists/cat-1')).toBe(true))
     expect(calls.some((call) => call.path === '/api/catechists' && call.init?.method === 'POST')).toBe(true)
+  })
+
+  it('mostra coordenadores e admin na gestão de pessoas, com o admin protegido (BUG-20260724-promovida-some-da-lista)', async () => {
+    const { calls } = setupFetch()
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const path = String(input)
+      calls.push({ path, init: init ?? undefined })
+      if (path === '/api/auth/me') return jsonResponse(adminUser)
+      if (path === '/api/catechists') {
+        return jsonResponse([
+          { ...catechist, id: 'admin-1', fullName: 'Administrador', email: 'admin@example.com', role: 'admin' },
+          { ...catechist, id: 'coord-1', fullName: 'Fátima Souza', email: 'fatima@example.com', role: 'coordinator' },
+          catechist,
+        ])
+      }
+      if (path.startsWith('/api/catechists/')) return jsonResponse({ ...catechist, role: 'catechist' })
+      if (path === '/api/academic-years') return jsonResponse([year])
+      if (path === '/api/classes') return jsonResponse([klass])
+      if (path.startsWith('/api/enrollments?')) return jsonResponse([enrollment])
+      return jsonResponse({ status: 'ok' })
+    })
+    renderAdmin('/admin/catequistas')
+
+    // Quem foi promovido continua visível e pode voltar a ser catequista.
+    const fatimaRole = await screen.findByLabelText('Papel de Fátima Souza')
+    expect(fatimaRole).toHaveValue('coordinator')
+    fireEvent.change(fatimaRole, { target: { value: 'catechist' } })
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/catechists/coord-1' && call.init?.method === 'PATCH')).toBe(true),
+    )
+    expect(JSON.parse(String(calls.find((c) => c.path === '/api/catechists/coord-1')?.init?.body))).toEqual({
+      role: 'catechist',
+    })
+
+    // O admin aparece, mas sem select de papel nem botão de remover.
+    expect(screen.getByText('Conta protegida')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Papel de Administrador')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Remover Administrador' })).not.toBeInTheDocument()
+  })
+
+  it('só remove a pessoa após confirmação (BUG-20260724-remover-ano-sem-confirmacao)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/catequistas')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Remover Catequista Um' }))
+    expect(calls.some((call) => call.init?.method === 'DELETE')).toBe(false)
+    fireEvent.click(await screen.findByTestId('confirm-destructive'))
+
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/catechists/cat-1' && call.init?.method === 'DELETE')).toBe(true),
+    )
+  })
+
+  it('busca o aluno por nome na renovação, sem pedir identificador (BUG-20260725-renovacao-exige-uuid)', async () => {
+    const { calls } = setupFetch()
+    renderAdmin('/admin/inscricoes')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pedro Santos' }))
+    fireEvent.change(await screen.findByLabelText(/Aluno já cadastrado/), { target: { value: 'ana' } })
+    fireEvent.click(screen.getByRole('button', { name: /buscar/i }))
+
+    fireEvent.click(await screen.findByRole('button', { name: /Ana Clara/ }))
+    fireEvent.change(screen.getByLabelText('Turma'), { target: { value: 'class-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
+
+    await waitFor(() =>
+      expect(calls.some((call) => call.path === '/api/enrollments/enrollment-1/approve')).toBe(true),
+    )
+    const body = JSON.parse(
+      String(calls.find((call) => call.path === '/api/enrollments/enrollment-1/approve')?.init?.body),
+    )
+    expect(body).toEqual({ classId: 'class-1', existingStudentId: 'student-1' })
+    expect(calls.some((call) => call.path === '/api/students?q=ana')).toBe(true)
+  })
+
+  it('mostra o motivo da rejeição ao reabrir a inscrição processada (BUG-20260725-motivo-rejeicao-invisivel)', async () => {
+    const { calls } = setupFetch()
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const path = String(input)
+      calls.push({ path, init: init ?? undefined })
+      if (path === '/api/auth/me') return jsonResponse(adminUser)
+      if (path.startsWith('/api/enrollments?')) {
+        return jsonResponse([
+          {
+            ...enrollment,
+            status: 'rejected',
+            rejectionReason: 'Fora da faixa etária da turma',
+            reviewedAt: '2026-07-25T13:45:00Z',
+          },
+        ])
+      }
+      if (path === '/api/academic-years') return jsonResponse([year])
+      if (path === '/api/classes') return jsonResponse([klass])
+      if (path === '/api/catechists') return jsonResponse([catechist])
+      return jsonResponse({ status: 'ok' })
+    })
+    renderAdmin('/admin/inscricoes')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pedro Santos' }))
+
+    const readonly = await screen.findByTestId('enrollment-readonly')
+    expect(readonly).toHaveTextContent('Rejeitada')
+    expect(readonly).toHaveTextContent('Fora da faixa etária da turma')
+    expect(screen.queryByRole('button', { name: 'Aprovar' })).not.toBeInTheDocument()
   })
 
   it('approves and rejects enrollments with the selected class and reason', async () => {

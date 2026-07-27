@@ -7,7 +7,11 @@ import { NetworkChip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProgressRail } from "@/components/ui/metrics";
 import { useAuth } from "@/contexts/auth-context";
-import type { PendingSession } from "@/lib/attendance-types";
+import { Chip } from "@/components/ui/chip";
+import type {
+  AttendanceSession,
+  PendingSession,
+} from "@/lib/attendance-types";
 import {
   submitAttendanceSession,
   getPendingSessionCount,
@@ -60,6 +64,10 @@ export function AttendancePage() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [offlineSaved, setOfflineSaved] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [doneSession, setDoneSession] = useState<AttendanceSession | null>(
+    null,
+  );
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -83,9 +91,23 @@ export function AttendancePage() {
         setClassName(data.classItem.name);
         setStudents(data.students);
         setIsScheduled(scheduled);
+        // Chamada de hoje já registrada abre em modo leitura — remarcar seria
+        // descartado pelo servidor (política decidida no
+        // BUG-20260724-refazer-chamada-descartada-em-silencio).
+        const existing =
+          data.attendance.find(
+            (session) =>
+              session.classId === classId && session.date === today(),
+          ) ?? null;
+        setDoneSession(existing);
         setMarks(
           Object.fromEntries(
-            data.students.map((student) => [student.id, null]),
+            data.students.map((student) => {
+              const record = existing?.records.find(
+                (item) => item.studentId === student.id,
+              );
+              return [student.id, record ? record.present : null];
+            }),
           ),
         );
         await refreshPendingCount();
@@ -142,6 +164,11 @@ export function AttendancePage() {
       );
       if (result === "queued") {
         setOfflineSaved(true);
+        await refreshPendingCount();
+        return;
+      }
+      if (result === "queued-expired") {
+        setSessionExpired(true);
         await refreshPendingCount();
         return;
       }
@@ -252,7 +279,40 @@ export function AttendancePage() {
             description="Confira com a coordenação a próxima data de chamada desta turma."
           />
         )}
-        {!loading && isScheduled && (
+        {!loading && isScheduled && doneSession && (
+          <>
+            <section
+              role="status"
+              className="rounded-[var(--r)] border border-accent-line bg-accent-soft p-4 text-sm text-accent-ink"
+              data-testid="attendance-readonly"
+            >
+              Chamada de hoje já registrada
+              {doneSession.syncedAt
+                ? ` às ${new Date(doneSession.syncedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+                : ""}
+              . Para corrigir alguma presença, fale com a coordenação.
+            </section>
+            <section
+              className="overflow-hidden rounded-[var(--r-lg)] border border-border bg-surface"
+              data-testid="student-list-readonly"
+            >
+              {students.map((student) => (
+                <div
+                  key={student.id}
+                  className="flex min-h-touch items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0"
+                >
+                  <span className="text-sm font-medium">
+                    {student.fullName}
+                  </span>
+                  <Chip tone={marks[student.id] ? "ok" : "warn"}>
+                    {marks[student.id] ? "Presente" : "Ausente"}
+                  </Chip>
+                </div>
+              ))}
+            </section>
+          </>
+        )}
+        {!loading && isScheduled && !doneSession && (
           <>
             <section
               className="flex flex-wrap gap-3"
@@ -322,7 +382,7 @@ export function AttendancePage() {
           </>
         )}
       </div>
-      {isScheduled && (
+      {isScheduled && !doneSession && (
         <div
           className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur"
           data-od-id="confirm-bar"
@@ -357,11 +417,25 @@ export function AttendancePage() {
             </Button>
             {offlineSaved && (
               <p
+                role="status"
                 className="w-full text-sm text-accent-ink"
                 data-testid="offline-saved-message"
               >
                 Chamada salva no aparelho. Será enviada quando a conexão
                 retornar.
+              </p>
+            )}
+            {sessionExpired && (
+              <p
+                role="alert"
+                className="w-full text-sm text-warn-ink"
+                data-testid="session-expired-message"
+              >
+                Sua sessão expirou, mas a chamada está guardada no aparelho.{" "}
+                <Link to="/login" className="font-semibold underline">
+                  Entre novamente
+                </Link>{" "}
+                e toque em Sincronizar agora.
               </p>
             )}
           </div>

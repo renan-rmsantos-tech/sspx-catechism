@@ -27,6 +27,12 @@ function reachReview() {
 describe('EnrollmentPage', () => {
   beforeEach(() => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+    // O rascunho é persistido de propósito; cada teste começa do zero.
+    sessionStorage.clear()
+  })
+
+  afterEach(() => {
+    sessionStorage.clear()
   })
 
   it('blocks an invalid step and shows its error before advancing', () => {
@@ -38,13 +44,42 @@ describe('EnrollmentPage', () => {
     expect(screen.getByRole('heading', { name: 'Dados do catequizando' })).toBeInTheDocument()
   })
 
-  it('preserves filled values when returning to a previous step', () => {
+  it('preserves filled values when returning to a previous step', async () => {
     render(<EnrollmentPage />)
     fillStudentStep()
     fireEvent.click(screen.getByRole('button', { name: 'Voltar' }))
 
-    expect(screen.getByLabelText(/Nome completo/)).toHaveValue('Ana Clara Souza')
+    // Voltar navega pelo histórico (o back do celular precisa fazer o mesmo),
+    // então o passo anterior volta de forma assíncrona.
+    expect(await screen.findByLabelText(/Nome completo/)).toHaveValue('Ana Clara Souza')
     expect(screen.getByLabelText('Cidade')).toHaveValue('São Paulo')
+  })
+
+  it('recupera o rascunho quando a pessoa sai e volta (BUG-20260725-voltar-do-navegador-perde-inscricao)', async () => {
+    const first = render(<EnrollmentPage />)
+    fillStudentStep()
+    fireEvent.change(screen.getByLabelText(/catequese anteriormente/i), {
+      target: { value: 'Paróquia São José, 2025' },
+    })
+    first.unmount()
+
+    render(<EnrollmentPage />)
+
+    // Volta no passo em que parou, com o que já tinha sido digitado.
+    expect(await screen.findByTestId('draft-restored')).toBeInTheDocument()
+    expect(screen.getByLabelText(/catequese anteriormente/i)).toHaveValue('Paróquia São José, 2025')
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+    expect(await screen.findByLabelText(/Nome completo/)).toHaveValue('Ana Clara Souza')
+  })
+
+  it('limpa o rascunho depois do envio', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ id: 'enrollment-1' })))
+    render(<EnrollmentPage />)
+    reachReview()
+    fireEvent.click(screen.getByRole('button', { name: /enviar inscrição/i }))
+
+    await screen.findByRole('heading', { name: 'Inscrição enviada com sucesso' })
+    expect(sessionStorage.getItem('inscricao-rascunho')).toBeNull()
   })
 
   it('updates the form when a choice tile is selected', async () => {

@@ -318,6 +318,91 @@ describe("catechist dashboard pages", () => {
     expect(screen.getByTestId("sync-skipped-notice").textContent).toMatch(/não foi aceita/i);
   });
 
+  it("abre em leitura a chamada já registrada de hoje (BUG-20260724-refazer-chamada-descartada-em-silencio)", async () => {
+    const calls: Array<{ path: string; init?: RequestInit }> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const path = String(input);
+        calls.push({ path, init });
+        if (path === "/api/auth/me") return jsonResponse(catechistUser);
+        if (path === "/api/classes") return jsonResponse([classItem]);
+        if (path === "/api/academic-years")
+          return jsonResponse([{ id: "year-1", year: 2026, isActive: true }]);
+        if (path === "/api/attendance")
+          return jsonResponse([
+            {
+              id: "session-1",
+              classId: classItem.id,
+              date: today(),
+              catechistId: catechistUser.id,
+              syncedAt: "2026-07-25T12:30:00Z",
+              records: [
+                { id: "r1", studentId: students[0].id, present: true },
+                { id: "r2", studentId: students[1].id, present: false },
+              ],
+            },
+          ]);
+        if (path === "/api/class-dates?academicYearId=year-1")
+          return jsonResponse({ dates: [today()], lockedDates: [] });
+        if (path === `/api/classes/${classItem.id}/students`)
+          return jsonResponse(students);
+        return jsonResponse({ status: "ok" });
+      }),
+    );
+
+    renderAt(`/dashboard/turmas/${classItem.id}/chamada`);
+
+    // Mostra o que foi registrado, sem oferecer remarcação que o servidor descartaria.
+    const notice = await screen.findByTestId("attendance-readonly");
+    expect(notice).toHaveTextContent(/já registrada/i);
+    expect(screen.getByTestId("student-list-readonly")).toHaveTextContent(
+      "Ana Clara",
+    );
+    expect(screen.getByText("Presente")).toBeInTheDocument();
+    expect(screen.getByText("Ausente")).toBeInTheDocument();
+    expect(screen.queryByTestId("btn-confirm")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Marcar todos presentes" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("guarda a chamada e orienta o novo login quando a sessão expira (BUG-20260724-sessao-expirada-sem-caminho)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const path = String(input);
+        if (path === "/api/auth/me") return jsonResponse(catechistUser);
+        if (path === "/api/classes") return jsonResponse([classItem]);
+        if (path === "/api/academic-years")
+          return jsonResponse([{ id: "year-1", year: 2026, isActive: true }]);
+        if (path === "/api/attendance" && init?.method === "POST")
+          return jsonResponse({ error: "não autenticado" }, 401);
+        if (path === "/api/attendance") return jsonResponse([]);
+        if (path === "/api/class-dates?academicYearId=year-1")
+          return jsonResponse({ dates: [today()], lockedDates: [] });
+        if (path === `/api/classes/${classItem.id}/students`)
+          return jsonResponse(students);
+        return jsonResponse({ status: "ok" });
+      }),
+    );
+
+    renderAt(`/dashboard/turmas/${classItem.id}/chamada`);
+
+    fireEvent.click(await screen.findByText("Marcar todos presentes"));
+    fireEvent.click(screen.getByTestId("btn-confirm"));
+
+    const message = await screen.findByTestId("session-expired-message");
+    expect(message).toHaveTextContent(/sessão expirou/i);
+    expect(message).toHaveTextContent(/guardada no aparelho/i);
+    expect(screen.getByRole("link", { name: /Entre novamente/i })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+    // A chamada não se perde: fica na fila para o sync depois do login.
+    await waitFor(async () => expect(await db.pending_sessions.count()).toBe(1));
+  });
+
   it("usa o calendário do ano da turma, não do ano ativo (BUG-20260725-dia-de-aula-do-ano-errado)", async () => {
     const otherYearClass = {
       ...classItem,

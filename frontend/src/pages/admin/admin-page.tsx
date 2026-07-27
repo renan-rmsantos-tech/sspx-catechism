@@ -17,6 +17,7 @@ import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Drawer } from '@/components/ui/drawer'
 import { BarChart, Meter, StatCard } from '@/components/ui/metrics'
 import { Sidebar } from '@/components/ui/sidebar'
@@ -160,6 +161,7 @@ export function AdminPage() {
 export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [editing, setEditing] = useState<AcademicYear | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [pendingRemoval, setPendingRemoval] = useState<AcademicYear | null>(null)
   const form = useForm<AcademicYearFormValues>({
     resolver: zodResolver(academicYearSchema) as never,
     defaultValues: {
@@ -203,12 +205,15 @@ export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminDa
     }
   }
 
-  async function removeYear(id: string) {
+  // Exclusão é destrutiva e imediata no servidor: passa pela confirmação
+  // (BUG-20260724-remover-ano-sem-confirmacao).
+  async function removeYear(year: AcademicYear) {
+    setPendingRemoval(null)
     setMessage(null)
     try {
-      await adminApi.deleteAcademicYear(id)
+      await adminApi.deleteAcademicYear(year.id)
       await data.reload()
-      setMessage('Ano letivo removido.')
+      setMessage(`Ano letivo ${year.year} removido.`)
     } catch (err) {
       setMessage(errorMessage(err))
     }
@@ -264,11 +269,19 @@ export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminDa
             <Button type="button" variant="outline" onClick={() => setEditing(year)}>
               Editar
             </Button>
-            <IconButton label="Remover ano" onClick={() => void removeYear(year.id)}>
+            <IconButton label={`Remover ano ${year.year}`} onClick={() => setPendingRemoval(year)}>
               <Trash2 />
             </IconButton>
           </div>,
         ])}
+      />
+      <ConfirmDialog
+        open={pendingRemoval !== null}
+        onOpenChange={(open) => !open && setPendingRemoval(null)}
+        title={`Remover o ano letivo ${pendingRemoval?.year ?? ''}?`}
+        description="Isso apaga os dias de aula e a janela de inscrição desse ano. Anos com turmas ou inscrições vinculadas não podem ser removidos."
+        confirmLabel="Remover ano"
+        onConfirm={() => pendingRemoval && void removeYear(pendingRemoval)}
       />
     </Section>
   )
@@ -421,12 +434,20 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
         <div className="md:col-span-2">
           <p className="mb-2 text-sm font-medium">Catequistas</p>
           <div className="grid gap-2 md:grid-cols-3">
-            {data.catechists.map((cat) => (
-              <label key={cat.id} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" value={cat.id} {...form.register('catechistIds')} />
-                {cat.fullName}
-              </label>
-            ))}
+            {/* Coordenadores também podem estar numa turma; a conta protegida do
+                admin fica de fora. Quem foi promovido continua vinculável — antes
+                sumia da lista e o vínculo era perdido ao salvar a turma. */}
+            {data.catechists
+              .filter((cat) => cat.role !== 'admin')
+              .map((cat) => (
+                <label key={cat.id} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" value={cat.id} {...form.register('catechistIds')} />
+                  {cat.fullName}
+                  {cat.role === 'coordinator' ? (
+                    <span className="text-xs text-muted-foreground">(coordenador)</span>
+                  ) : null}
+                </label>
+              ))}
           </div>
         </div>
         <label className="flex items-center gap-2 text-sm">
@@ -607,9 +628,16 @@ export function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }
   )
 }
 
+const roleLabels: Record<Catechist['role'], string> = {
+  admin: 'Administrador',
+  coordinator: 'Coordenador',
+  catechist: 'Catequista',
+}
+
 export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData> }) {
   const [message, setMessage] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedCatechist | null>(null)
+  const [pendingRemoval, setPendingRemoval] = useState<Catechist | null>(null)
   const form = useForm<CatechistFormValues>({
     resolver: zodResolver(catechistSchema) as never,
     defaultValues: { email: '', fullName: '' },
@@ -629,29 +657,38 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
   }
 
   async function update(id: string, payload: { role?: string; isActive?: boolean }) {
+    setMessage(null)
     try {
       await adminApi.updateCatechist(id, payload)
       await data.reload()
+      if (payload.role) {
+        setMessage(`Papel atualizado para ${roleLabels[payload.role as Catechist['role']] ?? payload.role}.`)
+      }
     } catch (err) {
       setMessage(errorMessage(err))
     }
   }
 
-  async function remove(id: string) {
+  // Remoção é destrutiva: só acontece depois da confirmação explícita
+  // (BUG-20260724-remover-ano-sem-confirmacao).
+  async function remove(person: Catechist) {
+    setPendingRemoval(null)
+    setMessage(null)
     try {
-      await adminApi.deleteCatechist(id)
+      await adminApi.deleteCatechist(person.id)
       await data.reload()
+      setMessage(`${person.fullName} foi removido.`)
     } catch (err) {
       setMessage(errorMessage(err))
     }
   }
 
   return (
-    <Section title="Catequistas">
+    <Section title="Catequistas e coordenadores">
       {message ? <Banner>{message}</Banner> : null}
       {created ? (
         <Banner>
-          Senha inicial de {created.fullName}: <strong>{created.password}</strong>
+          Senha inicial de {created.fullName}: <strong>{created.password}</strong> — anote agora, ela não será exibida de novo.
         </Banner>
       ) : null}
       <form className="grid gap-4 md:grid-cols-3" onSubmit={form.handleSubmit(onSubmit)}>
@@ -670,29 +707,50 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
         rows={data.catechists.map((cat) => [
           cat.fullName,
           cat.email,
-          <select
-            key={`${cat.id}-role`}
-            className="input max-w-44"
-            value={cat.role}
-            onChange={(event) => void update(cat.id, { role: event.target.value })}
-          >
-            <option value="catechist">Catequista</option>
-            <option value="coordinator">Coordenador</option>
-          </select>,
-          cat.isActive ? 'Ativo' : 'Inativo',
-          <div className="flex gap-2" key={cat.id}>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void update(cat.id, { isActive: !cat.isActive })}
+          // O admin é protegido no servidor: mostra o papel, não oferece troca
+          // (BUG-20260724-promovida-some-da-lista).
+          cat.role === 'admin' ? (
+            <span key={`${cat.id}-role`}>{roleLabels.admin}</span>
+          ) : (
+            <select
+              key={`${cat.id}-role`}
+              className="input max-w-44"
+              aria-label={`Papel de ${cat.fullName}`}
+              value={cat.role}
+              onChange={(event) => void update(cat.id, { role: event.target.value })}
             >
-              {cat.isActive ? 'Desativar' : 'Ativar'}
-            </Button>
-            <IconButton label="Remover catequista" onClick={() => void remove(cat.id)}>
-              <Trash2 />
-            </IconButton>
-          </div>,
+              <option value="catechist">{roleLabels.catechist}</option>
+              <option value="coordinator">{roleLabels.coordinator}</option>
+            </select>
+          ),
+          cat.isActive ? 'Ativo' : 'Inativo',
+          cat.role === 'admin' ? (
+            <span key={cat.id} className="text-sm text-muted-foreground">
+              Conta protegida
+            </span>
+          ) : (
+            <div className="flex gap-2" key={cat.id}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void update(cat.id, { isActive: !cat.isActive })}
+              >
+                {cat.isActive ? 'Desativar' : 'Ativar'}
+              </Button>
+              <IconButton label={`Remover ${cat.fullName}`} onClick={() => setPendingRemoval(cat)}>
+                <Trash2 />
+              </IconButton>
+            </div>
+          ),
         ])}
+      />
+      <ConfirmDialog
+        open={pendingRemoval !== null}
+        onOpenChange={(open) => !open && setPendingRemoval(null)}
+        title={`Remover ${pendingRemoval?.fullName ?? ''}?`}
+        description="A pessoa perde o acesso ao sistema. Quem já registrou chamadas não pode ser removido — nesse caso, use Desativar."
+        confirmLabel="Remover"
+        onConfirm={() => pendingRemoval && void remove(pendingRemoval)}
       />
     </Section>
   )
@@ -809,9 +867,10 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
                         ))}
                       </select>
                     </Field>
-                    <Field label="Aluno existente (opcional)">
-                      <input className="input" {...approveForm.register('existingStudentId')} />
-                    </Field>
+                    <StudentPicker
+                      value={approveForm.watch('existingStudentId') ?? ''}
+                      onChange={(id) => approveForm.setValue('existingStudentId', id)}
+                    />
                     <Button type="submit">
                       <Check />
                       Aprovar
@@ -820,10 +879,26 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
                   <RejectBox onReject={reject} />
                 </div>
               ) : (
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Revisada em {selected.reviewedAt ?? '-'}
-                  {selected.rejectionReason ? `: ${selected.rejectionReason}` : ''}
-                </p>
+                // Inscrição processada abre em leitura: o motivo da rejeição
+                // precisa ser consultável depois (BUG-20260725-motivo-rejeicao-invisivel).
+                <dl className="mt-5 grid gap-2 text-sm" data-testid="enrollment-readonly">
+                  <Info
+                    label="Situação"
+                    value={selected.status === 'approved' ? 'Aprovada' : 'Rejeitada'}
+                  />
+                  <Info label="Revisada em" value={formatReviewedAt(selected.reviewedAt)} />
+                  {selected.status === 'approved' ? (
+                    <Info
+                      label="Turma"
+                      value={
+                        data.classes.find((klass) => klass.id === selected.approvedClassId)?.name ??
+                        'Turma removida'
+                      }
+                    />
+                  ) : (
+                    <Info label="Motivo da rejeição" value={selected.rejectionReason ?? 'Não informado'} />
+                  )}
+                </dl>
               )}
             </>
           ) : (
@@ -832,6 +907,119 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
         </Drawer>
       </div>
     </Section>
+  )
+}
+
+function formatReviewedAt(value: string | null) {
+  if (!value) return '-'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString('pt-BR')
+}
+
+// Renovação: o coordenador conhece o NOME do aluno, nunca o uuid interno
+// (BUG-20260725-renovacao-exige-uuid).
+function StudentPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<Student[]>([])
+  const [selected, setSelected] = useState<Student | null>(null)
+  const [searching, setSearching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!value) setSelected(null)
+  }, [value])
+
+  async function search() {
+    if (!query.trim()) return
+    setSearching(true)
+    setError(null)
+    try {
+      setResults(await adminApi.searchStudents(query.trim()))
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  function pick(student: Student) {
+    setSelected(student)
+    onChange(student.id)
+    setResults([])
+    setQuery('')
+  }
+
+  if (selected) {
+    return (
+      <div className="grid gap-2" data-testid="student-picker">
+        <p className="text-sm font-medium">Renovação de aluno já cadastrado</p>
+        <div className="flex items-center justify-between gap-3 rounded-[var(--r)] border border-border bg-surface-2 p-3 text-sm">
+          <span>
+            <strong>{selected.fullName}</strong>
+            {selected.className ? <span className="text-muted-foreground"> · {selected.className}</span> : null}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              setSelected(null)
+              onChange('')
+            }}
+          >
+            Trocar
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-2" data-testid="student-picker">
+      <label className="text-sm font-medium" htmlFor="student-search">
+        Aluno já cadastrado (opcional — para renovação)
+      </label>
+      <div className="flex gap-2">
+        <input
+          id="student-search"
+          className="input"
+          value={query}
+          placeholder="Buscar pelo nome"
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              void search()
+            }
+          }}
+        />
+        <Button type="button" variant="outline" disabled={!query.trim() || searching} disabledReason={searching ? 'Buscando…' : 'Digite um nome'} onClick={() => void search()}>
+          <Search />
+          Buscar
+        </Button>
+      </div>
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {results.length > 0 ? (
+        <ul className="grid gap-1">
+          {results.map((student) => (
+            <li key={student.id}>
+              <button
+                type="button"
+                className="w-full min-h-touch rounded-[var(--r)] border border-border px-3 text-left text-sm hover:bg-surface-2"
+                onClick={() => pick(student)}
+              >
+                {student.fullName}
+                {student.className ? <span className="text-muted-foreground"> · {student.className}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {!searching && results.length === 0 && query.trim() === '' ? (
+        <p className="text-xs text-muted-foreground">
+          Deixe em branco para criar um cadastro novo.
+        </p>
+      ) : null}
+    </div>
   )
 }
 

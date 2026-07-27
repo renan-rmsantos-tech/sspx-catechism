@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api'
+import { apiFetch, ApiUnauthorizedError } from '@/lib/api'
 import type { AttendanceSyncResult, PendingSession } from '@/lib/attendance-types'
 import { db } from '@/lib/db'
 
@@ -43,7 +43,7 @@ export async function syncPendingSessions(): Promise<AttendanceSyncResult> {
 export async function submitAttendanceSession(
   session: PendingSession,
   online = typeof navigator === 'undefined' ? true : navigator.onLine,
-): Promise<'synced' | 'queued' | 'skipped'> {
+): Promise<'synced' | 'queued' | 'skipped' | 'queued-expired'> {
   // O registro de Background Sync nunca pode segurar a resposta ao usuário:
   // sem service worker ativo, `navigator.serviceWorker.ready` não resolve nunca.
   if (!online) {
@@ -60,6 +60,12 @@ export async function submitAttendanceSession(
       await enqueuePendingSession(session)
       void registerOneShotBackgroundSync()
       return 'queued'
+    }
+    // Sessão expirada não pode perder a chamada: guarda na fila e o sync
+    // pós-login entrega (BUG-20260724-sessao-expirada-sem-caminho).
+    if (error instanceof ApiUnauthorizedError) {
+      await enqueuePendingSession(session)
+      return 'queued-expired'
     }
     throw error
   }
