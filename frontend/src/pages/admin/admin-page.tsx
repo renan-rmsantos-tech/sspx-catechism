@@ -115,30 +115,15 @@ export function AdminPage() {
   return (
     <div className="min-h-screen bg-background lg:flex">
       <Sidebar
-        brand={<><p className="eyebrow">Coordenação</p><p className="text-xl font-semibold">Administração</p></>}
+        brand={<div className="px-2"><p className="eyebrow">Coordenação</p><h1 className="text-xl font-semibold text-fg">Administração</h1></div>}
         groups={[
           { label: 'Planejamento', items: [{ label: 'Anos', to: '/admin/anos', icon: <GraduationCap /> }, { label: 'Calendário', to: '/admin/calendario', icon: <CalendarDays /> }] },
           { label: 'Pessoas', items: [{ label: 'Turmas', to: '/admin/turmas', icon: <Layers /> }, { label: 'Alunos', to: '/admin/alunos', icon: <Users /> }, { label: 'Catequistas', to: '/admin/catequistas', icon: <UserCheck /> }] },
           { label: 'Acompanhamento', items: [{ label: 'Inscrições', to: '/admin/inscricoes', icon: <Check />, badge: data.pendingEnrollments }, { label: 'Relatórios', to: '/admin/relatorios', icon: <FileSpreadsheet /> }] },
         ]}
-        footer={<Button variant="outline" className="w-full" onClick={() => void logout()}>Sair</Button>}
+        footer={<div className="grid gap-2 border-t border-border pt-3"><p className="truncate px-2 text-sm font-semibold text-fg">{user?.fullName}</p><Button variant="outline" className="w-full" onClick={() => void logout()}>Sair</Button></div>}
       />
       <div className="min-w-0 flex-1">
-      <header className="border-b border-border bg-surface">
-        <div className="flex items-center justify-between px-4 py-4 lg:px-8">
-          <div>
-            <p className="text-sm text-muted-foreground">Coordenação</p>
-            <h1 className="text-2xl font-semibold text-foreground">Administração</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{user?.fullName}</span>
-            <Button variant="outline" onClick={() => void logout()}>
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-[var(--container)] px-4 py-6 lg:px-8">
           {data.error ? <Banner tone="error">{data.error}</Banner> : null}
           {data.isLoading ? <Banner>Carregando dados administrativos...</Banner> : null}

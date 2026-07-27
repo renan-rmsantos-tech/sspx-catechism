@@ -174,6 +174,20 @@ describe('AdminPage', () => {
     vi.restoreAllMocks()
   })
 
+  it('renders the console shell once: one title, one logout, one nav column', async () => {
+    setupFetch()
+    renderAdmin('/admin/anos')
+
+    await screen.findByRole('heading', { name: 'Anos letivos' })
+    // O título do console e o "Sair" viviam duplicados na sidebar e no header.
+    expect(screen.getAllByRole('heading', { name: 'Administração' })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: 'Sair' })).toHaveLength(1)
+    // A nav empilha os grupos; em linha eles vazavam por cima do conteúdo.
+    const nav = screen.getByRole('navigation')
+    expect(nav.className).toContain('flex-col')
+    expect(nav.className).not.toMatch(/(^|\s)flex-row(\s|$)/)
+  })
+
   it('validates and submits academic year forms to the admin API', async () => {
     const { calls } = setupFetch()
     renderAdmin('/admin/anos')
