@@ -1,5 +1,10 @@
 name: Deploy
 
+# DORMENTE — o GitHub Actions está desabilitado no nível da conta
+# (422 "Actions has been disabled for this user"), então este workflow não
+# dispara. O deploy real é `git push production main` (infra/README.md §8).
+# Mantido no repo para religar quando o suporte do GitHub liberar a conta.
+#
 # Runs tests on every PR; deploys only on push to main (+ manual trigger).
 # Builds happen ON the DigitalOcean droplet (no external registry). Requires
 # repo secrets: SSH_HOST, SSH_USER, SSH_KEY (private key), DEPLOY_PATH.
