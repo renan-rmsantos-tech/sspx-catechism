@@ -134,16 +134,66 @@ chmod +x scripts/backup.sh scripts/restore.sh
 > a aplicação logo em seguida. Os scripts usam `-f compose.traefik.yaml` para falar
 > com o container `db` correto.
 
-## 8. CI/CD (deploy automático)  **[você]**
-No GitHub do repo → Settings → Secrets and variables → Actions, crie:
-- `SSH_HOST` = IP do droplet
-- `SSH_USER` = `renan`
-- `SSH_KEY`  = conteúdo da **chave privada** autorizada no droplet
-- `DEPLOY_PATH` = `/opt/apps/projects/sspx-catechism`
+## 8. CI/CD (deploy automático)
 
-A partir daí, `git push` na `main` roda os testes e faz
-`docker compose -f compose.traefik.yaml up -d --build` via SSH
-(`.github/workflows/deploy.yml`). Pull requests rodam só os testes.
+> **O GitHub Actions está bloqueado no nível da conta** (`renan-rmsantos-tech`):
+> qualquer disparo devolve `422 "Actions has been disabled for this user."`.
+> O repo está correto (`actions/permissions` → `enabled: true`, workflow `active`)
+> e não há saldo devedor — é restrição administrativa da conta, só o suporte do
+> GitHub levanta. O `.github/workflows/deploy.yml` fica no repo para quando voltar.
+> **Enquanto isso, o deploy oficial é o push-to-deploy abaixo.**
+
+### Push-to-deploy (via `git push production main`)
+
+O droplet recebe o push direto no clone que já existe. Não há repo bare separado:
+`receive.denyCurrentBranch=updateInstead` faz o git atualizar o work-tree no próprio
+push, e o hook `post-receive` reconstrói a stack. O `origin` (GitHub) continua
+intacto como hospedagem de código e como plano B (`git pull`).
+
+**Instalação no droplet — uma vez:**
+```bash
+ssh renan@SEU_IP
+cd /opt/apps/projects/sspx-catechism
+git pull --ff-only                       # traz scripts/post-receive.sh
+git config receive.denyCurrentBranch updateInstead
+cp scripts/post-receive.sh .git/hooks/post-receive
+chmod +x .git/hooks/post-receive
+```
+> Copie, **não** faça symlink: com `updateInstead` o work-tree é atualizado antes do
+> hook rodar, e reescrever o script em execução corrompe o bash. Se
+> `scripts/post-receive.sh` mudar, repita o `cp`.
+
+**Na sua máquina — uma vez:**
+```bash
+git remote add production renan@SEU_IP:/opt/apps/projects/sspx-catechism
+```
+
+**No dia a dia:**
+```bash
+git push origin main       # hospeda o código no GitHub
+git push production main   # publica (build + testes + health check, com rollback)
+```
+O log do build sai no seu terminal durante o push; o histórico fica em
+`~/deploy-sspx-catechism.log` no droplet.
+
+### Onde vive o portão de testes
+
+Não no hook — **dentro das imagens**, para que nada quebrado chegue a rodar:
+
+| Imagem | Passo | Efeito da falha |
+|---|---|---|
+| `backend/Dockerfile` | `RUN go test ./...` | build falha, imagem não é gerada |
+| `infra/Caddy.Dockerfile` | `RUN npx vitest run` | build falha, imagem não é gerada |
+
+Como o `compose up -d --build` aborta, o container antigo **continua servindo**.
+Os testes de integração dão `t.Skip` sem `TEST_DATABASE_URL` — mesmo escopo que o
+CI antigo rodava.
+
+### Rollback automático
+
+O `post-receive` reverte sozinho (`git reset --hard` para a revisão anterior +
+rebuild) se o build/testes falharem **ou** se `/api/health` não responder 200
+através do Traefik em ~60s. Um deploy ruim volta ao estado anterior sem intervenção.
 
 ## 9. Evidências finais de produção
 Preencha este bloco durante o deploy real. Não marque a tarefa final como concluída
@@ -164,7 +214,7 @@ sem estes sinais.
 | Backup off-site *(opcional)* | `./scripts/backup.sh` envia `catechism-*.sql.gz.gpg` ao DO Spaces | |
 | Restore comprovado *(opcional)* | `./scripts/restore.sh <arquivo>` termina sem erro e app segue funcional | |
 | Cron ativo *(opcional)* | `crontab -l` contém o agendamento noturno e `/var/log/catechism-backup.log` registra sucesso | |
-| CI/CD ativo | Push na `main` (ou `workflow_dispatch`) conclui `deploy.yml` e atualiza o droplet | |
+| Deploy automático | `git push production main` conclui build+testes, health 200 e atualiza o droplet (§8) | |
 
 ## Operação do dia a dia
 Todos no droplet, em `/opt/apps/projects/sspx-catechism`:
@@ -174,7 +224,8 @@ Todos no droplet, em `/opt/apps/projects/sspx-catechism`:
 | Ver logs | `docker compose -f compose.traefik.yaml logs -f api` |
 | Reiniciar | `docker compose -f compose.traefik.yaml restart api` |
 | Status | `docker compose -f compose.traefik.yaml ps` |
-| Atualizar | `git pull && docker compose -f compose.traefik.yaml up -d --build` (ou via CI) |
+| Atualizar | `git push production main` da sua máquina (§8); no droplet, `git pull && docker compose -f compose.traefik.yaml up -d --build` |
+| Log dos deploys | `tail -f ~/deploy-sspx-catechism.log` |
 | Backup manual | `./scripts/backup.sh` |
 | Restaurar | `./scripts/restore.sh <arquivo>` |
 | Snapshot do droplet | painel DigitalOcean (recomendado periódico) |

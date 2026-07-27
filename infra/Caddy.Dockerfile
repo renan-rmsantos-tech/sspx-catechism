@@ -8,6 +8,9 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 COPY frontend/ ./
+# Portão de testes: substitui o job `test` do GitHub Actions. As dependências já
+# vieram do `npm ci` acima, então o custo é só o dos testes. Quebrou, não builda.
+RUN npx vitest run
 RUN npm run build   # outputs /app/dist
 
 # --- Stage 2: Caddy serving the static SPA + proxy ---
