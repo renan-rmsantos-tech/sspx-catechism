@@ -1,6 +1,6 @@
 # BUG-20260724-sessao-expirada-sem-caminho: Sessão expira na hora de confirmar e a tela só diz "não autenticado"
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Friction
 - **Severity:** Medium · **Priority:** P1
 - **Persona Affected:** Tereza
@@ -30,8 +30,14 @@ Com a folha aberta desde cedo (token de 12h vencido), "Confirmar chamada" devolv
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 99b06c3 + 740887f — o 401 enfileira a chamada, derruba a sessão local e leva ao login, que avisa que a chamada está guardada.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Sessão morta na hora de confirmar: a chamada foi para a fila, a catequista caiu no login com "Sua chamada está guardada no aparelho. Entre para enviá-la."; após entrar, a fila drenou sozinha (POST 200) e o servidor tem a sessão com 3 registros.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — no 401 a chamada vai para a fila offline e a catequista é orientada a entrar de novo; o sync ao abrir/manual entrega depois.

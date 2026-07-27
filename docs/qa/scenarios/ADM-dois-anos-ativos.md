@@ -6,13 +6,13 @@ persona: Anselmo
 journey: J-preparar-ano-letivo
 expected: O sistema impede dois anos ativos ao mesmo tempo — ou torna inequívoco qual ano rege a inscrição pública, o calendário e a fila de revisão
 entry_points: /admin/anos
-qa_status: blocked-decision
+qa_status: pass
 bug_ids: BUG-20260724-dois-anos-ativos-sem-aviso
-fix_status: pending
-retest_status:
-fix_commits:
-evidence: ../evidence/2026-07-24-ciclo-full/S1-dois-anos-ativos.png; ../evidence/2026-07-24-ciclo-full/S1-inscricao-com-2-anos-ativos.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+fix_status: fixed
+retest_status: pass
+fix_commits: 978d0c1
+evidence: ../evidence/2026-07-27-fixes-decisoes/S1-ano-ativo-unico.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

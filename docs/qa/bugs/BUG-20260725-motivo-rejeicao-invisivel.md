@@ -1,6 +1,6 @@
 # BUG-20260725-motivo-rejeicao-invisivel: O motivo da rejeição é obrigatório para rejeitar — e depois ninguém consegue vê-lo
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Friction
 - **Severity:** Medium · **Priority:** P2
 - **Persona Affected:** Anselmo
@@ -28,8 +28,14 @@ A UI exige o motivo para habilitar o "Rejeitar" (ótimo: o botão desabilitado d
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 99b06c3 — inscrição processada abre em drawer de leitura com situação, data da revisão e motivo (ou turma, quando aprovada).
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Rejeitada a inscrição de Sofia com motivo; ao reabrir pelo filtro "Rejeitadas", o motivo aparece por extenso e não há botões de decisão.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 2 — drawer somente-leitura para inscrições processadas, mostrando motivo/turma/status.

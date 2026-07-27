@@ -10,9 +10,9 @@ qa_status: pass
 bug_ids: BUG-20260724-refazer-chamada-descartada-em-silencio
 fix_status: fixed
 retest_status: pass
-fix_commits: e62e6c9; f6b4c5d
-evidence:
-last_report: ../reports/2026-07-24-ciclo-full.md
+fix_commits: e62e6c9; f6b4c5d; 99b06c3
+evidence: ../evidence/2026-07-27-fixes-decisoes/S5-chamada-leitura.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

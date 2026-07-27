@@ -12,7 +12,7 @@ fix_status: fixed
 retest_status: pass
 fix_commits: e62e6c9; f6b4c5d
 evidence: ../evidence/2026-07-24-ciclo-full/S3-chamada-salva-offline.png; ../evidence/2026-07-24-ciclo-full/S3-offline-saved-message.png; ../evidence/2026-07-24-ciclo-full/S3-fila-aguardando.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

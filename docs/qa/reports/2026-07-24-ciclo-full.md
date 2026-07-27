@@ -236,6 +236,8 @@ Compressão declarada: a passada reaproveitou as caminhadas extensas das sessõe
 
 ## Decisions for a Human
 
+**Decididas em 2026-07-27 (Renan):** itens abaixo aprovados nas recomendações — 1→op.1, 2→op.1, 3→op.1, 4→op.1, 5→op.3, 6→op.1, 7→op.2, 8→op.1, 9→op.1. Registro individual em cada bug (`## Decisão`); implementação e re-teste no ciclo targeted de 2026-07-27.
+
 ### Confirmação em ações destrutivas (BUG-20260724-remover-ano-sem-confirmacao + padrão geral)
 - What's broken: remover ano apaga na hora, sem confirmação, sem feedback, com tabela stale; remoção de catequista idem (só o 409 salvou a Tereza). Evidência: S1-tabela-pos-delete.png
 - Why not auto-fixed: o padrão de confirmação (AlertDialog? undo? texto?) é decisão de design que vale para o produto todo.

@@ -6,13 +6,13 @@ persona: Tereza
 journey: J-fazer-chamada-offline
 expected: Se o login expira (TTL de 12h), as marcações não se perdem — a chamada permanece na fila local e o reenvio funciona após novo login
 entry_points: /dashboard/turmas/:id/chamada
-qa_status: blocked-decision
-bug_ids: BUG-20260724-sessao-expirada-sem-caminho
-fix_status: pending
-retest_status:
-fix_commits:
-evidence: ../evidence/2026-07-24-ciclo-full/S3-401-na-confirmacao.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+qa_status: pass
+bug_ids: BUG-20260724-sessao-expirada-sem-caminho; BUG-20260727-sessao-expirada-preso-no-dashboard
+fix_status: fixed
+retest_status: pass
+fix_commits: 99b06c3; 740887f
+evidence: ../evidence/2026-07-27-fixes-decisoes/S5-sessao-expirada.png; ../evidence/2026-07-27-fixes-decisoes/S5R-login-com-aviso.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

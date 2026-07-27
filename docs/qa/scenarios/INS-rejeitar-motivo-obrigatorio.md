@@ -6,13 +6,13 @@ persona: Anselmo
 journey: J-aprovar-inscricao
 expected: O botão de rejeitar só habilita com motivo preenchido e a inscrição fica Rejeitada (terminal) com o motivo consultável no filtro de Rejeitadas
 entry_points: /admin/inscricoes
-qa_status: blocked-decision
+qa_status: pass
 bug_ids: BUG-20260725-motivo-rejeicao-invisivel
-fix_status: pending
-retest_status:
-fix_commits:
-evidence: ../evidence/2026-07-24-ciclo-full/S6-rejeitadas.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+fix_status: fixed
+retest_status: pass
+fix_commits: 99b06c3
+evidence: ../evidence/2026-07-27-fixes-decisoes/S4-motivo-visivel.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

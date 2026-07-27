@@ -12,7 +12,7 @@ fix_status: fixed
 retest_status: pass
 fix_commits: f6b4c5d
 evidence: ../evidence/2026-07-24-ciclo-full/S3-chamada-data-utc.png; ../evidence/2026-07-24-ciclo-full/S3-dashboard-tereza.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

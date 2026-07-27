@@ -12,7 +12,7 @@ fix_status: fixed
 retest_status: pass
 fix_commits: eb7b9f6
 evidence: ../evidence/2026-07-24-ciclo-full/S7-previa.png; ../evidence/2026-07-24-ciclo-full/S7R-previa-ok.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

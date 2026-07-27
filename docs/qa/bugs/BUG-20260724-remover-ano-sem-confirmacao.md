@@ -1,6 +1,6 @@
 # BUG-20260724-remover-ano-sem-confirmacao: Remover ano letivo apaga na hora, sem confirmação, sem feedback e com tabela desatualizada
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Trust-Damage
 - **Severity:** High · **Priority:** P1
 - **Persona Affected:** Anselmo
@@ -36,8 +36,14 @@ Nota de escopo: com dependências (turmas/inscrições) o backend bloqueia com 4
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 99b06c3 — exclusões de ano e de pessoa passam por `ConfirmDialog` dizendo o que se perde, com mensagem de sucesso e tabela recarregada.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Cancelar não dispara DELETE (0 requisições, tabela intacta); confirmar remove, mostra "Ano letivo 2028 removido." e a linha some na hora, sem reload. Remoção de catequista com chamadas segue barrada com 409 explicado antes no próprio diálogo.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — diálogo de confirmação nas ações destrutivas (remover ano e catequista), com feedback e tabela atualizada.

@@ -1,6 +1,6 @@
 # BUG-20260725-renovacao-exige-uuid: Aprovar renovação pede um "aluno existente" que só aceita UUID interno
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Blocks-Completion
 - **Severity:** High · **Priority:** P1
 - **Persona Affected:** Anselmo
@@ -30,8 +30,14 @@ O campo "Aluno existente (opcional)" do drawer de aprovação é um texto cru, s
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 99b06c3 — o campo vira busca por nome sobre `/api/students?q=`, com seleção explícita e opção de trocar.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Busca por "carla"/"bruno" devolveu o aluno com a turma; a aprovação usou o id certo sem o coordenador ver uuid nenhum.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — busca de aluno por nome (autocomplete sobre /api/students?q=) no campo de aluno existente.

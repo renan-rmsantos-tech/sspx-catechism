@@ -6,13 +6,13 @@ persona: Anselmo
 journey: J-aprovar-inscricao
 expected: O aluno existente é atualizado e transferido para a turma escolhida, sem duplicar o cadastro
 entry_points: /admin/inscricoes
-qa_status: blocked-decision
-bug_ids: BUG-20260725-renovacao-exige-uuid
-fix_status: pending
-retest_status:
-fix_commits:
-evidence: ../evidence/2026-07-24-ciclo-full/S6-aluno-existente-nome.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+qa_status: pass
+bug_ids: BUG-20260725-renovacao-exige-uuid; BUG-20260727-renovacao-sobrescreve-sem-aviso
+fix_status: fixed
+retest_status: pass
+fix_commits: 99b06c3; 740887f
+evidence: ../evidence/2026-07-27-fixes-decisoes/S4-busca-aluno.png; ../evidence/2026-07-27-fixes-decisoes/S4R-confirmacao-renovacao.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

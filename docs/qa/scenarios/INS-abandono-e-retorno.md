@@ -6,13 +6,13 @@ persona: Marta
 journey: J-inscrever-catequizando
 expected: Ao voltar, a família entende onde está — dados persistidos ou recomeço claro — e nunca gera envio duplicado
 entry_points: /inscricao
-qa_status: blocked-decision
+qa_status: pass
 bug_ids: BUG-20260725-voltar-do-navegador-perde-inscricao
-fix_status: pending
-retest_status:
-fix_commits:
-evidence:
-last_report: ../reports/2026-07-24-ciclo-full.md
+fix_status: fixed
+retest_status: pass
+fix_commits: 99b06c3
+evidence: ../evidence/2026-07-27-fixes-decisoes/S3-rascunho-recuperado.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

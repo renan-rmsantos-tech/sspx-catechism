@@ -1,6 +1,6 @@
 # BUG-20260724-promovida-some-da-lista: Promover catequista a coordenador a faz sumir de todas as telas, sem aviso e sem volta
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Trust-Damage
 - **Severity:** High · **Priority:** P1
 - **Persona Affected:** Anselmo
@@ -33,8 +33,14 @@ O coordenador muda o papel de uma catequista para "Coordenador" no select da tab
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 978d0c1 + 99b06c3 — `GET /api/catechists` devolve todos os perfis; a tela vira "Catequistas e coordenadores" com papel editável, admin como conta protegida, e os vínculos de turma passam a listar coordenadores.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Fátima (promovida no ciclo anterior) reapareceu, foi rebaixada a catequista e promovida de novo pela UI; vinculada à turma Crisma, o vínculo persistiu em fresh load. Admin aparece sem select e sem remover.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — a tela de pessoas lista todos os perfis com papel visível e permite rebaixar coordenador; admin aparece sem ações.

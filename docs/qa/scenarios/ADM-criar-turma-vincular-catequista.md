@@ -11,8 +11,8 @@ bug_ids: BUG-20260724-criar-turma-impossivel; BUG-20260724-promovida-some-da-lis
 fix_status: fixed
 retest_status: pass
 fix_commits: dd2b09a
-evidence: ../evidence/2026-07-24-ciclo-full/S1-criar-turma-400.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+evidence: ../evidence/2026-07-27-fixes-decisoes/S1-turma-vinculos.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

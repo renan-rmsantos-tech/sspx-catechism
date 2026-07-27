@@ -9,10 +9,10 @@ entry_points: /login
 qa_status: pass
 bug_ids:
 fix_status:
-retest_status:
+retest_status: pass
 fix_commits:
 evidence: ../evidence/2026-07-24-ciclo-full/S2-checklist-123456.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

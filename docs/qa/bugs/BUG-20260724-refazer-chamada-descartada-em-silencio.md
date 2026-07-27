@@ -31,11 +31,17 @@ A folha de uma chamada **já registrada** reabre em branco, como se nada tivesse
 
 ## Fix
 
-- **Root cause:** a resposta `{synced, skipped}` era ignorada: `submitAttendanceSession` devolvia 'synced' mesmo com tudo descartado, e o sync da fila limpava os itens sem avisar. (A reabertura da folha em branco e a política de edição de chamada seguem como decisão de produto — ver Decisions for a Human.)
-- **Fix commit:** e62e6c9 (retorno 'skipped') + f6b4c5d (mensagens honestas no confirmar e no sync do dashboard).
-- **Regression test:** attendance-sync.test.ts "devolve skipped…" e dashboard-page.test.tsx "avisa quando o servidor descarta…" (vermelhos antes).
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 99b06c3 (política) — a folha de uma chamada já registrada hoje abre em modo leitura, mostrando quem esteve presente e a hora do registro, sem oferecer remarcação que o servidor descartaria.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
 
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Reabrir a chamada da Primeira Comunhão mostrou "Chamada de hoje já registrada às 18:36", lista em leitura e nenhum botão de confirmar/marcar.
 - **Retested:** 2026-07-25, Tereza — reenvio de chamada existente via fila produziu o aviso "1 chamada não foi aceita pelo servidor (já registrada ou fora do calendário)…" (evidência S3R-aviso-descartada.png). Caminho direto coberto por teste. · **Report:** ../reports/2026-07-24-ciclo-full.md
 - **Result:** confirmado; política de edição de chamada segue escalada
+
+## Decisão
+
+Decisão (2026-07-27, Renan) para a política: opção 1 — folha de chamada já registrada reabre em modo leitura ("registrada às…"), sem remarcação. Correção pela coordenação fica como evolução.

@@ -1,6 +1,6 @@
 # BUG-20260724-dois-anos-ativos-sem-aviso: Sistema aceita dois anos letivos ativos e escolhe um em silêncio
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Trust-Damage
 - **Severity:** High · **Priority:** P1
 - **Persona Affected:** Anselmo
@@ -33,8 +33,14 @@ Agravante: com [[BUG-20260724-editar-ano-sempre-falha]], desativar um dos anos p
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 978d0c1 — ativar um ano desativa o anterior (troca atômica no serviço) e o índice parcial `academic_years_single_active` garante a unicidade no banco; a migração normaliza bases com mais de um ativo.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Ativação por criação e por edição testadas em persona: a tabela passou a mostrar exatamente um "Ativo" nos dois caminhos, confirmado em fresh load.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — troca atômica: ativar um ano desativa o anterior; unicidade garantida por índice parcial no banco.

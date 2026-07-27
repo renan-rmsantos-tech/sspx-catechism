@@ -12,7 +12,7 @@ fix_status: fixed
 retest_status: pass
 fix_commits: dd2b09a
 evidence: ../evidence/2026-07-24-ciclo-full/S1-salvar-ano-sem-feedback.png; ../evidence/2026-07-24-ciclo-full/S1-patch-400.png; ../evidence/2026-07-24-ciclo-full/S1-tabela-pos-delete.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

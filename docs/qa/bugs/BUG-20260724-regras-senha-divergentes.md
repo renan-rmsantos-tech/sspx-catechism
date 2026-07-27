@@ -1,6 +1,6 @@
 # BUG-20260724-regras-senha-divergentes: A tela exige "uma letra e um número" na senha; o servidor aceita qualquer coisa com 6 caracteres
 
-- **Status:** open
+- **Status:** verified
 - **Impact (user-side):** Trust-Damage
 - **Severity:** High · **Priority:** P1
 - **Persona Affected:** Camila
@@ -32,8 +32,14 @@ Validação do servidor: `backend/internal/server/auth_handlers.go` (`len(req.Ne
 
 ## Fix
 
-- **Root cause:**
-- **Fix commit:**
-- **Regression test:**
+- **Root cause:** ver Summary; decisão de 2026-07-27 registrada abaixo.
+- **Fix commit:** 978d0c1 — `auth.ValidatePassword` aplica a política da tela (≥6, uma letra e um número) no handler de troca de senha.
+- **Regression test:** suíte do frontend/backend desta rodada (76 vitest + 185 go), com os testes novos vermelhos contra o código anterior.
 
 ## Verification
+
+- **Retested:** 2026-07-27, sessões novas em persona. · **Report:** ../reports/2026-07-27-fixes-decisoes.md
+- **Result:** Verificação técnica declarada (fora de persona), conta descartável: "123456" → 400 "a senha deve conter ao menos uma letra e um número"; "abcdef" → 400; "valida26" → 200. Caminhada em persona (Rita) confirma o fluxo normal intacto.
+## Decisão
+
+Decisão (2026-07-27, Renan): opção 1 — servidor passa a exigir a política da tela (≥6 caracteres, uma letra e um número).

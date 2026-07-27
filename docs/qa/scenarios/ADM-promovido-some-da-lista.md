@@ -6,13 +6,13 @@ persona: Anselmo
 journey: J-preparar-ano-letivo
 expected: Ao promover alguém a Coordenador, fica claro onde a pessoa foi parar — ela não pode simplesmente sumir da lista e das checkboxes de turma sem explicação
 entry_points: /admin/catequistas; /admin/turmas
-qa_status: blocked-decision
+qa_status: pass
 bug_ids: BUG-20260724-promovida-some-da-lista
-fix_status: pending
-retest_status:
-fix_commits:
-evidence: ../evidence/2026-07-24-ciclo-full/S1-fatima-promovida.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+fix_status: fixed
+retest_status: pass
+fix_commits: 978d0c1; 99b06c3
+evidence: ../evidence/2026-07-27-fixes-decisoes/S1-pessoas-completa.png
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 

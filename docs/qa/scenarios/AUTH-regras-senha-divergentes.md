@@ -6,13 +6,13 @@ persona: Camila
 journey: J-primeiro-acesso-catequista
 expected: As regras exibidas na checklist coincidem com as que o servidor aceita — nenhuma senha passa num e é recusada no outro, em nenhuma direção
 entry_points: /trocar-senha
-qa_status: blocked-decision
+qa_status: pass
 bug_ids: BUG-20260724-regras-senha-divergentes
-fix_status: pending
-retest_status:
-fix_commits:
+fix_status: fixed
+retest_status: pass
+fix_commits: 978d0c1
 evidence: ../evidence/2026-07-24-ciclo-full/S2-checklist-123456.png
-last_report: ../reports/2026-07-24-ciclo-full.md
+last_report: ../reports/2026-07-27-fixes-decisoes.md
 overlaps:
 ---
 
