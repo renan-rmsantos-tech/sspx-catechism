@@ -177,7 +177,13 @@ projeto, então projetos diferentes seguem publicando em paralelo.
 **Na sua máquina — uma vez:**
 ```bash
 git remote add production renan@SEU_IP:/opt/apps/projects/sspx-catechism
+cp scripts/pre-push.sh .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
 ```
+> O `pre-push` é o retorno rápido local: ele executa `npm test` em `frontend/`
+> antes de qualquer push. Copie, não faça symlink, pelo mesmo motivo do hook de
+> deploy. O portão definitivo continua no Dockerfile, então quem não instalar o
+> hook ainda é protegido no `git push production main`.
 
 **No dia a dia:**
 ```bash

@@ -8,6 +8,7 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 COPY frontend/ ./
+COPY design/assets/catequese-ds.css ../design/assets/catequese-ds.css
 # Portão de testes: substitui o job `test` do GitHub Actions. As dependências já
 # vieram do `npm ci` acima, então o custo é só o dos testes. Quebrou, não builda.
 RUN npx vitest run
