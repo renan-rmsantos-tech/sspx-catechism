@@ -43,16 +43,25 @@ wait_healthy() {
   return 1
 }
 
+# $2 = "yes" quando os containers já foram trocados pela versão nova (falha no
+# health check) e precisam ser reconstruídos; "no" quando o build barrou antes de
+# tocar em qualquer container — aí basta reverter o código, sem restart inútil.
 rollback() {
-  local oldrev=$1
+  local oldrev=$1 rebuild=$2
   if [ -z "$oldrev" ] || [ "$oldrev" = "0000000000000000000000000000000000000000" ]; then
     log "sem revisão anterior para reverter — deixando como está"
     return 1
   fi
   log "REVERTENDO para $(git -C "$APP_DIR" rev-parse --short "$oldrev")"
   git -C "$APP_DIR" reset --hard "$oldrev" >>"$LOG_FILE" 2>&1
+
+  if [ "$rebuild" != "yes" ]; then
+    log "rollback concluído — containers nunca foram tocados, versão anterior segue no ar"
+    return 1
+  fi
+
   if docker compose -f "$COMPOSE_FILE" up -d --build >>"$LOG_FILE" 2>&1; then
-    log "rollback concluído — versão anterior no ar"
+    log "rollback concluído — versão anterior reconstruída e no ar"
   else
     log "ROLLBACK FALHOU — intervenção manual necessária (log: $LOG_FILE)"
   fi
@@ -66,14 +75,18 @@ deploy() {
   log "deploy $(git rev-parse --short "$newrev") — $(git log -1 --format=%s "$newrev")"
 
   # --build roda os testes dentro das imagens; falha aqui = teste ou build quebrado.
+  # `docker compose up` só troca os containers depois de as imagens existirem, e
+  # as imagens só existem se os testes passaram — então uma falha aqui deixa a
+  # versão anterior intacta e servindo. Daí o rollback sem rebuild.
   if ! docker compose -f "$COMPOSE_FILE" up -d --build 2>&1 | tee -a "$LOG_FILE"; then
     log "BUILD/TESTES FALHARAM — nada foi publicado"
-    rollback "$oldrev"
+    rollback "$oldrev" no
     return 1
   fi
 
+  # Aqui os containers JÁ são os novos; para voltar atrás é preciso reconstruir.
   if ! wait_healthy; then
-    rollback "$oldrev"
+    rollback "$oldrev" yes
     return 1
   fi
 
