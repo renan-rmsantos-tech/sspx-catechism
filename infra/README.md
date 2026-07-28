@@ -218,6 +218,14 @@ antes de voltar sozinho ao 200.
 
 ### Reaproveitando em outros projetos
 
+Projetos do droplet já usando este padrão (o `post-receive.sh` deve ser mantido
+**idêntico** em todos):
+
+| Projeto | Health URL | Portão de testes |
+|---|---|---|
+| `sspx-catechism` | `/api/health` | `RUN go test ./...` + `RUN npx vitest run` |
+| `sspx-donation` | `https://ajude-o-colegio-sao-jose.com/` | `RUN npm test` (383 testes) |
+
 O `scripts/post-receive.sh` é genérico. Para qualquer outro projeto compose do
 droplet, o roteiro é:
 

@@ -3,7 +3,10 @@
 # Hook de deploy push-to-deploy — roda NO SERVIDOR, disparado por
 # `git push production main`. Genérico: serve qualquer projeto docker compose
 # do droplet sem edição, porque descobre o repo pelo próprio caminho do hook e
-# lê o resto do `git config`. Ver infra/README.md §8.
+# lê o resto do `git config`.
+#
+# Este arquivo é compartilhado entre os projetos do droplet e deve ser mantido
+# idêntico em todos. Documentação completa: sspx-catechism/infra/README.md §8.
 #
 # Substitui o .github/workflows/deploy.yml enquanto o GitHub Actions está
 # bloqueado no nível da conta. O portão de testes NÃO vive aqui: ele está dentro
