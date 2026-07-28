@@ -30,10 +30,10 @@ function ConfirmDialog({
               <Dialog.Description className="mt-2 text-sm text-muted">{description}</Dialog.Description>
             ) : null}
             <div className="mt-5 flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="button" variant="destructive" onClick={onConfirm} data-testid="confirm-destructive">
+              <Button type="button" variant="danger" onClick={onConfirm} data-testid="confirm-destructive">
                 {confirmLabel}
               </Button>
             </div>

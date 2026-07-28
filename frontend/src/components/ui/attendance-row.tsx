@@ -19,8 +19,8 @@ function AttendanceRow({
     <div
       className={cn(
         "flex min-h-16 items-center gap-3 border-b border-border px-4 py-2",
-        mark === true && "bg-accent-soft",
-        mark === false && "bg-danger-soft",
+        mark === true && "bg-accent-wash",
+        mark === false && "bg-danger-wash",
         className,
       )}
       {...props}

@@ -1,10 +1,11 @@
-import { ArrowLeft, LogOut, Search, WifiOff } from "lucide-react";
+import { ArrowLeft, LogOut, WifiOff } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AttendanceRow, tallyMarks } from "@/components/ui/attendance-row";
 import { Button } from "@/components/ui/button";
 import { NetworkChip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SearchField } from "@/components/ui/field";
 import { ProgressRail } from "@/components/ui/metrics";
 import { useAuth } from "@/contexts/auth-context";
 import { Chip } from "@/components/ui/chip";
@@ -318,21 +319,13 @@ export function AttendancePage() {
               className="flex flex-wrap gap-3"
               data-od-id="sheet-toolbar"
             >
-              <label className="relative min-w-52 flex-1">
-                <Search
-                  aria-hidden="true"
-                  size={17}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
-                />
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  className="min-h-touch w-full rounded-[var(--r)] border border-border bg-surface py-2 pr-3 pl-10 text-sm focus:border-accent"
-                  placeholder="Buscar aluno"
-                  aria-label="Buscar aluno na lista"
-                />
-              </label>
+              <SearchField
+                className="min-w-52 flex-1"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar aluno"
+                label="Buscar aluno na lista"
+              />
               <Button
                 variant="secondary"
                 onClick={markVisiblePresent}

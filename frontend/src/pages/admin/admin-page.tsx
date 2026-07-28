@@ -17,8 +17,12 @@ import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Chip, NetworkChip } from '@/components/ui/chip'
+import { Checkbox } from '@/components/ui/choice'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Drawer } from '@/components/ui/drawer'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Field, Input, SearchField, Select, Textarea } from '@/components/ui/field'
 import { BarChart, Meter, StatCard } from '@/components/ui/metrics'
 import { Sidebar } from '@/components/ui/sidebar'
 import { Table, TableWrap } from '@/components/ui/table'
@@ -67,10 +71,6 @@ const weekdays = [
   ['5', 'Sexta'],
   ['6', 'Sábado'],
 ] as const
-
-function fieldError(message?: string) {
-  return message ? <p className="text-xs text-destructive">{message}</p> : null
-}
 
 function useAdminData() {
   const [years, setYears] = useState<AcademicYear[]>([])
@@ -121,7 +121,7 @@ export function AdminPage() {
           { label: 'Pessoas', items: [{ label: 'Turmas', to: '/admin/turmas', icon: <Layers /> }, { label: 'Alunos', to: '/admin/alunos', icon: <Users /> }, { label: 'Catequistas', to: '/admin/catequistas', icon: <UserCheck /> }] },
           { label: 'Acompanhamento', items: [{ label: 'Inscrições', to: '/admin/inscricoes', icon: <Check />, badge: data.pendingEnrollments }, { label: 'Relatórios', to: '/admin/relatorios', icon: <FileSpreadsheet /> }] },
         ]}
-        footer={<div className="grid gap-2 border-t border-border pt-3"><p className="truncate px-2 text-sm font-semibold text-fg">{user?.fullName}</p><Button variant="outline" className="w-full" onClick={() => void logout()}>Sair</Button></div>}
+        footer={<div className="grid gap-2 border-t border-border pt-3"><NetworkChip /><p className="truncate px-2 text-sm font-semibold text-fg">{user?.fullName}</p><Button variant="secondary" className="w-full" onClick={() => void logout()}>Sair</Button></div>}
       />
       <div className="min-w-0 flex-1">
       <main className="mx-auto max-w-[var(--container)] px-4 py-6 lg:px-8">
@@ -208,35 +208,29 @@ export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminDa
     <Section title="Anos letivos">
       {message ? <Banner>{message}</Banner> : null}
       <form className="grid gap-4 md:grid-cols-2" onSubmit={form.handleSubmit(onSubmit)}>
-        <Field label="Ano" error={form.formState.errors.year?.message}>
-          <input className="input" type="number" {...form.register('year')} />
+        <Field id="academic-year" label="Ano" error={form.formState.errors.year?.message}>
+          <Input id="academic-year" type="number" {...form.register('year')} />
         </Field>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" {...form.register('isActive')} />
-          Ano ativo
-        </label>
+        <Checkbox label="Ano ativo" {...form.register('isActive')} />
         <div className="md:col-span-2">
           <p className="mb-2 text-sm font-medium">Dias de aula</p>
           <div className="grid gap-2 sm:grid-cols-4">
             {weekdays.map(([value, label]) => (
-              <label key={value} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" value={value} {...form.register('classDays')} />
-                {label}
-              </label>
+              <Checkbox key={value} label={label} value={value} {...form.register('classDays')} />
             ))}
           </div>
-          {fieldError(form.formState.errors.classDays?.message)}
+          {form.formState.errors.classDays?.message ? <p role="alert" className="text-xs text-danger-ink">{form.formState.errors.classDays.message}</p> : null}
         </div>
-        <Field label="Abertura das inscrições" error={form.formState.errors.enrollmentStartsAt?.message}>
-          <input className="input" type="date" {...form.register('enrollmentStartsAt')} />
+        <Field id="enrollment-starts-at" label="Abertura das inscrições" error={form.formState.errors.enrollmentStartsAt?.message}>
+          <Input id="enrollment-starts-at" type="date" {...form.register('enrollmentStartsAt')} />
         </Field>
-        <Field label="Encerramento das inscrições" error={form.formState.errors.enrollmentEndsAt?.message}>
-          <input className="input" type="date" {...form.register('enrollmentEndsAt')} />
+        <Field id="enrollment-ends-at" label="Encerramento das inscrições" error={form.formState.errors.enrollmentEndsAt?.message}>
+          <Input id="enrollment-ends-at" type="date" {...form.register('enrollmentEndsAt')} />
         </Field>
         <div className="flex gap-2 md:col-span-2">
           <Button type="submit">{editing ? 'Salvar ano' : 'Criar ano'}</Button>
           {editing ? (
-            <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               Cancelar
             </Button>
           ) : null}
@@ -245,13 +239,14 @@ export function AcademicYearsView({ data }: { data: ReturnType<typeof useAdminDa
 
       <DataTable
         headers={['Ano', 'Dias', 'Inscrições', 'Status', 'Ações']}
+        numericColumns={[0]}
         rows={data.years.map((year) => [
           year.year,
           year.classDays.join(', '),
           `${year.enrollmentStartsAt ?? '-'} até ${year.enrollmentEndsAt ?? '-'}`,
           year.isActive ? 'Ativo' : 'Inativo',
           <div className="flex gap-2" key={year.id}>
-            <Button type="button" variant="outline" onClick={() => setEditing(year)}>
+            <Button type="button" variant="secondary" onClick={() => setEditing(year)}>
               Editar
             </Button>
             <IconButton label={`Remover ano ${year.year}`} onClick={() => setPendingRemoval(year)}>
@@ -309,18 +304,18 @@ export function CalendarView({ data }: { data: ReturnType<typeof useAdminData> }
     <Section title="Calendário de aulas">
       {message ? <Banner>{message}</Banner> : null}
       <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-        <Field label="Ano letivo" error={form.formState.errors.academicYearId?.message}>
-          <select className="input" {...form.register('academicYearId')}>
+        <Field id="calendar-academic-year" label="Ano letivo" error={form.formState.errors.academicYearId?.message}>
+          <Select id="calendar-academic-year" {...form.register('academicYearId')}>
             <option value="">Selecione</option>
             {data.years.map((year) => (
               <option key={year.id} value={year.id}>
                 {year.year}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
-        <Field label="Datas (uma por linha)" error={form.formState.errors.datesText?.message}>
-          <textarea className="input min-h-56 font-mono" {...form.register('datesText')} />
+        <Field id="calendar-dates" label="Datas (uma por linha)" error={form.formState.errors.datesText?.message}>
+          <Textarea id="calendar-dates" className="min-h-56 font-mono" {...form.register('datesText')} />
         </Field>
         <Button type="submit">Salvar calendário</Button>
       </form>
@@ -397,24 +392,24 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
     <Section title="Turmas">
       {message ? <Banner>{message}</Banner> : null}
       <form className="grid gap-4 md:grid-cols-2" onSubmit={form.handleSubmit(onSubmit)}>
-        <Field label="Nome" error={form.formState.errors.name?.message}>
-          <input className="input" {...form.register('name')} />
+        <Field id="class-name" label="Nome" error={form.formState.errors.name?.message}>
+          <Input id="class-name" {...form.register('name')} />
         </Field>
-        <Field label="Ano letivo" error={form.formState.errors.academicYearId?.message}>
-          <select className="input" {...form.register('academicYearId')}>
+        <Field id="class-academic-year" label="Ano letivo" error={form.formState.errors.academicYearId?.message}>
+          <Select id="class-academic-year" {...form.register('academicYearId')}>
             <option value="">Selecione</option>
             {data.years.map((year) => (
               <option key={year.id} value={year.id}>
                 {year.year}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
-        <Field label="Nível">
-          <input className="input" {...form.register('level')} />
+        <Field id="class-level" label="Nível">
+          <Input id="class-level" {...form.register('level')} />
         </Field>
-        <Field label="Horário">
-          <input className="input" {...form.register('schedule')} />
+        <Field id="class-schedule" label="Horário">
+          <Input id="class-schedule" {...form.register('schedule')} />
         </Field>
         <div className="md:col-span-2">
           <p className="mb-2 text-sm font-medium">Catequistas</p>
@@ -425,24 +420,20 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
             {data.catechists
               .filter((cat) => cat.role !== 'admin')
               .map((cat) => (
-                <label key={cat.id} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" value={cat.id} {...form.register('catechistIds')} />
-                  {cat.fullName}
+                <div key={cat.id} className="flex items-center gap-2">
+                  <Checkbox id={`class-catechist-${cat.id}`} label={cat.fullName} value={cat.id} {...form.register('catechistIds')} />
                   {cat.role === 'coordinator' ? (
                     <span className="text-xs text-muted-foreground">(coordenador)</span>
                   ) : null}
-                </label>
+                </div>
               ))}
           </div>
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" {...form.register('isArchived')} />
-          Arquivada
-        </label>
+        <Checkbox label="Arquivada" {...form.register('isArchived')} />
         <div className="flex gap-2 md:col-span-2">
           <Button type="submit">{editing ? 'Salvar turma' : 'Criar turma'}</Button>
           {editing ? (
-            <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               Cancelar
             </Button>
           ) : null}
@@ -450,6 +441,7 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
       </form>
       <DataTable
         headers={['Turma', 'Ano', 'Catequistas', 'Status', 'Ações']}
+        numericColumns={[1]}
         rows={data.classes.map((klass) => [
           klass.name,
           data.years.find((year) => year.id === klass.academicYearId)?.year ?? '-',
@@ -457,7 +449,7 @@ export function ClassesView({ data }: { data: ReturnType<typeof useAdminData> })
             .map((id) => data.catechists.find((cat) => cat.id === id)?.fullName ?? id)
             .join(', ') || '-',
           klass.isArchived ? 'Arquivada' : 'Ativa',
-          <Button key={klass.id} type="button" variant="outline" onClick={() => setEditing(klass)}>
+          <Button key={klass.id} type="button" variant="secondary" onClick={() => setEditing(klass)}>
             Editar
           </Button>,
         ])}
@@ -530,68 +522,61 @@ export function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }
     <Section title="Alunos">
       {message ? <Banner>{message}</Banner> : null}
       <div className="mb-6 flex gap-2">
-        <input
-          className="input"
+        <SearchField
           aria-label="Buscar alunos"
           placeholder="Buscar por nome"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <Button type="button" variant="outline" onClick={() => void search()}>
+        <Button type="button" variant="secondary" onClick={() => void search()}>
           <Search />
           Buscar
         </Button>
       </div>
       <form className="grid gap-4 md:grid-cols-2" onSubmit={form.handleSubmit(onSubmit)}>
-        <Field label="Turma" error={form.formState.errors.classId?.message}>
-          <select className="input" {...form.register('classId')}>
+        <Field id="student-class" label="Turma" error={form.formState.errors.classId?.message}>
+          <Select id="student-class" {...form.register('classId')}>
             <option value="">Selecione</option>
             {data.classes.map((klass) => (
               <option key={klass.id} value={klass.id}>
                 {klass.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
-        <Field label="Nome completo" error={form.formState.errors.fullName?.message}>
-          <input className="input" {...form.register('fullName')} />
+        <Field id="student-name" label="Nome completo" error={form.formState.errors.fullName?.message}>
+          <Input id="student-name" {...form.register('fullName')} />
         </Field>
-        <Field label="Nascimento" error={form.formState.errors.birthDate?.message}>
-          <input className="input" type="date" {...form.register('birthDate')} />
+        <Field id="student-birth-date" label="Nascimento" error={form.formState.errors.birthDate?.message}>
+          <Input id="student-birth-date" type="date" {...form.register('birthDate')} />
         </Field>
-        <Field label="Cidade">
-          <input className="input" {...form.register('city')} />
+        <Field id="student-city" label="Cidade">
+          <Input id="student-city" {...form.register('city')} />
         </Field>
-        <Field label="Telefone" error={form.formState.errors.guardianPhone?.message}>
-          <input className="input" placeholder="(11) 99999-9999" {...form.register('guardianPhone')} />
+        <Field id="student-phone" label="Telefone" error={form.formState.errors.guardianPhone?.message}>
+          <Input id="student-phone" placeholder="(11) 99999-9999" {...form.register('guardianPhone')} />
         </Field>
-        <Field label="E-mail" error={form.formState.errors.guardianEmail?.message}>
-          <input className="input" type="email" {...form.register('guardianEmail')} />
+        <Field id="student-email" label="E-mail" error={form.formState.errors.guardianEmail?.message}>
+          <Input id="student-email" type="email" {...form.register('guardianEmail')} />
         </Field>
-        <Field label="Pai">
-          <input className="input" {...form.register('guardianFatherName')} />
+        <Field id="student-father" label="Pai">
+          <Input id="student-father" {...form.register('guardianFatherName')} />
         </Field>
-        <Field label="Mãe">
-          <input className="input" {...form.register('guardianMotherName')} />
+        <Field id="student-mother" label="Mãe">
+          <Input id="student-mother" {...form.register('guardianMotherName')} />
         </Field>
-        <Field label="Catecismo anterior">
-          <input className="input" {...form.register('previousCatechism')} />
+        <Field id="student-previous-catechism" label="Catecismo anterior">
+          <Input id="student-previous-catechism" {...form.register('previousCatechism')} />
         </Field>
-        <Field label="Livros religiosos">
-          <input className="input" {...form.register('religiousBooks')} />
+        <Field id="student-religious-books" label="Livros religiosos">
+          <Input id="student-religious-books" {...form.register('religiousBooks')} />
         </Field>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" {...form.register('firstCommunion')} />
-          Primeira comunhão
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" {...form.register('confirmation')} />
-          Crisma
-        </label>
+        <Checkbox label="Primeira comunhão" {...form.register('firstCommunion')} />
+        <Checkbox label="Crisma" {...form.register('confirmation')} />
         <div className="flex gap-2 md:col-span-2">
           <Button type="submit">{editing ? 'Salvar aluno' : 'Criar aluno'}</Button>
           {editing ? (
-            <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
               Cancelar
             </Button>
           ) : null}
@@ -599,12 +584,13 @@ export function StudentsView({ data }: { data: ReturnType<typeof useAdminData> }
       </form>
       <DataTable
         headers={['Nome', 'Turma', 'Responsável', 'Contato', 'Ações']}
+        numericColumns={[]}
         rows={students.map((student) => [
           student.fullName,
           student.className ?? data.classes.find((klass) => klass.id === student.classId)?.name ?? '-',
           [student.guardianFatherName, student.guardianMotherName].filter(Boolean).join(' / ') || '-',
           [student.guardianPhone, student.guardianEmail].filter(Boolean).join(' / ') || '-',
-          <Button key={student.id} type="button" variant="outline" onClick={() => setEditing(student)}>
+          <Button key={student.id} type="button" variant="secondary" onClick={() => setEditing(student)}>
             Editar
           </Button>,
         ])}
@@ -677,11 +663,11 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
         </Banner>
       ) : null}
       <form className="grid gap-4 md:grid-cols-3" onSubmit={form.handleSubmit(onSubmit)}>
-        <Field label="Nome" error={form.formState.errors.fullName?.message}>
-          <input className="input" {...form.register('fullName')} />
+        <Field id="catechist-name" label="Nome" error={form.formState.errors.fullName?.message}>
+          <Input id="catechist-name" {...form.register('fullName')} />
         </Field>
-        <Field label="E-mail" error={form.formState.errors.email?.message}>
-          <input className="input" type="email" {...form.register('email')} />
+        <Field id="catechist-email" label="E-mail" error={form.formState.errors.email?.message}>
+          <Input id="catechist-email" type="email" {...form.register('email')} />
         </Field>
         <div className="flex items-end">
           <Button type="submit">Criar catequista</Button>
@@ -689,6 +675,7 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
       </form>
       <DataTable
         headers={['Nome', 'E-mail', 'Papel', 'Status', 'Ações']}
+        numericColumns={[]}
         rows={data.catechists.map((cat) => [
           cat.fullName,
           cat.email,
@@ -697,16 +684,16 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
           cat.role === 'admin' ? (
             <span key={`${cat.id}-role`}>{roleLabels.admin}</span>
           ) : (
-            <select
+            <Select
               key={`${cat.id}-role`}
-              className="input max-w-44"
+              className="max-w-44"
               aria-label={`Papel de ${cat.fullName}`}
               value={cat.role}
               onChange={(event) => void update(cat.id, { role: event.target.value })}
             >
               <option value="catechist">{roleLabels.catechist}</option>
               <option value="coordinator">{roleLabels.coordinator}</option>
-            </select>
+            </Select>
           ),
           cat.isActive ? 'Ativo' : 'Inativo',
           cat.role === 'admin' ? (
@@ -717,7 +704,7 @@ export function CatechistsView({ data }: { data: ReturnType<typeof useAdminData>
             <div className="flex gap-2" key={cat.id}>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => void update(cat.id, { isActive: !cat.isActive })}
               >
                 {cat.isActive ? 'Desativar' : 'Ativar'}
@@ -815,19 +802,18 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
     <Section title="Revisão de inscrições">
       {message ? <Banner>{message}</Banner> : null}
       <div className="mb-4 grid gap-3 md:grid-cols-[180px_1fr_auto]">
-        <select className="input" value={status} onChange={(event) => setStatus(event.target.value as EnrollmentStatus)}>
+        <Select aria-label="Status das inscrições" value={status} onChange={(event) => setStatus(event.target.value as EnrollmentStatus)}>
           <option value="pending">Pendentes</option>
           <option value="approved">Aprovadas</option>
           <option value="rejected">Rejeitadas</option>
-        </select>
-        <input
-          className="input"
+        </Select>
+        <SearchField
           aria-label="Buscar inscrições"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar por nome"
         />
-        <Button type="button" variant="outline" onClick={() => void load()}>
+        <Button type="button" variant="secondary" onClick={() => void load()}>
           <Search />
           Buscar
         </Button>
@@ -835,17 +821,19 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
       <div>
         <DataTable
           headers={['Nome', 'Status', 'Renovação', 'Contato']}
+          numericColumns={[]}
           rows={enrollments.map((enrollment) => [
-            <button
+            <Button
               key={enrollment.id}
               type="button"
-              className="text-left font-medium underline-offset-2 hover:underline"
+              variant="ghost"
+              className="justify-start px-0 text-left font-medium underline-offset-2 hover:underline"
               onClick={() => setSelected(enrollment)}
             >
               {enrollment.fullName}
-            </button>,
-            enrollment.status,
-            enrollment.isRenewal ? 'Sim' : 'Não',
+            </Button>,
+            <EnrollmentStatusChip key={`${enrollment.id}-status`} status={enrollment.status} />,
+            enrollment.isRenewal ? <Chip key={`${enrollment.id}-renewal`} tone="gold">Renovação</Chip> : '—',
             [enrollment.guardianPhone, enrollment.guardianEmail].filter(Boolean).join(' / ') || '-',
           ])}
         />
@@ -862,15 +850,15 @@ export function EnrollmentsView({ data }: { data: ReturnType<typeof useAdminData
               {selected.status === 'pending' ? (
                 <div className="mt-5 grid gap-5">
                   <form className="grid gap-3" onSubmit={approveForm.handleSubmit(approve)}>
-                    <Field label="Turma" error={approveForm.formState.errors.classId?.message}>
-                      <select className="input" {...approveForm.register('classId')}>
+                    <Field id="approval-class" label="Turma" error={approveForm.formState.errors.classId?.message}>
+                      <Select id="approval-class" {...approveForm.register('classId')}>
                         <option value="">Selecione</option>
                         {data.classes.map((klass) => (
                           <option key={klass.id} value={klass.id}>
                             {klass.name}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </Field>
                     <StudentPicker
                       value={approveForm.watch('existingStudentId') ?? ''}
@@ -944,6 +932,16 @@ function formatReviewedAt(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString('pt-BR')
 }
 
+function EnrollmentStatusChip({ status }: { status: EnrollmentStatus }) {
+  const labels: Record<EnrollmentStatus, { label: string; tone: 'warn' | 'ok' | 'danger' }> = {
+    pending: { label: 'Pendente', tone: 'warn' },
+    approved: { label: 'Aprovada', tone: 'ok' },
+    rejected: { label: 'Rejeitada', tone: 'danger' },
+  }
+  const { label, tone } = labels[status]
+  return <Chip tone={tone}>{label}</Chip>
+}
+
 // Renovação: o coordenador conhece o NOME do aluno, nunca o uuid interno
 // (BUG-20260725-renovacao-exige-uuid).
 function StudentPicker({
@@ -1013,9 +1011,8 @@ function StudentPicker({
         Aluno já cadastrado (opcional — para renovação)
       </label>
       <div className="flex gap-2">
-        <input
+        <Input
           id="student-search"
-          className="input"
           value={query}
           placeholder="Buscar pelo nome"
           onChange={(event) => setQuery(event.target.value)}
@@ -1026,7 +1023,7 @@ function StudentPicker({
             }
           }}
         />
-        <Button type="button" variant="outline" disabled={!query.trim() || searching} disabledReason={searching ? 'Buscando…' : 'Digite um nome'} onClick={() => void search()}>
+        <Button type="button" variant="secondary" disabled={!query.trim() || searching} disabledReason={searching ? 'Buscando…' : 'Digite um nome'} onClick={() => void search()}>
           <Search />
           Buscar
         </Button>
@@ -1036,14 +1033,15 @@ function StudentPicker({
         <ul className="grid gap-1">
           {results.map((student) => (
             <li key={student.id}>
-              <button
+              <Button
                 type="button"
-                className="w-full min-h-touch rounded-[var(--r)] border border-border px-3 text-left text-sm hover:bg-surface-2"
+                variant="secondary"
+                className="w-full justify-start text-left"
                 onClick={() => pick(student)}
               >
                 {student.fullName}
                 {student.className ? <span className="text-muted-foreground"> · {student.className}</span> : null}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -1064,13 +1062,13 @@ function RejectBox({ onReject }: { onReject: (reason: string) => Promise<void> }
       <label className="text-sm font-medium" htmlFor="rejectionReason">
         Motivo da rejeição
       </label>
-      <textarea
+      <Textarea
         id="rejectionReason"
-        className="input min-h-24"
+        className="min-h-24"
         value={reason}
         onChange={(event) => setReason(event.target.value)}
       />
-      <Button type="button" variant="destructive" disabled={!reason.trim()} disabledReason="Informe o motivo" onClick={() => void onReject(reason)}>
+      <Button type="button" variant="danger" disabled={!reason.trim()} disabledReason="Informe o motivo" onClick={() => void onReject(reason)}>
         <X />
         Rejeitar
       </Button>
@@ -1121,32 +1119,32 @@ export function ReportsView({ data }: { data: ReturnType<typeof useAdminData> })
     <Section title="Relatórios de presença">
       {message ? <Banner>{message}</Banner> : null}
       <form className="grid gap-4 md:grid-cols-[1fr_180px_180px_auto]" onSubmit={form.handleSubmit(preview)}>
-        <Field label="Turma" error={form.formState.errors.classId?.message}>
-          <select className="input" {...form.register('classId')}>
+        <Field id="report-class" label="Turma" error={form.formState.errors.classId?.message}>
+          <Select id="report-class" {...form.register('classId')}>
             <option value="">Selecione</option>
             {data.classes.map((klass) => (
               <option key={klass.id} value={klass.id}>
                 {klass.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
-        <Field label="De" error={form.formState.errors.from?.message}>
-          <input className="input" type="date" {...form.register('from')} />
+        <Field id="report-from" label="De" error={form.formState.errors.from?.message}>
+          <Input id="report-from" type="date" {...form.register('from')} />
         </Field>
-        <Field label="Até" error={form.formState.errors.to?.message}>
-          <input className="input" type="date" {...form.register('to')} />
+        <Field id="report-to" label="Até" error={form.formState.errors.to?.message}>
+          <Input id="report-to" type="date" {...form.register('to')} />
         </Field>
         <div className="flex items-end">
           <Button type="submit">Pré-visualizar</Button>
         </div>
       </form>
       <div className="mt-4 flex gap-2">
-        <Button type="button" variant="outline" onClick={() => void download('pdf')}>
+        <Button type="button" variant="secondary" onClick={() => void download('pdf')}>
           <Download />
           PDF
         </Button>
-        <Button type="button" variant="outline" onClick={() => void download('xlsx')}>
+        <Button type="button" variant="secondary" onClick={() => void download('xlsx')}>
           <Download />
           XLSX
         </Button>
@@ -1165,6 +1163,7 @@ export function ReportsView({ data }: { data: ReturnType<typeof useAdminData> })
             const bars = report.students.map((student) => ({ label: student.full_name.split(' ')[0], value: presentsByStudent(student.id) }))
             return <><div className="grid gap-3 sm:grid-cols-3"><StatCard value={report.students.length} label="Catequizandos" /><StatCard value={present} label="Presenças" /><StatCard value={percentage} unit="%" label="Frequência" /></div><Meter percent={percentage} label="Frequência da turma" /><BarChart data={bars} label={`Presenças por catequizando: ${bars.map((bar) => `${bar.label} ${bar.value}`).join(', ')}`} /><DataTable
             headers={['Aluno', 'Presenças']}
+            numericColumns={[1]}
             rows={report.students.map((student) => [
               student.full_name,
               `${presentsByStudent(student.id)}/${sessions.length}`,
@@ -1177,28 +1176,11 @@ export function ReportsView({ data }: { data: ReturnType<typeof useAdminData> })
   )
 }
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string
-  error?: string
-  children: ReactNode
-}) {
-  return (
-    <label className="grid gap-1 text-sm font-medium">
-      {label}
-      {children}
-      {fieldError(error)}
-    </label>
-  )
-}
-
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  const id = `admin-${title.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
   return (
-    <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
-      <h2 className="mb-5 text-xl font-semibold">{title}</h2>
+    <section data-od-id={id} className="rounded-[var(--r-lg)] border border-border bg-surface p-5 shadow-1">
+      <h2 data-od-id={`${id}-heading`} className="mb-5 text-xl font-semibold">{title}</h2>
       {children}
     </section>
   )
@@ -1220,14 +1202,14 @@ function Banner({ children, tone = 'info' }: { children: ReactNode; tone?: 'info
   )
 }
 
-function DataTable({ headers, rows }: { headers: string[]; rows: ReactNode[][] }) {
+function DataTable({ headers, numericColumns = [], rows }: { headers: string[]; numericColumns?: readonly number[]; rows: ReactNode[][] }) {
   return (
     <TableWrap className="mt-6">
-      <Table>
+      <Table numericColumns={numericColumns}>
         <thead>
           <tr>
             {headers.map((header) => (
-              <th key={header} className="px-3 py-2 font-semibold">
+              <th key={header}>
                 {header}
               </th>
             ))}
@@ -1238,7 +1220,7 @@ function DataTable({ headers, rows }: { headers: string[]; rows: ReactNode[][] }
             rows.map((row, index) => (
               <tr key={index} className="border-t border-border">
                 {row.map((cell, cellIndex) => (
-                  <td key={cellIndex} className="px-3 py-2 align-top">
+                  <td key={cellIndex} className="align-top">
                     {cell}
                   </td>
                 ))}
@@ -1246,8 +1228,8 @@ function DataTable({ headers, rows }: { headers: string[]; rows: ReactNode[][] }
             ))
           ) : (
             <tr>
-              <td className="px-3 py-5 text-center text-muted-foreground" colSpan={headers.length}>
-                Nenhum registro encontrado.
+              <td className="py-5" colSpan={headers.length}>
+                <EmptyState title="Ainda não há registros" description="Use o formulário acima para criar o primeiro registro desta lista." />
               </td>
             </tr>
           )}
@@ -1267,7 +1249,7 @@ function IconButton({
   onClick: () => void
 }) {
   return (
-    <Button type="button" aria-label={label} title={label} variant="destructive" size="icon" onClick={onClick}>
+    <Button type="button" aria-label={label} title={label} variant="danger" size="icon" onClick={onClick}>
       {children}
     </Button>
   )

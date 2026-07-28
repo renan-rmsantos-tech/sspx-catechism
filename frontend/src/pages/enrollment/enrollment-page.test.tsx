@@ -121,4 +121,16 @@ describe('EnrollmentPage', () => {
       isRenewal: false, previousName: null,
     })
   })
+
+  it('keeps all four enrollment steps reachable with rail navigation', () => {
+    render(<EnrollmentPage />)
+    expect(screen.getAllByTestId(/stepper-rail-/)).toHaveLength(4)
+    fillStudentStep()
+    expect(screen.getByRole('heading', { name: 'Histórico religioso' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    expect(screen.getByRole('heading', { name: 'Dados dos responsáveis' })).toBeInTheDocument()
+    fillGuardianStep()
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    expect(screen.getByRole('heading', { name: 'Revise antes de enviar' })).toBeInTheDocument()
+  })
 })

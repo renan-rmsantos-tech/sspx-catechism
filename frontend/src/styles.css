@@ -10,6 +10,7 @@
   --border: oklch(90% 0.006 240);
   --accent: oklch(56% 0.12 170);
   --accent-soft: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --accent-wash: color-mix(in srgb, var(--accent) 5%, var(--surface));
   --accent-line: color-mix(in srgb, var(--accent) 32%, var(--surface));
   --accent-ink: oklch(40% 0.09 170);
   --accent-press: color-mix(in srgb, var(--accent) 86%, black);
@@ -25,6 +26,7 @@
   --warn-ink: oklch(45% 0.14 45);
   --danger: oklch(55% 0.19 25);
   --danger-soft: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  --danger-wash: color-mix(in srgb, var(--danger) 4%, var(--surface));
   --danger-ink: oklch(45% 0.17 25);
   --info: oklch(58% 0.10 250);
   --info-soft: color-mix(in srgb, var(--info) 12%, var(--surface));
@@ -44,6 +46,7 @@
   --nav-w: 244px; --container: 1200px; --container-read: 760px; --touch: 44px;
   --dur-fast: 140ms; --dur: 160ms; --dur-slow: 220ms; --ease: ease; --ease-enter: cubic-bezier(.2, .7, .3, 1);
   --focus-field-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  --auth-aside-gradient: linear-gradient(165deg, var(--accent-ink), color-mix(in srgb, var(--accent-ink) 60%, black));
   /* shadcn compatibility aliases; new UI uses the DS tokens above. */
   --background: var(--bg); --foreground: var(--fg); --card: var(--surface); --card-foreground: var(--fg);
   --primary: var(--accent); --primary-foreground: var(--surface); --secondary: var(--surface-2); --secondary-foreground: var(--fg);
@@ -57,8 +60,8 @@
   --color-muted: var(--surface-2); --color-muted-foreground: var(--muted); --color-accent: var(--accent); --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border); --color-input: var(--input); --color-ring: var(--ring); --color-destructive: var(--destructive);
   --color-surface: var(--surface); --color-surface-2: var(--surface-2); --color-surface-3: var(--surface-3);
-  --color-fg: var(--fg); --color-fg-soft: var(--fg-soft); --color-accent-soft: var(--accent-soft); --color-accent-line: var(--accent-line); --color-accent-ink: var(--accent-ink);
-  --color-warn: var(--warn); --color-warn-soft: var(--warn-soft); --color-warn-ink: var(--warn-ink); --color-danger-soft: var(--danger-soft); --color-danger-ink: var(--danger-ink);
+  --color-fg: var(--fg); --color-fg-soft: var(--fg-soft); --color-accent-soft: var(--accent-soft); --color-accent-wash: var(--accent-wash); --color-accent-line: var(--accent-line); --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn); --color-warn-soft: var(--warn-soft); --color-warn-ink: var(--warn-ink); --color-danger-soft: var(--danger-soft); --color-danger-wash: var(--danger-wash); --color-danger-ink: var(--danger-ink);
   --color-info: var(--info); --color-info-soft: var(--info-soft); --color-info-ink: var(--info-ink); --color-gold: var(--gold); --color-gold-soft: var(--gold-soft); --color-gold-ink: var(--gold-ink);
   --font-sans: var(--font-body); --font-display: var(--font-display); --font-mono: var(--font-mono); --font-logo: var(--font-logo);
   --radius-sm: var(--r-sm); --radius-md: var(--r); --radius-lg: var(--r-lg); --radius-xl: var(--r-xl);

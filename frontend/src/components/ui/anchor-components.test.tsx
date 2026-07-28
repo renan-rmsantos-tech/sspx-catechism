@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Button } from './button'
 import { Chip, NetworkChip } from './chip'
-import { Field, Input, Select, Textarea } from './field'
+import { Field, Input, SearchField, Select, Textarea } from './field'
 import { Card } from './card'
 import { AttendanceRow } from './attendance-row'
 import { Seg } from './seg'
@@ -16,6 +16,7 @@ import { Stepper } from './stepper'
 import { Sidebar } from './sidebar'
 import { Drawer } from './drawer'
 import { Brand } from './brand'
+import { AuthShell } from '@/components/auth/auth-shell'
 
 vi.mock('@/lib/attendance-sync', () => ({ getPendingSessionCount: vi.fn().mockResolvedValue(2) }))
 
@@ -44,6 +45,13 @@ describe('anchor components', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Escolha uma turma')
   })
 
+  it('renders a touch-sized search field with its icon inside the control', () => {
+    render(<SearchField label="Buscar catequizandos" placeholder="Buscar por nome" />)
+    const search = screen.getByRole('searchbox', { name: 'Buscar catequizandos' })
+    expect(search).toHaveClass('min-h-touch', 'pl-10')
+    expect(search.previousElementSibling).toHaveClass('absolute', 'left-3')
+  })
+
   it('marks attendance with a touch-floor control', () => {
     const onMark = vi.fn()
     render(<AttendanceRow student={{ id: '1', name: 'Ana' }} mark={null} onMark={onMark} />)
@@ -53,20 +61,38 @@ describe('anchor components', () => {
     expect(onMark).toHaveBeenCalledWith(true)
   })
 
+  it('uses the subtle attendance washes for present and absent rows', () => {
+    const { rerender } = render(<AttendanceRow student={{ id: '1', name: 'Ana' }} mark onMark={vi.fn()} />)
+    expect(screen.getByText('Ana').closest('[class*=bg-]')).toHaveClass('bg-accent-wash')
+    rerender(<AttendanceRow student={{ id: '1', name: 'Ana' }} mark={false} onMark={vi.fn()} />)
+    expect(screen.getByText('Ana').closest('[class*=bg-]')).toHaveClass('bg-danger-wash')
+  })
+
   it('renders surface and selection primitives', () => {
     const onChange = vi.fn()
     render(<><Card variant="accent">Cartão</Card><Seg ariaLabel="Presença" value="yes" onValueChange={onChange} options={[{ value: 'yes', label: 'Sim' }, { value: 'no', label: 'Não' }]} /><Choice legend="Comunhão" name="communion" onChange={onChange} options={[{ value: 'yes', label: 'Sim' }]} /><TableWrap><Table><tbody><tr><td>Valor</td></tr></tbody></Table></TableWrap></>)
     expect(screen.getByText('Cartão')).toHaveClass('bg-accent-soft')
+    expect(screen.getByRole('cell', { name: 'Valor' })).not.toHaveClass('tabular-nums', 'text-right', 'whitespace-nowrap')
     expect(screen.getByRole('button', { name: 'Sim' })).toHaveAttribute('aria-pressed', 'true')
     fireEvent.click(screen.getByLabelText('Sim'))
     expect(onChange).toHaveBeenCalledWith('yes')
   })
 
-  it('maps metrics dimensions and marks the current step', () => {
+  it('applies tabular treatment only to declared numeric table columns', () => {
+    render(<Table numericColumns={[1]}><thead><tr><th>Nome</th><th>Presenças</th></tr></thead><tbody><tr><td>Ana</td><td>12</td></tr></tbody></Table>)
+    expect(screen.getByRole('columnheader', { name: 'Nome' })).not.toHaveClass('tabular-nums', 'text-right', 'whitespace-nowrap')
+    expect(screen.getByRole('columnheader', { name: 'Presenças' })).toHaveClass('font-mono', 'tabular-nums', 'text-right', 'whitespace-nowrap')
+    expect(screen.getByRole('cell', { name: '12' })).toHaveClass('font-mono', 'tabular-nums', 'text-right', 'whitespace-nowrap')
+  })
+
+  it('maps metrics dimensions and renders equal stepper rails with responsive mono labels', () => {
     render(<><StatCard value={86} unit="%" label="Presença" /><Meter percent={64} label="Meta" /><BarChart data={[{ label: 'Jan', value: 50 }]} max={100} /><ProgressRail done={2} total={4} /><Stepper current={1} steps={[{ label: 'Dados' }, { label: 'Contato' }]} /></>)
     expect(screen.getByTestId('meter-fill')).toHaveStyle({ width: '64%' })
     expect(screen.getByTestId('bar-0')).toHaveStyle({ height: '50%' })
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Contato')
+    expect(screen.getByTestId('stepper-rail-0')).toHaveClass('h-1', 'bg-accent')
+    expect(screen.getByTestId('stepper-rail-1')).toHaveClass('bg-[linear-gradient(90deg,var(--accent)_50%,var(--surface-3)_50%)]')
+    expect(screen.getByText('Dados')).toHaveClass('hidden', 'min-[720px]:block', 'font-mono')
   })
 
   it('renders navigation, drawer, brand, and an actionable empty state', () => {
@@ -74,7 +100,26 @@ describe('anchor components', () => {
     expect(screen.getByRole('link', { name: /Turmas/, hidden: true })).toHaveTextContent('3')
     expect(screen.getByRole('dialog')).toHaveTextContent('Conteúdo')
     expect(screen.getByLabelText('Catequese SSPX')).toBeInTheDocument()
+    expect(screen.getByLabelText('Catequese SSPX').querySelector('svg')).toBeInTheDocument()
     expect(screen.getByText('Crie uma turma para começar.')).toBeInTheDocument()
+  })
+
+  it('uses token-driven brand variants and the favicon form only below 20px', () => {
+    const { rerender } = render(<Brand onInk />)
+    const brand = screen.getByLabelText('Catequese SSPX')
+    expect(brand).toHaveClass('text-surface', '[--mk-field:var(--accent-ink)]')
+    expect(brand.querySelector('svg path[fill="currentColor"]')).toBeInTheDocument()
+    expect(brand.querySelector('img')).not.toBeInTheDocument()
+    rerender(<Brand markHeight={16} />)
+    expect(screen.getByLabelText('Catequese SSPX').querySelector('img')).toHaveAttribute('src', '/favicon.svg')
+  })
+
+  it('renders the auth shell with its token gradient and without image filters', () => {
+    render(<AuthShell title="Entrar">Conteúdo</AuthShell>)
+    const aside = document.querySelector('aside')
+    expect(aside).toHaveClass('bg-[image:var(--auth-aside-gradient)]')
+    expect(aside?.className).not.toMatch(/filter|brightness|invert/)
+    expect(aside?.querySelector('img')).not.toBeInTheDocument()
   })
 
   it('keeps keyboard focus visible on every interactive primitive', async () => {

@@ -54,14 +54,14 @@ export const RULES: readonly Rule[] = [
   {
     name: 'classe-inexistente',
     reason: 'This class exists in the reference design but was not translated into the project.',
-    enforcement: 'report',
+    enforcement: 'block',
     inspect: missingClasses,
     fixture: { filename: 'legacy.tsx', source: 'export const field = <input className="input" />' },
   },
   {
     name: 'controle-cru',
     reason: 'Use a component from components/ui so touch target and focus behavior stay consistent.',
-    enforcement: 'report',
+    enforcement: 'block',
     inspect: rawControls,
     fixture: { filename: 'raw.tsx', source: 'export const field = <input />' },
   },
@@ -75,7 +75,7 @@ export const RULES: readonly Rule[] = [
   {
     name: 'apelido-de-variante',
     reason: 'Use the design-system variant names instead of inherited aliases.',
-    enforcement: 'report',
+    enforcement: 'block',
     inspect: (file, source) => matches(source, VARIANT_ALIAS, file, (match) => match[0]),
     fixture: { filename: 'alias.tsx', source: 'export const action = <Button variant="outline" />' },
   },

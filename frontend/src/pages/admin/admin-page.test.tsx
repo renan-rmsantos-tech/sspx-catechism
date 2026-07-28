@@ -186,6 +186,68 @@ describe('AdminPage', () => {
     const nav = screen.getByRole('navigation')
     expect(nav.className).toContain('flex-col')
     expect(nav.className).not.toMatch(/(^|\s)flex-row(\s|$)/)
+    expect(screen.getByText('Online')).toBeInTheDocument()
+  })
+
+  it('associa os rótulos aos controles nas sete views do admin (BUG-20260728-field-id)', async () => {
+    setupFetch()
+    const views = [
+      { path: '/admin/anos', heading: 'Anos letivos', labels: ['Ano', 'Abertura das inscrições', 'Encerramento das inscrições'] },
+      { path: '/admin/calendario', heading: 'Calendário de aulas', labels: ['Ano letivo', 'Datas (uma por linha)'] },
+      { path: '/admin/turmas', heading: 'Turmas', labels: ['Nome', 'Ano letivo', 'Nível', 'Horário', 'Catequista Um'] },
+      { path: '/admin/alunos', heading: 'Alunos', labels: ['Buscar alunos', 'Turma', 'Nome completo', 'Telefone', 'E-mail'] },
+      { path: '/admin/catequistas', heading: 'Catequistas e coordenadores', labels: ['Nome', 'E-mail', 'Papel de Catequista Um'] },
+      { path: '/admin/inscricoes', heading: 'Revisão de inscrições', labels: ['Buscar inscrições'] },
+      { path: '/admin/relatorios', heading: 'Relatórios de presença', labels: ['Turma', 'De', 'Até'] },
+    ]
+
+    for (const view of views) {
+      const rendered = renderAdmin(view.path)
+      await screen.findByRole('heading', { name: view.heading })
+      for (const label of view.labels) expect(screen.getByLabelText(label)).toBeInTheDocument()
+      rendered.unmount()
+    }
+  })
+
+  it('mostra estado de inscrição em chip pt-BR e reserva dourado para renovação (BUG-20260728-chips-inscricao)', async () => {
+    setupFetch()
+    renderAdmin('/admin/inscricoes')
+
+    await screen.findByRole('heading', { name: 'Revisão de inscrições' })
+    expect(await screen.findByText('Pendente')).toHaveAttribute('data-slot', 'chip')
+    expect(screen.queryByText('pending')).not.toBeInTheDocument()
+  })
+
+  it('renders all admin tables with declared numeric columns aligned by the primitive', async () => {
+    setupFetch()
+    const tables = [
+      { path: '/admin/anos', heading: 'Anos letivos', header: 'Ano', numeric: true },
+      { path: '/admin/turmas', heading: 'Turmas', header: 'Ano', numeric: true },
+      { path: '/admin/alunos', heading: 'Alunos', header: 'Nome', numeric: false },
+      { path: '/admin/catequistas', heading: 'Catequistas e coordenadores', header: 'Nome', numeric: false },
+      { path: '/admin/inscricoes', heading: 'Revisão de inscrições', header: 'Nome', numeric: false },
+    ]
+
+    for (const table of tables) {
+      const view = renderAdmin(table.path)
+      await screen.findByRole('heading', { name: table.heading })
+      const header = screen.getByRole('columnheader', { name: table.header })
+      if (table.numeric) expect(header).toHaveClass('font-mono', 'tabular-nums', 'text-right', 'whitespace-nowrap')
+      else expect(header).not.toHaveClass('tabular-nums', 'text-right', 'whitespace-nowrap')
+      view.unmount()
+    }
+
+    const view = renderAdmin('/admin/relatorios')
+    const user = userEvent.setup()
+    await screen.findByRole('heading', { name: 'Relatórios de presença' })
+    await screen.findByRole('option', { name: 'Primeira Comunhão' })
+    await user.selectOptions(screen.getByLabelText('Turma'), 'class-1')
+    fireEvent.change(screen.getByLabelText('De'), { target: { value: '2026-01-01' } })
+    fireEvent.change(screen.getByLabelText('Até'), { target: { value: '2026-01-31' } })
+    await waitFor(() => expect((screen.getByLabelText('Turma') as HTMLSelectElement).value).toBe('class-1'))
+    await user.click(screen.getByRole('button', { name: 'Pré-visualizar' }))
+    expect(await screen.findByRole('columnheader', { name: 'Presenças' })).toHaveClass('font-mono', 'tabular-nums', 'text-right', 'whitespace-nowrap')
+    view.unmount()
   })
 
   it('validates and submits academic year forms to the admin API', async () => {

@@ -1,5 +1,8 @@
-import type { HTMLAttributes, TableHTMLAttributes } from 'react'
+import { Children, cloneElement, isValidElement, type HTMLAttributes, type ReactNode, type TableHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 function TableWrap({ className, ...props }: HTMLAttributes<HTMLDivElement>) { return <div data-slot="table-wrap" className={cn('overflow-x-auto rounded-[var(--r-lg)] border border-border', className)} {...props} /> }
-function Table({ className, ...props }: TableHTMLAttributes<HTMLTableElement>) { return <table className={cn('w-full min-w-[620px] border-collapse text-left text-sm [&_th]:bg-surface-2 [&_th]:px-4 [&_th]:py-3 [&_th]:font-mono [&_th]:text-[11px] [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-[.1em] [&_th]:text-muted [&_td]:border-t [&_td]:border-border [&_td]:px-4 [&_td]:py-3', className)} {...props} /> }
+const numericCell = 'font-mono tabular-nums text-right whitespace-nowrap'
+type TableProps = TableHTMLAttributes<HTMLTableElement> & { numericColumns?: readonly number[] }
+function numericCells(children: ReactNode, numericColumns: readonly number[]): ReactNode { return Children.map(children, (child) => { if (!isValidElement<{ children?: ReactNode; className?: string }>(child)) return child; if (child.type === 'tr') return cloneElement(child, undefined, Children.map(child.props.children, (cell, index) => isValidElement<{ className?: string }>(cell) && (cell.type === 'th' || cell.type === 'td') && numericColumns.includes(index) ? cloneElement(cell, { className: cn(cell.props.className, numericCell) }) : cell)); return cloneElement(child, undefined, numericCells(child.props.children, numericColumns)) }) }
+function Table({ className, numericColumns = [], children, ...props }: TableProps) { return <table className={cn('w-full min-w-[620px] border-collapse text-left text-sm [&_th]:bg-surface-2 [&_th]:px-4 [&_th]:py-3 [&_th]:font-mono [&_th]:text-[11px] [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-[.1em] [&_th]:text-muted [&_td]:border-t [&_td]:border-border [&_td]:px-4 [&_td]:py-3', className)} {...props}>{numericCells(children, numericColumns)}</table> }
 export { Table, TableWrap }
