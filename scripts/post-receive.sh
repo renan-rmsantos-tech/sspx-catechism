@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 #
-# Hook de deploy — roda NO DROPLET, disparado por `git push production main`.
+# Hook de deploy push-to-deploy — roda NO SERVIDOR, disparado por
+# `git push production main`. Genérico: serve qualquer projeto docker compose
+# do droplet sem edição, porque descobre o repo pelo próprio caminho do hook e
+# lê o resto do `git config`. Ver infra/README.md §8.
 #
 # Substitui o .github/workflows/deploy.yml enquanto o GitHub Actions está
-# bloqueado no nível da conta (ver infra/README.md §8). O portão de testes NÃO
-# vive aqui: ele está dentro dos Dockerfiles (backend/Dockerfile roda
-# `go test ./...`, infra/Caddy.Dockerfile roda `npx vitest run`). Se um teste
-# quebra, a imagem não constrói, o `compose up` falha e este script reverte.
+# bloqueado no nível da conta. O portão de testes NÃO vive aqui: ele está dentro
+# dos Dockerfiles (`RUN go test ./...`, `RUN npx vitest run`). Se um teste quebra,
+# a imagem não constrói, o `compose up` falha e este script reverte.
 #
-# Instalação (ver infra/README.md §8):
+# Instalação, idêntica em qualquer projeto:
 #   git config receive.denyCurrentBranch updateInstead
+#   git config deploy.healthUrl   https://SEU-DOMINIO/rota-de-health
+#   git config deploy.composeFile compose.traefik.yaml     # opcional (é o padrão)
 #   cp scripts/post-receive.sh .git/hooks/post-receive && chmod +x .git/hooks/post-receive
 #
 # Copie, não faça symlink: com `updateInstead` o work-tree é atualizado ANTES do
@@ -20,17 +24,36 @@ set -uo pipefail
 # push e quebrariam qualquer comando git executado no work-tree abaixo.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_QUARANTINE_PATH
 
-APP_DIR=${APP_DIR:-/opt/apps/projects/sspx-catechism}
-COMPOSE_FILE=${COMPOSE_FILE:-compose.traefik.yaml}
-HEALTH_URL=${HEALTH_URL:-https://catequese.apps.rmsantos.tech/api/health}
-LOG_FILE=${LOG_FILE:-$HOME/deploy-sspx-catechism.log}
+# O hook mora em <repo>/.git/hooks/post-receive, então dois níveis acima é o repo.
+# É o que dispensa configurar caminho por projeto.
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
+APP_DIR=${APP_DIR:-$(cd "$HOOK_DIR/../.." && pwd)}
+APP_NAME=$(basename "$APP_DIR")
+
+COMPOSE_FILE=${COMPOSE_FILE:-$(git -C "$APP_DIR" config --get deploy.composeFile || echo compose.traefik.yaml)}
+HEALTH_URL=${HEALTH_URL:-$(git -C "$APP_DIR" config --get deploy.healthUrl || true)}
+LOG_FILE=${LOG_FILE:-$HOME/deploy-$APP_NAME.log}
+LOCK_FILE=${LOCK_FILE:-$HOME/.deploy-$APP_NAME.lock}
 
 log() { printf '%s  %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*" | tee -a "$LOG_FILE"; }
 
-# Espera o /api/health responder 200 através do Traefik — valida o caminho
-# inteiro (Traefik -> Caddy -> API), não só "o container subiu".
+# Um deploy por projeto de cada vez. Dois pushes simultâneos se atropelariam no
+# meio do build (era o `concurrency: deploy-production` do workflow do GitHub).
+# O lock é por projeto, então projetos diferentes seguem deployando em paralelo.
+exec 9>"$LOCK_FILE"
+if ! flock -w 900 9; then
+  log "outro deploy de $APP_NAME segue rodando após 15min — abortando este"
+  exit 1
+fi
+
+# Bate na URL pública — valida o caminho inteiro (Traefik -> app), não só
+# "o container subiu".
 wait_healthy() {
   local i code
+  if [ -z "$HEALTH_URL" ]; then
+    log "AVISO: deploy.healthUrl não configurado — publicando sem verificar saúde"
+    return 0
+  fi
   for i in $(seq 1 20); do
     code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$HEALTH_URL" || echo 000)
     if [ "$code" = "200" ]; then

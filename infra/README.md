@@ -156,12 +156,23 @@ ssh renan@SEU_IP
 cd /opt/apps/projects/sspx-catechism
 git pull --ff-only                       # traz scripts/post-receive.sh
 git config receive.denyCurrentBranch updateInstead
+git config deploy.healthUrl https://catequese.apps.rmsantos.tech/api/health
 cp scripts/post-receive.sh .git/hooks/post-receive
 chmod +x .git/hooks/post-receive
 ```
 > Copie, **não** faça symlink: com `updateInstead` o work-tree é atualizado antes do
 > hook rodar, e reescrever o script em execução corrompe o bash. Se
 > `scripts/post-receive.sh` mudar, repita o `cp`.
+
+O script não tem nada deste projeto embutido: ele descobre o repo pelo próprio
+caminho (`<repo>/.git/hooks/post-receive` → dois níveis acima) e lê o resto do
+`git config` (`deploy.healthUrl`, `deploy.composeFile`, padrão
+`compose.traefik.yaml`). O mesmo arquivo serve qualquer projeto compose do droplet
+— ver "Reaproveitando em outros projetos" abaixo.
+
+Deploys do mesmo projeto são serializados por `flock` (equivalente ao
+`concurrency: deploy-production` que o workflow do GitHub tinha); o lock é por
+projeto, então projetos diferentes seguem publicando em paralelo.
 
 **Na sua máquina — uma vez:**
 ```bash
@@ -191,9 +202,41 @@ CI antigo rodava.
 
 ### Rollback automático
 
-O `post-receive` reverte sozinho (`git reset --hard` para a revisão anterior +
-rebuild) se o build/testes falharem **ou** se `/api/health` não responder 200
-através do Traefik em ~60s. Um deploy ruim volta ao estado anterior sem intervenção.
+O `post-receive` reverte sozinho se o build/testes falharem **ou** se
+`deploy.healthUrl` não responder 200 através do Traefik em ~60s. Ele distingue os
+dois casos, e a diferença importa:
+
+| Falha | O que aconteceu | Ação | Impacto |
+|---|---|---|---|
+| Teste/build | as imagens novas nunca existiram, containers intactos | só `git reset --hard` | **zero** — nenhum restart |
+| Health check | os containers novos já estão no ar | `git reset --hard` + rebuild | ~90s fora |
+
+Ambos os caminhos foram exercitados de propósito em produção (2026-07-27) com
+commits de simulacro: o de build não reiniciou container nenhum (mesmos IDs de
+imagem e `StartedAt` antes e depois), e o de health ficou ~90s com `/api` em 502
+antes de voltar sozinho ao 200.
+
+### Reaproveitando em outros projetos
+
+O `scripts/post-receive.sh` é genérico. Para qualquer outro projeto compose do
+droplet, o roteiro é:
+
+1. **Portão de testes nos Dockerfiles do projeto** — um `RUN` que roda a suíte
+   dele antes do build de produção. É a única parte que muda de projeto para
+   projeto (`go test`, `vitest`, `pytest`…). Confirme que a suíte está verde
+   antes, senão você trava todos os deploys.
+2. Copiar `scripts/post-receive.sh` para o repo dele.
+3. No servidor: `git config receive.denyCurrentBranch updateInstead`,
+   `git config deploy.healthUrl <url>` e o `cp` para `.git/hooks/post-receive`.
+4. Na sua máquina: `git remote add production renan@SEU_IP:/opt/apps/projects/<projeto>`.
+
+Pré-requisitos: repo já clonado no servidor, work-tree limpo (o `updateInstead`
+recusa push com alteração pendente) e git ≥ 2.3.
+
+**Limitação conhecida:** o build roda na própria máquina de produção, competindo
+por CPU com as aplicações no ar (~60s para o frontend no droplet de 2 vCPU). É a
+diferença real em relação ao runner do GitHub, que buildava em outro lugar. Com
+poucos projetos é aceitável; se virarem muitos, vale um servidor de build.
 
 ## 9. Evidências finais de produção
 Preencha este bloco durante o deploy real. Não marque a tarefa final como concluída
