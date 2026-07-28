@@ -1,6 +1,6 @@
 ---
 title: "A porta de fidelidade"
-status: pending
+status: completed
 type: test
 complexity: high
 dependencies: []
@@ -35,13 +35,13 @@ Construir a verificação automática de fidelidade ao design system e calibrá-
 
 ## Subtasks
 
-- [ ] 1.1 Criar o varredor de arquivos, os tipos (`Rule`, `Violation`, `RuleContext`) e o condutor que derrama as duas suítes a partir do registro
-- [ ] 1.2 Implementar `legacyOnlyClasses()` — extrair seletores de classe do CSS de referência, inclusive aninhados, e subtrair os que o projeto define
-- [ ] 1.3 Implementar as cinco regras com seus fixtures plantados, nos níveis de aplicação definidos acima
-- [ ] 1.4 Migrar `color-literals.test.ts` para o registro, mantendo-a em `block` e preservando a auto-verificação
-- [ ] 1.5 Adicionar a linha de `COPY` em `infra/Caddy.Dockerfile` e o hook `scripts/pre-push.sh`, com a instalação documentada em `infra/README.md` §8
-- [ ] 1.6 Exercitar um deploy real (`git push production main`) confirmando que a regra `classe-inexistente` encontra a folha de referência dentro da imagem
-- [ ] 1.7 Emitir e publicar o relatório de divergências ordenado por superfície
+- [x] 1.1 Criar o varredor de arquivos, os tipos (`Rule`, `Violation`, `RuleContext`) e o condutor que derrama as duas suítes a partir do registro
+- [x] 1.2 Implementar `legacyOnlyClasses()` — extrair seletores de classe do CSS de referência, inclusive aninhados, e subtrair os que o projeto define
+- [x] 1.3 Implementar as cinco regras com seus fixtures plantados, nos níveis de aplicação definidos acima
+- [x] 1.4 Migrar `color-literals.test.ts` para o registro, mantendo-a em `block` e preservando a auto-verificação
+- [x] 1.5 Adicionar a linha de `COPY` em `infra/Caddy.Dockerfile` e o hook `scripts/pre-push.sh`, com a instalação documentada em `infra/README.md` §8
+- [x] 1.6 Exercitar um deploy real (`git push production main`) confirmando que a regra `classe-inexistente` encontra a folha de referência dentro da imagem
+- [x] 1.7 Emitir e publicar o relatório de divergências ordenado por superfície
 
 ## Implementation Details
 

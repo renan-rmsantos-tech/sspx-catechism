@@ -41,13 +41,13 @@ Trazer o console da coordenação para dentro do design system. É a tarefa que 
 
 ## Subtasks
 
-- [ ] 4.1 Remover o `Field` local e migrar `AcademicYearsView` e `CalendarView`, rodando a suíte do admin ao fim de cada
-- [ ] 4.2 Migrar `ClassesView` e `StudentsView` — a segunda concentra 11 das 31 ocorrências
-- [ ] 4.3 Migrar `CatechistsView`, `EnrollmentsView` e `ReportsView`, incluindo `StudentPicker` e `RejectBox`
-- [ ] 4.4 Trocar estado por chip em português e aplicar o dourado à renovação
-- [ ] 4.5 Adicionar o indicador de rede ao shell, ajustar `Section` aos tokens e reescrever o vazio de `DataTable`
-- [ ] 4.6 Virar `classe-inexistente`, `controle-cru` e `apelido-de-variante` para `block`
-- [ ] 4.7 Responder a checklist do `design/SKILL.md` nas sete telas e registrar em `docs/qa/`
+- [x] 4.1 Remover o `Field` local e migrar `AcademicYearsView` e `CalendarView`, rodando a suíte do admin ao fim de cada
+- [x] 4.2 Migrar `ClassesView` e `StudentsView` — a segunda concentra 11 das 31 ocorrências
+- [x] 4.3 Migrar `CatechistsView`, `EnrollmentsView` e `ReportsView`, incluindo `StudentPicker` e `RejectBox`
+- [x] 4.4 Trocar estado por chip em português e aplicar o dourado à renovação
+- [x] 4.5 Adicionar o indicador de rede ao shell, ajustar `Section` aos tokens e reescrever o vazio de `DataTable`
+- [x] 4.6 Virar `classe-inexistente`, `controle-cru` e `apelido-de-variante` para `block`
+- [x] 4.7 Responder a checklist do `design/SKILL.md` nas sete telas e registrar em `docs/qa/`
 
 ## Implementation Details
 

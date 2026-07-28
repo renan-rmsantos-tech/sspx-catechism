@@ -36,12 +36,12 @@ Preparar a biblioteca de primitivos para a migração do console da coordenaçã
 
 ## Subtasks
 
-- [ ] 3.1 Estender a API de `Table`/`DataTable` para declaração de colunas numéricas, aplicando o tratamento no primitivo
-- [ ] 3.2 Ajustar as 6 chamadas de `DataTable` do admin à nova API, declarando quais colunas são numéricas em cada uma
-- [ ] 3.3 Criar `SearchField` em `field.tsx`, com o ícone dentro do controle
-- [ ] 3.4 Podar as variantes-apelido de `button.tsx` para os quatro nomes do sistema
-- [ ] 3.5 Renomear os 17 usos afetados e confirmar com `tsc -b` que nenhum escapou
-- [ ] 3.6 Estender o contrato dos primitivos com o caso da coluna tabular
+- [x] 3.1 Estender a API de `Table`/`DataTable` para declaração de colunas numéricas, aplicando o tratamento no primitivo
+- [x] 3.2 Ajustar as 6 chamadas de `DataTable` do admin à nova API, declarando quais colunas são numéricas em cada uma
+- [x] 3.3 Criar `SearchField` em `field.tsx`, com o ícone dentro do controle
+- [x] 3.4 Podar as variantes-apelido de `button.tsx` para os quatro nomes do sistema
+- [x] 3.5 Renomear os 17 usos afetados e confirmar com `tsc -b` que nenhum escapou
+- [x] 3.6 Estender o contrato dos primitivos com o caso da coluna tabular
 
 ## Implementation Details
 
