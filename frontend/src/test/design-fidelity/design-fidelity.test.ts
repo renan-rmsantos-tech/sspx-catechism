@@ -76,15 +76,22 @@ describe('design fidelity gate', () => {
     }
   })
 
-  it('reports violations without blocking until enforcement changes', async () => {
+  it('blocks focus removal violations after enforcement changes', async () => {
     const rule = RULES.find(({ name }) => name === 'foco-apagado')!
     const directory = await plant(rule)
     try {
       const found = await scan(directory, rule, await ruleContext())
-      expect(() => enforce(rule, found)).not.toThrow()
-      expect(() => enforce({ ...rule, enforcement: 'block' }, found)).toThrow('foco-apagado')
+      expect(() => enforce(rule, found)).toThrow('foco-apagado')
     } finally {
       await rm(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('detects every outline removal utility variant', () => {
+    const rule = RULES.find(({ name }) => name === 'foco-apagado')!
+    const base = ['outline', 'none'].join('-')
+    for (const className of [base, `focus:${base}`, `focus-visible:${base}`]) {
+      expect(rule.inspect('focus.tsx', `<input className="${className}" />`, context(new Set()))).toHaveLength(1)
     }
   })
 

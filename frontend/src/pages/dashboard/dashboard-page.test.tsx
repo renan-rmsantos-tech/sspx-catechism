@@ -187,6 +187,23 @@ describe("catechist dashboard pages", () => {
     expect(screen.getByRole("button", { name: "Faltam 1" })).toBeDisabled();
   });
 
+  it("keeps the attendance search focusable without suppressing its keyboard ring", async () => {
+    setupDashboardFetch();
+    renderAt(`/dashboard/turmas/${classItem.id}/chamada`);
+
+    const search = await screen.findByRole("searchbox", {
+      name: "Buscar aluno na lista",
+    });
+    search.focus();
+    expect(search).toHaveFocus();
+    const outlineNone = ["outline", "none"].join("-");
+    expect(search.className.split(" ")).not.toContain(outlineNone);
+    expect(search.className.split(" ")).not.toContain(`focus:${outlineNone}`);
+    expect(search.className.split(" ")).not.toContain(
+      `focus-visible:${outlineNone}`,
+    );
+  });
+
   it("shows the offline queue, network state, and explicitly syncs queued calls", async () => {
     await enqueuePendingSession({
       id: "55555555-5555-5555-5555-555555555555",

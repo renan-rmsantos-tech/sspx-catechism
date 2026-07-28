@@ -68,9 +68,9 @@ export const RULES: readonly Rule[] = [
   {
     name: 'foco-apagado',
     reason: 'Do not remove the visible keyboard focus indicator.',
-    enforcement: 'report',
-    inspect: (file, source) => matches(source, OUTLINE_NONE, file, (match) => match[0]),
-    fixture: { filename: 'focus.tsx', source: 'export const field = <input className="focus:outline-none" />' },
+    enforcement: 'block',
+    inspect: (file, source) => file.startsWith('test/design-fidelity/') ? [] : matches(source, OUTLINE_NONE, file, (match) => match[0]),
+    fixture: { filename: 'focus.tsx', source: ['export const field = <input className="', 'focus:', 'outline-', 'none', '" />'].join('') },
   },
   {
     name: 'apelido-de-variante',

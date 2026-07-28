@@ -328,7 +328,7 @@ export function AttendancePage() {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  className="min-h-touch w-full rounded-[var(--r)] border border-border bg-surface py-2 pr-3 pl-10 text-sm outline-none focus:border-accent"
+                  className="min-h-touch w-full rounded-[var(--r)] border border-border bg-surface py-2 pr-3 pl-10 text-sm focus:border-accent"
                   placeholder="Buscar aluno"
                   aria-label="Buscar aluno na lista"
                 />

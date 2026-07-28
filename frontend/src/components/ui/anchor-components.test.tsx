@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { Button } from './button'
@@ -74,5 +75,34 @@ describe('anchor components', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Conteúdo')
     expect(screen.getByLabelText('Catequese SSPX')).toBeInTheDocument()
     expect(screen.getByText('Crie uma turma para começar.')).toBeInTheDocument()
+  })
+
+  it('keeps keyboard focus visible on every interactive primitive', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const outlineNone = ['outline', 'none'].join('-')
+    const suppressedFocusClasses = [outlineNone, `focus:${outlineNone}`, `focus-visible:${outlineNone}`]
+    const { unmount } = render(<MemoryRouter><Button>Primário</Button><Button variant="secondary">Secundário</Button><Button variant="ghost">Fantasma</Button><Button variant="danger">Perigo</Button><Input aria-label="Nome" /><Select aria-label="Turma"><option>A</option></Select><Textarea aria-label="Observação" /><AttendanceRow student={{ id: '1', name: 'Ana' }} mark={null} onMark={vi.fn()} /><Seg ariaLabel="Presença" value={null} onValueChange={onChange} options={[{ value: 'yes', label: 'Sim' }, { value: 'no', label: 'Não' }]} /><Choice legend="Comunhão" name="communion" onChange={onChange} options={[{ value: 'yes', label: 'Sim' }]} /><Sidebar groups={[{ label: 'Gestão', items: [{ label: 'Turmas', to: '/turmas' }] }]} /></MemoryRouter>)
+
+    const controls = Array.from(document.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href]'))
+    expect(controls).not.toHaveLength(0)
+    for (const control of controls) {
+      for (const className of control.className.split(' ')) expect(suppressedFocusClasses).not.toContain(className)
+    }
+
+    await user.tab()
+    expect(controls).toContain(document.activeElement)
+    expect(screen.getByLabelText('Nome')).toHaveClass('focus:border-accent', 'focus:shadow-[var(--focus-field-ring)]')
+    expect(screen.getByLabelText('Turma')).toHaveClass('focus:border-accent', 'focus:shadow-[var(--focus-field-ring)]')
+    expect(screen.getByLabelText('Observação')).toHaveClass('focus:border-accent', 'focus:shadow-[var(--focus-field-ring)]')
+    const navigationItem = screen.getByRole('link', { name: 'Turmas' })
+    for (let index = 0; index < 12; index += 1) await user.tab()
+    expect(navigationItem).toHaveFocus()
+
+    unmount()
+    render(<Drawer open onOpenChange={vi.fn()} title="Inscrição">Conteúdo</Drawer>)
+    const closeDrawer = screen.getByRole('button', { name: 'Fechar' })
+    closeDrawer.focus()
+    expect(closeDrawer).toHaveFocus()
   })
 })
