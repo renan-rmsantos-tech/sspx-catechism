@@ -1,7 +1,6 @@
-import { useEffect, useState, type HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { getPendingSessionCount } from "@/lib/attendance-sync";
 
 const chipVariants = cva(
   "inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
@@ -38,32 +37,16 @@ function Chip({
   );
 }
 
-function NetworkChip({ className }: { className?: string }) {
-  const [online, setOnline] = useState(
-    () => typeof navigator === "undefined" || navigator.onLine,
-  );
-  const [pending, setPending] = useState(0);
-  useEffect(() => {
-    const refresh = () =>
-      void getPendingSessionCount()
-        .then(setPending)
-        .catch(() => undefined);
-    const goOnline = () => {
-      setOnline(true);
-      refresh();
-    };
-    const goOffline = () => {
-      setOnline(false);
-      refresh();
-    };
-    refresh();
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
-    return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
-    };
-  }, []);
+/** O chip de rede, puro: quem está conectado ao aparelho é `NetworkChip`. */
+function NetworkStatusChip({
+  online,
+  pending,
+  className,
+}: {
+  online: boolean;
+  pending: number;
+  className?: string;
+}) {
   return (
     <Chip
       className={className}
@@ -75,4 +58,4 @@ function NetworkChip({ className }: { className?: string }) {
     </Chip>
   );
 }
-export { Chip, NetworkChip, chipVariants };
+export { Chip, NetworkStatusChip, chipVariants };
