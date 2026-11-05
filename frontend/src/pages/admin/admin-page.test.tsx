@@ -204,7 +204,7 @@ describe('AdminPage', () => {
     for (const view of views) {
       const rendered = renderAdmin(view.path)
       await screen.findByRole('heading', { name: view.heading })
-      for (const label of view.labels) expect(screen.getByLabelText(label)).toBeInTheDocument()
+      for (const label of view.labels) expect(await screen.findByLabelText(label)).toBeInTheDocument()
       rendered.unmount()
     }
   })
