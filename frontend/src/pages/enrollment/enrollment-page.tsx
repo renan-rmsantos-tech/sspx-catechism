@@ -6,7 +6,7 @@ import { Brand } from '@/components/ui/brand'
 import { Button } from '@/components/ui/button'
 import { Choice } from '@/components/ui/choice'
 import { Field, Input, Textarea } from '@/components/ui/field'
-import { NetworkChip } from '@/components/ui/chip'
+import { NetworkChip } from '@/components/ui/network-chip'
 import { Stepper } from '@/components/ui/stepper'
 import {
   publicEnrollmentSchema,

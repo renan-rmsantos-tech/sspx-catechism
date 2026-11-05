@@ -83,3 +83,8 @@ Desktop.ini
 # QA living docs — generated views & bulky evidence (source of truth: docs/qa/scenarios/ etc.)
 docs/qa/state.csv
 docs/qa/evidence/
+
+# ─── Galeria de protótipos (@compozy/proto) ───────────────────
+# Capturas de `proto screenshot`/`evidence` e anexos baixados de comentários.
+frontend/docs/design/*/
+frontend/.tmp/

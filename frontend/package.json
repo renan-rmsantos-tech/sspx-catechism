@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "tsc -b --pretty false",
-    "capture-baseline": "tsx scripts/capture-baseline.ts"
+    "capture-baseline": "tsx scripts/capture-baseline.ts",
+    "proto": "proto"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -35,6 +36,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@compozy/proto": "^0.1.6",
     "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

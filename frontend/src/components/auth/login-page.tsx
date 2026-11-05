@@ -1,9 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { LogIn } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AuthShell } from '@/components/auth/auth-shell'
-import { Button } from '@/components/ui/button'
-import { Field, Input } from '@/components/ui/field'
+import { LoginForm } from '@/components/auth/login-form'
 import { useAuth } from '@/contexts/auth-context'
 import { ApiError } from '@/lib/api'
 import { getPendingSessionCount } from '@/lib/attendance-sync'
@@ -20,8 +17,6 @@ export function friendlyLoginError(err: unknown): string {
 export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   // Quem chega aqui com chamada na fila (sessão expirada) precisa saber que o
@@ -38,15 +33,8 @@ export function LoginPage() {
     }
   }, [])
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(email: string, password: string) {
     setError(null)
-
-    if (!email.trim() || !password) {
-      setError('Informe e-mail e senha.')
-      return
-    }
-
     setIsSubmitting(true)
     try {
       const user = await login(email, password)
@@ -61,54 +49,11 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell title="Entrar" description="Use o e-mail cadastrado pela coordenação da paróquia.">
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        {pendingAttendance > 0 && (
-          <p
-            role="status"
-            className="rounded-[var(--r-sm)] bg-info-soft px-3 py-2 text-sm text-info-ink"
-            data-testid="pending-attendance-notice"
-          >
-            {pendingAttendance === 1
-              ? 'Sua chamada está guardada no aparelho. Entre para enviá-la.'
-              : `Você tem ${pendingAttendance} chamadas guardadas no aparelho. Entre para enviá-las.`}
-          </p>
-        )}
-        <Field id="email" label="E-mail">
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            aria-invalid={error && !email.trim() ? 'true' : undefined}
-            placeholder="catequista@paroquia.org"
-          />
-        </Field>
-
-        <Field id="password" label="Senha" hint="No primeiro acesso você será levado à troca de senha.">
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-invalid={error && !password ? 'true' : undefined}
-            placeholder="Mínimo de 6 caracteres"
-          />
-        </Field>
-
-        {error ? (
-          <p role="alert" className="rounded-[var(--r-sm)] bg-danger-soft px-3 py-2 text-sm text-danger-ink">
-            {error}
-          </p>
-        ) : null}
-
-        <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} disabledReason="Entrando..." className="mt-1 w-full">
-          <LogIn aria-hidden="true" />
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </Button>
-      </form>
-    </AuthShell>
+    <LoginForm
+      error={error}
+      isSubmitting={isSubmitting}
+      pendingAttendance={pendingAttendance}
+      onSubmit={(email, password) => void handleSubmit(email, password)}
+    />
   )
 }

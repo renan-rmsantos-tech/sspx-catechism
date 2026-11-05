@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AttendanceRow, tallyMarks } from "@/components/ui/attendance-row";
 import { Button } from "@/components/ui/button";
-import { NetworkChip } from "@/components/ui/chip";
+import { NetworkChip } from "@/components/ui/network-chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchField } from "@/components/ui/field";
 import { ProgressRail } from "@/components/ui/metrics";
