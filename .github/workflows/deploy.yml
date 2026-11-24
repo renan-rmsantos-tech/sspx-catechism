@@ -1,13 +1,12 @@
 name: Deploy
 
-# DORMENTE — o GitHub Actions está desabilitado no nível da conta
-# (422 "Actions has been disabled for this user"), então este workflow não
-# dispara. O deploy real é `git push production main` (infra/README.md §8).
-# Mantido no repo para religar quando o suporte do GitHub liberar a conta.
+# O GitHub Actions voltou a rodar neste repositório. O `git push production main`
+# (infra/README.md §8) continua como alternativa; os dois usam o mesmo lock no
+# servidor, então não rodam ao mesmo tempo.
 #
 # Runs tests on every PR; deploys only on push to main (+ manual trigger).
 # Builds happen ON the DigitalOcean droplet (no external registry). Requires
-# repo secrets: SSH_HOST, SSH_USER, SSH_KEY (private key), DEPLOY_PATH.
+# repo secrets: CI_GATE_SSH_KEY (chave presa ao ci-gate) e CI_GATE_KNOWN_HOSTS.
 
 on:
   push:
@@ -48,16 +47,18 @@ jobs:
     # Never deploy from a pull request — only push to main / manual dispatch.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e
-            cd ${{ secrets.DEPLOY_PATH }}
-            git pull --ff-only
-            docker compose -f compose.traefik.yaml up -d --build
-            docker image prune -f
+      - name: Deploy pelo ci-gate
+        # A chave só aciona `deploy sspx-catechism` no ci-gate do servidor (sem shell);
+        # o passo a passo do deploy está em sspx-school/infra/ci-gate.
+        env:
+          SSH_KEY: ${{ secrets.CI_GATE_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.CI_GATE_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o ServerAliveInterval=30 \
+            renan@64.225.15.219 "deploy sspx-catechism"
