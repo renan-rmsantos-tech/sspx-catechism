@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { LoginForm } from "./login-form";
 import { pendingAttendance, rateLimitedError } from "./login-form.fixtures";
 

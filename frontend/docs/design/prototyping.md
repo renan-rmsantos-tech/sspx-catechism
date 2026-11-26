@@ -1,6 +1,6 @@
 ---
 target: library
-host: vite-app # galeria @compozy/proto compilada pelo vite.config.ts do próprio app
+host: vite-app # galeria @protohq/cli compilada pelo vite.config.ts do próprio app
 prototypes: "src/**/*.proto.tsx"
 entry: "src/drafts/{slug}/index.proto.tsx"
 providers: proto.canvas.tsx
@@ -12,7 +12,7 @@ output: "docs/design/{slug}/"
 
 # Protótipos
 
-A galeria `@compozy/proto` renderiza as views reais do app com fixtures, um estado
+A galeria `@protohq/cli` renderiza as views reais do app com fixtures, um estado
 por vez, e guarda os comentários de revisão em `proto/review/`. O que se revisa na
 galeria é o mesmo código que vai para produção. As skills `proto` e
 `proto-apply-comments` (`.agents/skills/`, com links em `.claude/skills/`) descrevem
@@ -21,7 +21,7 @@ autoria e revisão.
 Tudo roda de dentro de `frontend/`:
 
 ```bash
-npm run proto dev            # galeria em http://127.0.0.1:4470 (render em :4471)
+npm run proto dev            # galeria em http://127.0.0.1:4400/p/<projeto>/
 npm run proto check          # valida meta, guards e compilação; rode antes da revisão
 npm run proto -- screenshot dashboard-view --state offline --width 390
 ```

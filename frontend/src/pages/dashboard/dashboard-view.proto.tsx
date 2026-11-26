@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { NetworkStatusChip } from "@/components/ui/chip";
 import { DashboardView } from "./dashboard-view";
 import {

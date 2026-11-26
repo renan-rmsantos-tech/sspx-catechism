@@ -31,11 +31,11 @@ Toda UI do `frontend/` segue o design system em `design/`. Leia antes de mexer e
 
 Ao criar/refazer tela, rode a checklist do fim do `SKILL.md` e conserte o que falhar.
 
-## Protótipos — `@compozy/proto`
+## Protótipos — `@protohq/cli`
 
 Telas novas ou refeitas passam pela galeria antes de virar rota: ela renderiza a view real com fixtures, um estado por vez, e guarda os comentários de revisão em `frontend/proto/review/`. Fluxo completo em **`frontend/docs/design/prototyping.md`**; autoria e revisão nas skills `proto` e `proto-apply-comments` (`.agents/skills/`).
 
-- Rode de `frontend/`: `npm run proto dev` (galeria em `127.0.0.1:4470`) e `npm run proto check` (precisa sair com `problems` vazio).
+- Rode de `frontend/`: `npm run proto dev` (galeria em `http://127.0.0.1:4400/p/<projeto>/`) e `npm run proto check` (precisa sair com `problems` vazio).
 - Protótipo de componente: `<view>.proto.tsx` ao lado da view, fixtures em `<view>.fixtures.ts`, sem markup próprio. Exploração livre vai em `src/drafts/<slug>/index.proto.tsx`.
 - A view recebe tudo por props; quem chama API, `useAuth()` ou o IndexedDB é o container da página (`DashboardView`/`DashboardPage`, `LoginForm`/`LoginPage`). Falta algo para um estado? Adicione uma prop à view.
 - `network_import` no `proto check` quer dizer que a view alcança dados: corte o import, nunca afrouxe `guards.forbidRuntimeImports`.

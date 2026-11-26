@@ -84,7 +84,7 @@ Desktop.ini
 docs/qa/state.csv
 docs/qa/evidence/
 
-# ─── Galeria de protótipos (@compozy/proto) ───────────────────
+# ─── Galeria de protótipos (@protohq/cli) ───────────────────
 # Capturas de `proto screenshot`/`evidence` e anexos baixados de comentários.
 frontend/docs/design/*/
 frontend/.tmp/
